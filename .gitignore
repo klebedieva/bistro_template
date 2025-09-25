@@ -15,7 +15,16 @@
 ###< phpunit/phpunit ###
 
 ###> symfony/asset-mapper ###
-/public/assets/
+/public/assets/@symfony/
+/public/assets/controllers/
+/public/assets/vendor/
+/public/assets/entrypoint*.json
+/public/assets/importmap.json
+/public/assets/manifest.json
+/public/assets/app-*.js
+/public/assets/bootstrap-*.js
+/public/assets/reviews-*.js
+/public/assets/styles/
 /assets/vendor/
 ###< symfony/asset-mapper ###
 

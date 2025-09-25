@@ -124,7 +124,8 @@ class ContactMessageCrudController extends AbstractCrudController
             
             BooleanField::new('consent', 'Consentement')
                 ->setHelp('La personne a accepté d\'être contactée')
-                ->hideOnForm(),
+                ->hideOnForm()
+                ->renderAsSwitch(false),
             
             DateTimeField::new('createdAt', 'Date de réception')
                 ->hideOnForm()
@@ -133,6 +134,7 @@ class ContactMessageCrudController extends AbstractCrudController
             
             BooleanField::new('isReplied', 'Répondu')
                 ->hideOnForm()
+                ->renderAsSwitch(false)
                 ->setHelp('Indique si une réponse a été envoyée'),
             
             DateTimeField::new('repliedAt', 'Date de réponse')
@@ -142,22 +144,21 @@ class ContactMessageCrudController extends AbstractCrudController
             
             TextareaField::new('replyMessage', 'Réponse')
                 ->hideOnForm()
-                ->setHelp('Texte de la réponse envoyée')
+                ->setHelp('Message de réponse envoyé au client')
                 ->formatValue(function ($value, $entity) use ($pageName) {
                     if (!$value) {
-                        return '<em style="color: #6c757d; font-style: italic;">Aucune réponse</em>';
+                        return '<em style="color: #6c757d; font-style: italic;">Aucune réponse envoyée</em>';
                     }
-                    $text = nl2br(htmlspecialchars($value)); // preserve line breaks and escape HTML
-                    // Only truncate on index page
+                    $text = nl2br(htmlspecialchars($value));
                     if ($pageName === Crud::PAGE_INDEX) {
-                        $maxLength = 80; // character count for response
+                        $maxLength = 80;
                         if (mb_strlen($value) > $maxLength) {
                             return mb_substr($text, 0, $maxLength) . '...';
                         }
                     }
                     return $text;
                 })
-                ->renderAsHtml(), // enable HTML rendering for <br> tags
+                ->renderAsHtml(),
         ];
     }
 
@@ -165,7 +166,7 @@ class ContactMessageCrudController extends AbstractCrudController
     {
         $replyAction = Action::new('reply', 'Répondre')
             ->setIcon('fa fa-reply')
-            ->setCssClass('btn btn-link')
+            ->setCssClass('btn btn-soft-success btn-sm')
             ->linkToCrudAction('reply')
             ->displayIf(function ($entity) {
                 return $entity instanceof ContactMessage && $entity->getId() !== null && !$entity->isReplied();
@@ -180,6 +181,7 @@ class ContactMessageCrudController extends AbstractCrudController
                 return $action
                     ->setIcon('fa fa-eye')
                     ->setLabel('Voir')
+                    ->setCssClass('btn btn-soft-info btn-sm')
                     ->displayIf(function ($entity) {
                         return $entity instanceof ContactMessage && $entity->getId() !== null;
                     });
@@ -188,10 +190,14 @@ class ContactMessageCrudController extends AbstractCrudController
                 return $action
                     ->setIcon('fa fa-trash')
                     ->setLabel('Supprimer')
+                    // Keep EasyAdmin's expected class so the modal submits the delete form
+                    ->setCssClass('action-delete btn btn-soft-danger btn-sm')
                     ->displayIf(function ($entity) {
                         return $entity instanceof ContactMessage && $entity->getId() !== null;
                     });
-            });
+            })
+            // Only admins can delete contact messages
+            ->setPermission(Action::DELETE, 'ROLE_ADMIN');
     }
 
     public function configureFilters(Filters $filters): Filters
@@ -210,6 +216,7 @@ class ContactMessageCrudController extends AbstractCrudController
                     'Autre' => 'autre',
                 ]))
             ->add(BooleanFilter::new('consent', 'Consentement'))
+            ->add(BooleanFilter::new('isReplied', 'Répondu'))
             ->add(DateTimeFilter::new('createdAt', 'Date de réception'));
     }
 
@@ -241,19 +248,16 @@ class ContactMessageCrudController extends AbstractCrudController
             }
 
             try {
-                // Mark the message as replied
                 $contactMessage->setIsReplied(true);
                 $contactMessage->setRepliedAt(new \DateTime());
                 $contactMessage->setReplyMessage($message);
                 $contactMessage->setRepliedBy($this->getUser());
-                
                 $this->entityManager->flush();
-                
-                // Send reply email to client
+
                 $clientName = $contactMessage->getFirstName() . ' ' . $contactMessage->getLastName();
                 $subjectLabels = [
                     'reservation' => 'Réservation',
-                    'commande' => 'Commande', 
+                    'commande' => 'Commande',
                     'evenement_prive' => 'Événement privé',
                     'suggestion' => 'Suggestion',
                     'reclamation' => 'Réclamation',
@@ -261,22 +265,22 @@ class ContactMessageCrudController extends AbstractCrudController
                 ];
                 $subjectLabel = $subjectLabels[$contactMessage->getSubject()] ?? $contactMessage->getSubject();
                 $emailSubject = "Re: Votre message concernant " . $subjectLabel;
-                
+
                 $emailSent = $this->emailService->sendReplyToClient(
                     $contactMessage->getEmail(),
                     $clientName,
                     $emailSubject,
                     $message
                 );
-                
+
                 if ($emailSent) {
                     $this->addFlash('success', 'Réponse envoyée par email avec succès !');
                 } else {
                     $this->addFlash('error', 'Erreur lors de l\'envoi de l\'email. Veuillez réessayer.');
                 }
-                
+
                 return $this->redirectToRoute('admin_contact_message_index');
-                
+
             } catch (\Exception $e) {
                 $this->addFlash('error', 'Erreur lors de la sauvegarde: ' . $e->getMessage());
             }

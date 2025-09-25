@@ -3,13 +3,17 @@
 namespace App\Controller\Admin;
 
 use App\Entity\ContactMessage;
+use App\Entity\MenuItem;
+use App\Entity\Drink;
+use App\Entity\Reservation;
 use App\Entity\Review;
 use App\Repository\ContactMessageRepository;
+use App\Repository\ReservationRepository;
 use App\Repository\ReviewRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
-use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
+use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem as EaMenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Config\CrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
 use Symfony\Component\HttpFoundation\Response;
@@ -32,6 +36,7 @@ class DashboardController extends AbstractDashboardController
         // Get reviews statistics for dashboard
         $reviewRepository = $this->entityManager->getRepository(Review::class);
         $contactRepository = $this->entityManager->getRepository(ContactMessage::class);
+        $reservationRepository = $this->entityManager->getRepository(Reservation::class);
         
         $totalReviews = $reviewRepository->count([]);
         $approvedReviews = $reviewRepository->count(['isApproved' => true]);
@@ -41,6 +46,12 @@ class DashboardController extends AbstractDashboardController
         $totalMessages = $contactRepository->count([]);
         $repliedMessages = $contactRepository->count(['isReplied' => true]);
         $pendingMessages = $contactRepository->count(['isReplied' => false]);
+        
+        // Get reservations statistics
+        $totalReservations = $reservationRepository->count([]);
+        $confirmedReservations = $reservationRepository->count(['status' => 'confirmed']);
+        $pendingReservations = $reservationRepository->count(['status' => 'pending']);
+        $cancelledReservations = $reservationRepository->count(['status' => 'cancelled']);
         
         // Get average rating
         $avgRating = $reviewRepository->createQueryBuilder('r')
@@ -68,6 +79,10 @@ class DashboardController extends AbstractDashboardController
             'totalMessages' => $totalMessages,
             'repliedMessages' => $repliedMessages,
             'pendingMessages' => $pendingMessages,
+            'totalReservations' => $totalReservations,
+            'confirmedReservations' => $confirmedReservations,
+            'pendingReservations' => $pendingReservations,
+            'cancelledReservations' => $cancelledReservations,
         ]);
     }
 
@@ -80,17 +95,32 @@ class DashboardController extends AbstractDashboardController
             ->renderContentMaximized();
     }
 
+    public function configureAssets(): Assets
+    {
+        return Assets::new()
+            ->addCssFile('assets/css/admin-styles.css')
+            ->addJsFile('assets/js/admin.js');
+    }
+
     public function configureMenuItems(): iterable
     {
-        yield MenuItem::linkToDashboard('Dashboard', 'fa fa-home');
-        yield MenuItem::linkToCrud('Avis', 'fas fa-comments', Review::class);
-        yield MenuItem::linkToCrud('Messages de contact', 'fas fa-envelope', ContactMessage::class);
-        yield MenuItem::linkToUrl('Retour au site', 'fas fa-external-link-alt', '/');
+        yield EaMenuItem::linkToDashboard('Dashboard', 'fa fa-home');
+        yield EaMenuItem::subMenu('Carte (Menu)', 'fa fa-utensils')->setSubItems([
+            EaMenuItem::linkToCrud('Plats', 'fa fa-bowl-food', MenuItem::class),
+            EaMenuItem::linkToCrud('Boissons', 'fa fa-wine-glass', Drink::class),
+        ]);
+        yield EaMenuItem::linkToCrud('Réservations', 'fas fa-calendar-check', Reservation::class);
+        yield EaMenuItem::linkToCrud('Messages de contact', 'fas fa-envelope', ContactMessage::class);
+        yield EaMenuItem::linkToCrud('Avis', 'fas fa-comments', Review::class);
+        yield EaMenuItem::linkToUrl('Retour au site', 'fas fa-external-link-alt', '/');
     }
 
     public function configureCrudControllers(): iterable
     {
-        yield Review::class => ReviewCrudController::class;
+        yield Reservation::class => ReservationCrudController::class;
         yield ContactMessage::class => ContactMessageCrudController::class;
+        yield Review::class => ReviewCrudController::class;
+        yield MenuItem::class => MenuItemCrudController::class;
+        yield Drink::class => DrinkCrudController::class;
     }
 }

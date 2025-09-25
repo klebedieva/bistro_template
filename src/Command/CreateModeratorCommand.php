@@ -3,6 +3,7 @@
 namespace App\Command;
 
 use App\Entity\User;
+use App\Enum\UserRole;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -58,7 +59,7 @@ class CreateModeratorCommand extends Command
         $user = new User();
         $user->setEmail($email);
         $user->setName($name);
-        $user->setRole('ROLE_MODERATOR');
+        $user->setRole(UserRole::MODERATOR);
         
         $hashedPassword = $this->passwordHasher->hashPassword($user, $password);
         $user->setPassword($hashedPassword);

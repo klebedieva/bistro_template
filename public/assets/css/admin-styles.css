@@ -1,0 +1,162 @@
+/* Ensure EasyAdmin select dropdowns aren't clipped inside containers */
+.select2-container--bootstrap-5 .select2-dropdown,
+.select2-container .select2-dropdown {
+    z-index: 20000; /* above modals and cards */
+}
+
+/* Also allow overflow in the main content area so long lists can escape cards */
+.content-body .content-panel,
+.content-body .card,
+.content-body .field-collection {
+    overflow: visible !important;
+}
+
+/* Ensure main wrappers allow dropdowns to extend and page to scroll */
+.content-wrapper,
+.content,
+body {
+    overflow-y: visible !important;
+}
+
+/* Prefer page scrolling (not inner dropdown scrolling) */
+/* Remove inner dropdown scroll; let page scroll (handled by JS) */
+.ts-dropdown,
+.ts-dropdown .ts-dropdown-content,
+.select2-container .select2-results__options {
+    max-height: none !important;
+    overflow: visible !important;
+}
+
+/* ===== CUSTOM ADMIN STYLES ===== */
+
+/* Uniform light background with colored text and neutral borders for all buttons */
+.btn.btn-soft-warning.btn-sm {
+    background-color: #f8f9fa !important;
+    border: 1px solid #dee2e6 !important;
+    color: #ff6f00 !important;
+    margin: 0 2px !important;
+    box-shadow: none !important;
+}
+
+.btn.btn-soft-warning.btn-sm:hover {
+    background-color: #e9ecef !important;
+    border: 1px solid #adb5bd !important;
+    color: #e65100 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+.btn.btn-soft-success.btn-sm {
+    background-color: #f8f9fa !important;
+    border: 1px solid #dee2e6 !important;
+    color: #28a745 !important;
+    margin: 0 2px !important;
+    box-shadow: none !important;
+}
+
+.btn.btn-soft-success.btn-sm:hover {
+    background-color: #e9ecef !important;
+    border: 1px solid #adb5bd !important;
+    color: #1e7e34 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+.btn.btn-soft-info.btn-sm {
+    background-color: #f8f9fa !important;
+    border: 1px solid #dee2e6 !important;
+    color: #007bff !important;
+    margin: 0 2px !important;
+    box-shadow: none !important;
+}
+
+.btn.btn-soft-info.btn-sm:hover {
+    background-color: #e9ecef !important;
+    border: 1px solid #adb5bd !important;
+    color: #0056b3 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+.btn.btn-soft-danger.btn-sm {
+    background-color: #f8f9fa !important;
+    border: 1px solid #dee2e6 !important;
+    color: #dc3545 !important;
+    margin: 0 2px !important;
+    box-shadow: none !important;
+}
+
+.btn.btn-soft-danger.btn-sm:hover {
+    background-color: #e9ecef !important;
+    border: 1px solid #adb5bd !important;
+    color: #c82333 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+/* Make buttons slightly smaller and more rounded */
+.btn-sm {
+    border-radius: 8px !important;
+    font-size: 0.875rem !important;
+    padding: 0.375rem 0.75rem !important;
+    transition: all 0.2s ease !important;
+}
+
+/* Add small spacing between action buttons */
+.table-actions .btn.btn-sm, 
+.action-dropdown .btn.btn-sm,
+td .btn.btn-sm {
+    margin: 0 2px !important;
+    display: inline-block !important;
+}
+
+/* Ensure consistent styling on all action buttons */
+td .btn {
+    box-shadow: none !important;
+}
+
+/* Focus styles for all buttons */
+.btn.btn-soft-warning.btn-sm:focus {
+    box-shadow: 0 0 0 0.2rem rgba(255, 111, 0, 0.25) !important;
+}
+
+.btn.btn-soft-success.btn-sm:focus {
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25) !important;
+}
+
+.btn.btn-soft-info.btn-sm:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+}
+
+.btn.btn-soft-danger.btn-sm:focus {
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+/* Additional admin panel improvements */
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+    border: none !important;
+}
+
+.card-header {
+    border-bottom: 1px solid #dee2e6 !important;
+}
+
+.alert-light {
+    background-color: #f8f9fa !important;
+    border: 1px solid #e9ecef !important;
+    border-radius: 4px !important;
+    padding: 15px !important;
+}
+
+/* Dashboard gradient cards (moved from inline styles in dashboard.html.twig) */
+.gradient-orange { background: linear-gradient(135deg, #ffa726 0%, #ff7043 100%) !important; }
+.gradient-blue   { background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%) !important; }
+.gradient-grey   { background: linear-gradient(135deg, #78909c 0%, #546e7a 100%) !important; }
+.gradient-indigo { background: linear-gradient(135deg, #5c6bc0 0%, #3f51b5 100%) !important; }
+.gradient-violet { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
+.gradient-green  { background: linear-gradient(135deg, #66bb6a 0%, #43a047 100%) !important; }
+
+
+
+

@@ -5,119 +5,67 @@
 {% endblock %}
 
 {% block main %}
-    <div class="row">
-        <!-- Statistiques -->
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card bg-primary text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="card-title">{{ totalReviews|default(0) }}</h4>
-                            <p class="card-text">Total des avis</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-comments fa-2x"></i>
-                        </div>
-                    </div>
+    <!-- Tâches prioritaires -->
+    <div class="row mb-4">
+        <div class="col-lg-4 col-md-4 mb-4">
+            <div class="card text-white shadow-sm gradient-orange">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock fa-2x mb-2 opacity-75"></i>
+                    <h3 class="card-title mb-1">{{ pendingReservations|default(0) }}</h3>
+                    <p class="card-text mb-0">Réservations en attente</p>
                 </div>
             </div>
         </div>
 
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card bg-success text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="card-title">{{ approvedReviews|default(0) }}</h4>
-                            <p class="card-text">Avis approuvés</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-check-circle fa-2x"></i>
-                        </div>
-                    </div>
+        <div class="col-lg-4 col-md-4 mb-4">
+            <div class="card text-white shadow-sm gradient-blue">
+                <div class="card-body text-center">
+                    <i class="fas fa-envelope fa-2x mb-2 opacity-75"></i>
+                    <h3 class="card-title mb-1">{{ pendingMessages|default(0) }}</h3>
+                    <p class="card-text mb-0">Messages en attente</p>
                 </div>
             </div>
         </div>
 
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card bg-warning text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="card-title">{{ pendingReviews|default(0) }}</h4>
-                            <p class="card-text">Avis en attente</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-clock fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card bg-info text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="card-title">{{ avgRating|default(0) }}/5</h4>
-                            <p class="card-text">Note moyenne</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-star fa-2x"></i>
-                        </div>
-                    </div>
+        <div class="col-lg-4 col-md-4 mb-4">
+            <div class="card text-white shadow-sm gradient-grey">
+                <div class="card-body text-center">
+                    <i class="fas fa-comments fa-2x mb-2 opacity-75"></i>
+                    <h3 class="card-title mb-1">{{ pendingReviews|default(0) }}</h3>
+                    <p class="card-text mb-0">Avis en attente</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Messages de contact -->
+    <!-- Statistiques générales -->
     <div class="row mb-4">
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card bg-secondary text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="card-title">{{ totalMessages|default(0) }}</h4>
-                            <p class="card-text">Messages reçus</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-envelope fa-2x"></i>
-                        </div>
-                    </div>
+        <div class="col-lg-4 col-md-4 mb-4">
+            <div class="card text-white shadow-sm gradient-indigo">
+                <div class="card-body text-center">
+                    <i class="fas fa-calendar-check fa-2x mb-2 opacity-75"></i>
+                    <h3 class="card-title mb-1">{{ totalReservations|default(0) }}</h3>
+                    <p class="card-text mb-0">Total réservations</p>
                 </div>
             </div>
         </div>
 
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card bg-success text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="card-title">{{ repliedMessages|default(0) }}</h4>
-                            <p class="card-text">Messages répondues</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-reply fa-2x"></i>
-                        </div>
-                    </div>
+        <div class="col-lg-4 col-md-4 mb-4">
+            <div class="card text-white shadow-sm gradient-violet">
+                <div class="card-body text-center">
+                    <i class="fas fa-comments fa-2x mb-2 opacity-75"></i>
+                    <h3 class="card-title mb-1">{{ totalReviews|default(0) }}</h3>
+                    <p class="card-text mb-0">Total avis</p>
                 </div>
             </div>
         </div>
 
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card bg-warning text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="card-title">{{ pendingMessages|default(0) }}</h4>
-                            <p class="card-text">Messages en attente</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-clock fa-2x"></i>
-                        </div>
-                    </div>
+        <div class="col-lg-4 col-md-4 mb-4">
+            <div class="card text-white shadow-sm gradient-green">
+                <div class="card-body text-center">
+                    <i class="fas fa-star fa-2x mb-2 opacity-75"></i>
+                    <h3 class="card-title mb-1">{{ avgRating|default(0) }}/5</h3>
+                    <p class="card-text mb-0">Note moyenne</p>
                 </div>
             </div>
         </div>
@@ -126,35 +74,30 @@
     <!-- Actions rapides -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card">
-                <div class="card-header">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
                     <h5 class="card-title mb-0">
-                        <i class="fas fa-bolt me-2"></i>Actions rapides
+                        <i class="fas fa-bolt me-2 text-primary"></i>Actions rapides
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3 mb-2">
-                            <a href="{{ ea_url().setController('App\\Controller\\Admin\\ReviewCrudController').setAction('index') }}" 
-                               class="btn btn-primary w-100">
-                                <i class="fas fa-list me-2"></i>Gérer les avis
+                    <div class="row justify-content-center">
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <a href="{{ ea_url().setController('App\\Controller\\Admin\\ReservationCrudController').setAction('index').set('filters[status][comparison]', '=').set('filters[status][value]', 'pending') }}" 
+                               class="btn btn-warning w-100 btn-lg">
+                                <i class="fas fa-clock me-2"></i>Réservations en attente
                             </a>
                         </div>
-                        <div class="col-md-3 mb-2">
-                            <a href="{{ ea_url().setController('App\\Controller\\Admin\\ReviewCrudController').setAction('index').set('filters[isApproved]', false) }}" 
-                               class="btn btn-warning w-100">
-                                <i class="fas fa-clock me-2"></i>Avis en attente
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <a href="{{ ea_url().setController('App\\Controller\\Admin\\ContactMessageCrudController').setAction('index').set('filters[isReplied][value]', false) }}" 
+                               class="btn btn-info w-100 btn-lg">
+                                <i class="fas fa-envelope me-2"></i>Messages en attente
                             </a>
                         </div>
-                        <div class="col-md-3 mb-2">
-                            <a href="{{ ea_url().setController('App\\Controller\\Admin\\ContactMessageCrudController').setAction('index') }}" 
-                               class="btn btn-info w-100">
-                                <i class="fas fa-envelope me-2"></i>Messages de contact
-                            </a>
-                        </div>
-                        <div class="col-md-3 mb-2">
-                            <a href="/" target="_blank" class="btn btn-success w-100">
-                                <i class="fas fa-external-link-alt me-2"></i>Voir le site
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <a href="{{ ea_url().setController('App\\Controller\\Admin\\ReviewCrudController').setAction('index').set('filters[isApproved][value]', false) }}" 
+                               class="btn btn-secondary w-100 btn-lg">
+                                <i class="fas fa-comments me-2"></i>Avis en attente
                             </a>
                         </div>
                     </div>
@@ -167,20 +110,20 @@
     {% if recentReviews|default([]) is not empty %}
         <div class="row">
             <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light">
                         <h5 class="card-title mb-0">
-                            <i class="fas fa-star me-2"></i>Derniers avis approuvés
+                            <i class="fas fa-star me-2 text-warning"></i>Derniers avis approuvés
                         </h5>
                     </div>
                     <div class="card-body">
                         <div class="row">
                             {% for review in recentReviews %}
                                 <div class="col-lg-6 mb-3">
-                                    <div class="border rounded p-3">
+                                    <div class="border rounded p-3 bg-light">
                                         <div class="d-flex justify-content-between align-items-start mb-2">
                                             <div>
-                                                <strong>{{ review.name }}</strong>
+                                                <strong class="text-primary">{{ review.name }}</strong>
                                                 <small class="text-muted d-block">{{ review.createdAt|date('d/m/Y à H:i') }}</small>
                                             </div>
                                             <div>
@@ -193,7 +136,7 @@
                                                 {% endfor %}
                                             </div>
                                         </div>
-                                        <p class="mb-0 text-muted">"{{ review.comment|length > 100 ? review.comment|slice(0, 100) ~ '...' : review.comment }}"</p>
+                                        <p class="mb-0 text-dark">"{{ review.comment|length > 100 ? review.comment|slice(0, 100) ~ '...' : review.comment }}"</p>
                                     </div>
                                 </div>
                             {% endfor %}
@@ -203,4 +146,5 @@
             </div>
         </div>
     {% endif %}
+
 {% endblock %}

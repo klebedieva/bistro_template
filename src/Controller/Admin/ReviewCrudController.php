@@ -22,6 +22,10 @@ use EasyCorp\Bundle\EasyAdminBundle\Filter\NumericFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\TextFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Routing\Annotation\Route;
 
 #[IsGranted('ROLE_ADMIN')]
 class ReviewCrudController extends AbstractCrudController
@@ -109,10 +113,21 @@ class ReviewCrudController extends AbstractCrudController
     {
         return $actions
             ->remove(Crud::PAGE_INDEX, Action::NEW)
+            ->add(Crud::PAGE_INDEX, Action::DETAIL)
+            ->update(Crud::PAGE_INDEX, Action::DETAIL, function (Action $action) {
+                return $action
+                    ->setIcon('fa fa-eye')
+                    ->setLabel('Voir')
+                    ->setCssClass('btn btn-soft-info btn-sm')
+                    ->displayIf(function ($entity) {
+                        return $entity instanceof Review && $entity->getId() !== null;
+                    });
+            })
             ->update(Crud::PAGE_INDEX, Action::EDIT, function (Action $action) {
                 return $action
                     ->setIcon('fa fa-edit')
                     ->setLabel('Modifier')
+                    ->setCssClass('btn btn-soft-success btn-sm')
                     ->displayIf(function ($entity) {
                         return $entity instanceof Review && $entity->getId() !== null;
                     });
@@ -121,10 +136,14 @@ class ReviewCrudController extends AbstractCrudController
                 return $action
                     ->setIcon('fa fa-trash')
                     ->setLabel('Supprimer')
+                    // Keep EasyAdmin's expected class so the confirmation modal submits correctly
+                    ->setCssClass('action-delete btn btn-soft-danger btn-sm')
                     ->displayIf(function ($entity) {
                         return $entity instanceof Review && $entity->getId() !== null;
                     });
-            });
+            })
+            // Only admins can delete
+            ->setPermission(Action::DELETE, 'ROLE_ADMIN');
     }
 
 
@@ -137,4 +156,5 @@ class ReviewCrudController extends AbstractCrudController
             ->add(BooleanFilter::new('isApproved', 'Approuvé'))
             ->add(DateTimeFilter::new('createdAt', 'Date de création'));
     }
+
 }

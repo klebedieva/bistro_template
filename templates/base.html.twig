@@ -9,11 +9,17 @@
     <link rel="icon" href="{{ asset('favicon.png') }}" type="image/png">
 
     {# Stylesheets block (can be overridden on child pages) #}
-    {% block stylesheets %}{% endblock %}
+    {% block stylesheets %}
+        <link rel="stylesheet" href="{{ asset('assets/css/global.css') }}">
+    {% endblock %}
+    
 
     {# JavaScripts block (can be overridden on child pages) #}
     {% block javascripts %}
         {% block importmap %}{{ importmap('app') }}{% endblock %}
+        {# Cart functionality #}
+        <script src="{{ asset('assets/js/cart.js') }}?v=3"></script>
+        <script src="{{ asset('assets/js/global.js') }}"></script>
     {% endblock %}
 </head>
 <body>
@@ -28,6 +34,9 @@
 
     {# Include footer partial #}
     {% include 'partials/footer.html.twig' %}
+    
+    {# Include cart sidebar #}
+    {% include 'partials/cart-sidebar.html.twig' %}
 </body>
 </html>
 

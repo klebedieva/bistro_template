@@ -1,0 +1,28 @@
+{# Clickable status badge: cycles status via controller route #}
+{% set value = field.value %}
+{# Use EasyAdmin-like badge colors (filled), closer to renderAsBadges output #}
+{% set badgeClasses = {
+    'new': 'badge badge-primary',
+    'pending': 'badge badge-warning',
+    'confirmed': 'badge badge-success',
+    'cancelled': 'badge badge-danger',
+    'completed': 'badge badge-info',
+    'no_show': 'badge badge-secondary'
+} %}
+
+{% set labels = {
+    'new': 'Nouveau',
+    'pending': 'En attente',
+    'confirmed': 'Confirmée',
+    'cancelled': 'Annulée',
+    'completed': 'Réalisée',
+    'no_show': 'Non venu'
+} %}
+
+{% set url = path('admin_reservation_change_status', { entityId: entity.primaryKeyValue }) %}
+
+<a href="{{ url }}" class="{{ badgeClasses[value] ?? 'badge bg-secondary' }}" title="Changer le statut">
+    {{ labels[value] ?? value }}
+</a>
+
+

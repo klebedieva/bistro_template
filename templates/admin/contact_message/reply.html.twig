@@ -1,5 +1,10 @@
 {% extends '@EasyAdmin/layout.html.twig' %}
 
+{% block head_stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('assets/css/admin.css') }}">
+{% endblock %}
+
 {% block content_title %}
     <i class="fa fa-reply"></i> Répondre à {{ contactMessage.firstName }} {{ contactMessage.lastName }}
 {% endblock %}
@@ -94,22 +99,22 @@
                     
                     <h6 class="mt-3">Templates rapides :</h6>
                     <div class="btn-group-vertical w-100" role="group">
-                        <button type="button" class="btn btn-outline-primary btn-sm mb-1 template-btn" onclick="insertTemplate('reservation')">
+                        <button type="button" class="btn btn-outline-primary btn-sm mb-1 template-btn" data-template="reservation">
                             <i class="fa fa-calendar me-1"></i>Réservation
                         </button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm mb-1 template-btn" onclick="insertTemplate('commande')">
+                        <button type="button" class="btn btn-outline-secondary btn-sm mb-1 template-btn" data-template="commande">
                             <i class="fa fa-shopping-cart me-1"></i>Commande
                         </button>
-                        <button type="button" class="btn btn-outline-info btn-sm mb-1 template-btn" onclick="insertTemplate('evenement_prive')">
+                        <button type="button" class="btn btn-outline-info btn-sm mb-1 template-btn" data-template="evenement_prive">
                             <i class="fa fa-star me-1"></i>Événement privé
                         </button>
-                        <button type="button" class="btn btn-outline-warning btn-sm mb-1 template-btn" onclick="insertTemplate('reclamation')">
+                        <button type="button" class="btn btn-outline-warning btn-sm mb-1 template-btn" data-template="reclamation">
                             <i class="fa fa-exclamation-triangle me-1"></i>Réclamation
                         </button>
-                        <button type="button" class="btn btn-outline-success btn-sm mb-1 template-btn" onclick="insertTemplate('suggestion')">
+                        <button type="button" class="btn btn-outline-success btn-sm mb-1 template-btn" data-template="suggestion">
                             <i class="fa fa-lightbulb me-1"></i>Suggestion
                         </button>
-                        <button type="button" class="btn btn-outline-dark btn-sm mb-1 template-btn" onclick="insertTemplate('general')">
+                        <button type="button" class="btn btn-outline-dark btn-sm mb-1 template-btn" data-template="general">
                             <i class="fa fa-envelope me-1"></i>Général
                         </button>
                     </div>
@@ -123,101 +128,14 @@
             </div>
         </div>
     </div>
+{% endblock %}
 
-    <style>
-        .template-btn {
-            transition: all 0.3s ease;
-            border-width: 2px;
-        }
-        
-        .template-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
-        
-        .btn-outline-primary:hover {
-            background-color: #0d6efd !important;
-            border-color: #0d6efd !important;
-            color: white !important;
-        }
-        
-        .btn-outline-secondary:hover {
-            background-color: #6c757d !important;
-            border-color: #6c757d !important;
-            color: white !important;
-        }
-        
-        .btn-outline-info:hover {
-            background-color: #0dcaf0 !important;
-            border-color: #0dcaf0 !important;
-            color: white !important;
-        }
-        
-        .btn-outline-warning:hover {
-            background-color: #ffc107 !important;
-            border-color: #ffc107 !important;
-            color: #000 !important;
-        }
-        
-        .btn-outline-success:hover {
-            background-color: #198754 !important;
-            border-color: #198754 !important;
-            color: white !important;
-        }
-        
-        .btn-outline-dark:hover {
-            background-color: #212529 !important;
-            border-color: #212529 !important;
-            color: white !important;
-        }
-        
-        .btn-outline-danger:hover {
-            background-color: #dc3545 !important;
-            border-color: #dc3545 !important;
-            color: white !important;
-        }
-    </style>
-
+{% block body_javascript %}
+    {{ parent() }}
     <script>
-        // Récupérer le prénom du client depuis Twig
-        const clientFirstName = '{{ contactMessage.firstName|e('js') }}';
-        
-        function insertTemplate(type) {
-            const messageTextarea = document.getElementById('message');
-            let template = '';
-            
-            switch(type) {
-                case 'reservation':
-                    template = `Merci pour votre demande de réservation. Nous avons bien reçu votre message et nous vous contacterons dans les plus brefs délais pour confirmer votre réservation.`;
-                    break;
-                case 'reclamation':
-                    template = `Nous vous remercions de nous avoir fait part de votre réclamation. Nous prenons très au sérieux vos commentaires et nous vous contacterons rapidement pour résoudre cette situation.`;
-                    break;
-                case 'general':
-                    template = `Merci pour votre message. Nous avons bien reçu votre demande et nous vous répondrons dans les plus brefs délais.`;
-                    break;
-                case 'commande':
-                    template = `Merci pour votre demande concernant une commande. Nous avons bien pris note de votre demande et nous vous contacterons rapidement pour vous donner plus d'informations.`;
-                    break;
-                case 'evenement_prive':
-                    template = `Merci pour votre intérêt pour l'organisation d'un événement privé. Nous sommes ravis de vous aider et nous vous contacterons dans les plus brefs délais pour discuter de vos besoins.`;
-                    break;
-                case 'suggestion':
-                    template = `Merci pour votre suggestion. Nous apprécions vos idées et nous les prendrons en considération pour améliorer notre service.`;
-                    break;
-            }
-            
-            messageTextarea.value = template;
-            // Focus sur le textarea après insertion
-            messageTextarea.focus();
-        }
-        
-        function clearMessage() {
-            const messageTextarea = document.getElementById('message');
-            if (confirm('Êtes-vous sûr de vouloir effacer le message ?')) {
-                messageTextarea.value = '';
-                messageTextarea.focus();
-            }
-        }
+        window.AdminConfig = {
+            clientFirstName: {{ contactMessage.firstName|json_encode|raw }}
+        };
     </script>
+    <script src="{{ asset('assets/js/admin.js') }}?v={{ 'now'|date('YmdHis') }}"></script>
 {% endblock %}

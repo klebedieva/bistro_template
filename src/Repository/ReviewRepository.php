@@ -40,4 +40,17 @@ class ReviewRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return Review[] Returns an array of approved reviews ordered by date
+     */
+    public function findApprovedOrderedByDate(): array
+    {
+        return $this->createQueryBuilder('r')
+            ->andWhere('r.isApproved = :approved')
+            ->setParameter('approved', true)
+            ->orderBy('r.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

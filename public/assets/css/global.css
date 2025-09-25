@@ -1,0 +1,43 @@
+/* Global Bootstrap primary override */
+body .bg-primary,
+html body .bg-primary,
+section.bg-primary,
+.py-5.bg-primary,
+#reservation.bg-primary,
+#avis.bg-primary,
+#gallery.bg-primary {
+    background: linear-gradient(135deg, #d4a574, #8b4513) !important;
+    background-color: #d4a574 !important;
+    background-image: linear-gradient(135deg, #d4a574, #8b4513) !important;
+}
+
+body .btn-primary,
+html body .btn-primary,
+button.btn-primary,
+input.btn-primary {
+    background: linear-gradient(135deg, #d4a574, #8b4513) !important;
+    background-color: #d4a574 !important;
+    border-color: #d4a574 !important;
+    color: white !important;
+}
+
+body .btn-primary:hover,
+html body .btn-primary:hover,
+button.btn-primary:hover,
+input.btn-primary:hover {
+    background: linear-gradient(135deg, #8b4513, #d4a574) !important;
+    background-color: #8b4513 !important;
+    border-color: #8b4513 !important;
+    color: white !important;
+}
+
+body .btn-primary:focus,
+html body .btn-primary:focus,
+button.btn-primary:focus,
+input.btn-primary:focus {
+    background: linear-gradient(135deg, #8b4513, #d4a574) !important;
+    background-color: #8b4513 !important;
+    border-color: #8b4513 !important;
+    color: white !important;
+    box-shadow: 0 0 0 0.2rem rgba(139, 69, 19, 0.25) !important;
+}
