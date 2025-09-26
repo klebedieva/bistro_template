@@ -14,6 +14,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ArrayField;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
@@ -45,22 +47,57 @@ class MenuItemCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
+        $imageField = ImageField::new('image', 'Image')
+            ->setBasePath('/uploads/menu')
+            ->setUploadDir('public/uploads/menu')
+            ->setUploadedFileNamePattern('[slug]-[timestamp].[extension]')
+            ->setHelp('Téléversez une image; le fichier sera copié dans /public/uploads/menu');
+
+        // On edit, keep existing image and make upload optional
+        if ($pageName === Crud::PAGE_EDIT) {
+            $imageField = $imageField->setRequired(false);
+        }
+
         return [
             IdField::new('id')->hideOnForm()->hideOnIndex(),
             TextField::new('name', 'Nom')->setRequired(true),
             TextareaField::new('description', 'Description')->setNumOfRows(4)->hideOnIndex(),
             MoneyField::new('price', 'Prix')->setCurrency('EUR')->setStoredAsCents(false),
-            ImageField::new('image', 'Image')
-                ->setBasePath('/uploads/menu')
-                ->setUploadDir('public/uploads/menu')
-                ->setUploadedFileNamePattern('[slug]-[timestamp].[extension]')
-                ->setHelp('Téléversez une image; le fichier sera copié dans /public/uploads/menu'),
+            $imageField,
             ChoiceField::new('category', 'Catégorie')
                 ->setChoices([
                     'Entrées' => 'entrees',
                     'Plats' => 'plats',
                     'Desserts' => 'desserts',
                 ]),
+            TextareaField::new('ingredients', 'Ingrédients')
+                ->hideOnIndex()
+                ->setHelp('Liste d\'ingrédients. Saisissez un par ligne (recommandé) ou un tableau JSON ["item1","item2"].')
+                ->formatValue(function ($value, $entity) {
+                    if (!$value) return '';
+                    
+                    // Если это JSON, показываем как построчный список для удобства редактирования
+                    $decoded = json_decode($value, true);
+                    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                        return implode("\n", $decoded);
+                    }
+                    
+                    return $value;
+                })
+                ->setFormTypeOptions([
+                    'attr' => ['rows' => 6]
+                ]),
+            TextareaField::new('preparation', 'Préparation')->hideOnIndex(),
+            IntegerField::new('prepTimeMin', 'Temps de préparation min (min)')
+                ->hideOnIndex()
+                ->setHelp('Temps minimum de préparation en minutes'),
+            IntegerField::new('prepTimeMax', 'Temps de préparation max (min)')
+                ->hideOnIndex()
+                ->setHelp('Temps maximum de préparation en minutes. Si rempli avec min, affichera "15 - 20 minutes"'),
+            TextareaField::new('chefTip', 'Conseil du chef')->hideOnIndex(),
+            AssociationField::new('allergens', 'Allergènes')
+                ->setFormTypeOptions(['by_reference' => false])
+                ->hideOnIndex(),
             AssociationField::new('badges', 'Badges')
                 ->setFormTypeOptions(['by_reference' => false])
                 ->hideOnIndex()
@@ -88,6 +125,13 @@ class MenuItemCrudController extends AbstractCrudController
                     }
                     return implode(', ', $names);
                 }),
+            // Nutrition (embedded)
+            IntegerField::new('nutrition.caloriesKcal', 'Calories (kcal)')->hideOnIndex(),
+            TextField::new('nutrition.proteinsG', 'Protéines (g)')->hideOnIndex(),
+            TextField::new('nutrition.carbsG', 'Glucides (g)')->hideOnIndex(),
+            TextField::new('nutrition.fatsG', 'Lipides (g)')->hideOnIndex(),
+            TextField::new('nutrition.fiberG', 'Fibres (g)')->hideOnIndex(),
+            IntegerField::new('nutrition.sodiumMg', 'Sodium (mg)')->hideOnIndex(),
             DateTimeField::new('createdAt', 'Créé le')->hideOnForm(),
         ];
     }

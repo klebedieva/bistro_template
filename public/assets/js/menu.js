@@ -405,7 +405,7 @@ function renderMenuItem(item) {
                 <div class="menu-card-image">
                     <img src="${item.image}" alt="${item.name}">
                     <div class="menu-card-overlay">
-                        <a href="dish-detail.html?id=${item.id}" class="quick-view-btn">
+                        <a href="/dish/${item.id}" class="quick-view-btn">
                             <i class="bi bi-eye me-2"></i>Voir détails
                         </a>
                     </div>
@@ -515,7 +515,7 @@ function addMenuItemEventListeners() {
             e.stopPropagation();
             // Get the dish ID from the href attribute
             const href = this.getAttribute('href');
-            if (href && href.includes('dish-detail.html?id=')) {
+            if (href && href.startsWith('/dish/')) {
                 // Let default link behavior handle navigation
                 // No need to prevent default or show an alert
             }

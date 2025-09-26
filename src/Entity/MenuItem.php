@@ -38,6 +38,31 @@ class MenuItem
     #[ORM\Column]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $ingredients = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $preparation = null;
+
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $prepTimeMinutes = null;
+
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $prepTimeMin = null;
+
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $prepTimeMax = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $chefTip = null;
+
+    #[ORM\ManyToMany(targetEntity: Allergen::class, inversedBy: 'menuItems')]
+    #[ORM\JoinTable(name: 'menu_item_allergen')]
+    private Collection $allergens;
+
+    #[ORM\Embedded(class: NutritionFacts::class)]
+    private NutritionFacts $nutrition;
+
     /**
      * @var Collection<int, Badge>
      */
@@ -58,6 +83,8 @@ class MenuItem
         $this->updatedAt = $now;
         $this->badges = new ArrayCollection();
         $this->tags = new ArrayCollection();
+        $this->allergens = new ArrayCollection();
+        $this->nutrition = new NutritionFacts();
     }
 
     #[ORM\PrePersist]
@@ -214,6 +241,145 @@ class MenuItem
     public function removeTag(Tag $tag): static
     {
         $this->tags->removeElement($tag);
+
+        return $this;
+    }
+
+    public function getIngredients(): ?string
+    {
+        return $this->ingredients;
+    }
+
+    public function setIngredients(?string $ingredients): static
+    {
+        // Если это не JSON, конвертируем в JSON массив
+        if ($ingredients && !$this->isJson($ingredients)) {
+            // Разбиваем по строкам и создаем JSON массив
+            $lines = array_filter(array_map('trim', explode("\n", $ingredients)));
+            if (!empty($lines)) {
+                $ingredients = json_encode($lines, JSON_UNESCAPED_UNICODE);
+            }
+        }
+        
+        $this->ingredients = $ingredients;
+
+        return $this;
+    }
+
+    private function isJson(string $string): bool
+    {
+        json_decode($string);
+        return json_last_error() === JSON_ERROR_NONE;
+    }
+
+    public function getIngredientsAsArray(): array
+    {
+        if (!$this->ingredients) {
+            return [];
+        }
+        
+        // Попробуем декодировать как JSON
+        $decoded = json_decode($this->ingredients, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            return $decoded;
+        }
+        
+        // Если не JSON, разбиваем по строкам
+        return array_filter(array_map('trim', explode("\n", $this->ingredients)));
+    }
+
+    public function getPreparation(): ?string
+    {
+        return $this->preparation;
+    }
+
+    public function setPreparation(?string $preparation): static
+    {
+        $this->preparation = $preparation;
+
+        return $this;
+    }
+
+    public function getPrepTimeMinutes(): ?int
+    {
+        return $this->prepTimeMinutes;
+    }
+
+    public function setPrepTimeMinutes(?int $prepTimeMinutes): static
+    {
+        $this->prepTimeMinutes = $prepTimeMinutes;
+
+        return $this;
+    }
+
+    public function getPrepTimeMin(): ?int
+    {
+        return $this->prepTimeMin;
+    }
+
+    public function setPrepTimeMin(?int $prepTimeMin): static
+    {
+        $this->prepTimeMin = $prepTimeMin;
+
+        return $this;
+    }
+
+    public function getPrepTimeMax(): ?int
+    {
+        return $this->prepTimeMax;
+    }
+
+    public function setPrepTimeMax(?int $prepTimeMax): static
+    {
+        $this->prepTimeMax = $prepTimeMax;
+
+        return $this;
+    }
+
+    public function getChefTip(): ?string
+    {
+        return $this->chefTip;
+    }
+
+    public function setChefTip(?string $chefTip): static
+    {
+        $this->chefTip = $chefTip;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Allergen>
+     */
+    public function getAllergens(): Collection
+    {
+        return $this->allergens;
+    }
+
+    public function addAllergen(Allergen $allergen): static
+    {
+        if (!$this->allergens->contains($allergen)) {
+            $this->allergens->add($allergen);
+        }
+
+        return $this;
+    }
+
+    public function removeAllergen(Allergen $allergen): static
+    {
+        $this->allergens->removeElement($allergen);
+
+        return $this;
+    }
+
+    public function getNutrition(): NutritionFacts
+    {
+        return $this->nutrition;
+    }
+
+    public function setNutrition(NutritionFacts $nutrition): static
+    {
+        $this->nutrition = $nutrition;
 
         return $this;
     }

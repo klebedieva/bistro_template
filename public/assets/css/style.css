@@ -36,12 +36,27 @@ body {
     padding-top: 68px;
     width: 100%;
     min-width: 100%;
+    margin: 0;
+    padding-bottom: 0;
 }
 
 /* Prevent horizontal overflow causing a thin line on the right edge */
 html, body {
     overflow-x: hidden;
     background-color: #ffffff;
+    margin: 0;
+    padding: 0;
+}
+
+/* Ensure no bottom spacing */
+html {
+    height: 100%;
+}
+
+body {
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
 }
 
 @media (max-width: 768px) {
@@ -629,6 +644,31 @@ section .text-center.mb-5 {
 /* Footer */
 footer {
     background: var(--dark-color) !important;
+    width: 100vw !important;
+    margin-left: calc(-50vw + 50%) !important;
+    margin-right: calc(-50vw + 50%) !important;
+    max-width: none !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+footer .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+/* Responsive footer adjustments */
+@media (max-width: 768px) {
+    footer .container {
+        padding: 0 20px;
+    }
+}
+
+@media (max-width: 576px) {
+    footer .container {
+        padding: 0 15px;
+    }
 }
 
 /* Footer Legal Links Hover Effect */

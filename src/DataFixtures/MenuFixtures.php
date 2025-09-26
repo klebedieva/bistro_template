@@ -18,6 +18,7 @@ class MenuFixtures extends Fixture implements FixtureGroupInterface, DependentFi
     public function getDependencies(): array
     {
         return [
+            AllergenFixtures::class,
             BadgeFixtures::class,
             TagFixtures::class,
         ];
@@ -197,6 +198,30 @@ class MenuFixtures extends Fixture implements FixtureGroupInterface, DependentFi
                 } catch (\Throwable $e) {
                     // Référence manquante: ignorer
                 }
+            }
+
+            // Optionally attach some example allergens based on dish name keywords
+            try {
+                $name = strtolower($r['name']);
+                $maybe = [];
+                if (str_contains($name, 'thon') || str_contains($name, 'loup de mer') || str_contains($name, 'poêlée') || str_contains($name, 'seiches')) {
+                    $maybe[] = 'fish';
+                }
+                if (str_contains($name, 'ricotta') || str_contains($r['description'] ?? '', 'crème')) {
+                    $maybe[] = 'lactose';
+                }
+                if (str_contains($r['description'] ?? '', 'amandes') || str_contains($r['description'] ?? '', 'noisettes')) {
+                    $maybe[] = 'nuts';
+                }
+                foreach (array_unique($maybe) as $code) {
+                    /** @var \App\Entity\Allergen|null $a */
+                    $a = $this->getReference(AllergenFixtures::REFERENCE_PREFIX . $code) ?? null;
+                    if ($a && method_exists($item, 'addAllergen')) {
+                        $item->addAllergen($a);
+                    }
+                }
+            } catch (\Throwable $e) {
+                // ignore
             }
 
             $manager->persist($item);
