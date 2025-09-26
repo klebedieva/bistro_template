@@ -4,48 +4,79 @@ document.addEventListener('DOMContentLoaded', function() {
     const match = window.location.pathname.match(/\/dish\/(\d+)/);
     const dishId = match ? match[1] : null;
     
+    console.log('Dish Detail Page Loaded');
+    console.log('Dish ID:', dishId);
+    console.log('Dish Data:', window.dishData);
+    console.log('Menu Items:', window.menuItems);
+    
     if (!dishId) {
+        console.log('No dish ID found, exiting');
         return; // Don't redirect, just exit
     }
     
     // Find dish in menu data (optional - for cart functionality)
     const dish = findDishById(dishId);
+    console.log('Found dish:', dish);
     
     if (dish) {
+        console.log('Initializing quantity controls for dish:', dish.name);
         // Initialize quantity controls if dish found in JS data
         initQuantityControls(dish);
         // Add event listener for cart updates
         addCartUpdateListener(dish);
+    } else {
+        console.log('Dish not found in data, trying to initialize with dishData');
+        // If we have dishData but it wasn't found by findDishById, use it directly
+        if (window.dishData && window.dishData.id == dishId) {
+            console.log('Using dishData directly:', window.dishData);
+            initQuantityControls(window.dishData);
+            addCartUpdateListener(window.dishData);
+        }
     }
 });
 
 function findDishById(dishId) {
+    // First check if we have dishData from the current page
+    if (window.dishData && window.dishData.id == dishId) {
+        return window.dishData;
+    }
+    
     // Search in menuItems array
     if (window.menuItems) {
-        return window.menuItems.find(item => item.id === dishId);
+        return window.menuItems.find(item => item.id == dishId);
     }
     
     // Fallback: search in drinks data
     if (window.drinksData) {
-        return window.drinksData.find(item => item.id === dishId);
+        return window.drinksData.find(item => item.id == dishId);
     }
     
     return null;
 }
 
 function initQuantityControls(dish) {
+    console.log('Initializing quantity controls for dish:', dish);
     const decreaseBtn = document.getElementById('decreaseQty');
     const increaseBtn = document.getElementById('increaseQty');
     const quantityDisplay = document.getElementById('quantityDisplay');
     
+    console.log('Found elements:', {
+        decreaseBtn: !!decreaseBtn,
+        increaseBtn: !!increaseBtn,
+        quantityDisplay: !!quantityDisplay
+    });
+    
     if (decreaseBtn && increaseBtn && quantityDisplay) {
+        console.log('All elements found, setting up controls');
         // Initialize quantity display with current cart quantity
         updateQuantityDisplay(dish.id);
         
         // Always show all buttons and quantity display
         showAllControls();
         
-        decreaseBtn.addEventListener('click', function() {
+        decreaseBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Decrease button clicked');
             if (!this.disabled) {
                 const currentQty = getItemQuantity(dish.id);
                 if (currentQty > 0) {
@@ -64,7 +95,9 @@ function initQuantityControls(dish) {
             }
         });
         
-        increaseBtn.addEventListener('click', function() {
+        increaseBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Increase button clicked');
             const currentQty = getItemQuantity(dish.id);
             addToCart(dish.id);
             updateQuantityDisplay(dish.id);
@@ -78,6 +111,10 @@ function initQuantityControls(dish) {
                 }
             }
         });
+        
+        console.log('Event listeners attached successfully');
+    } else {
+        console.error('Could not find required elements for quantity controls');
     }
 }
 
@@ -121,24 +158,33 @@ function getItemQuantity(itemId) {
 }
 
 function addToCart(itemId) {
+    console.log('Adding to cart, itemId:', itemId);
     const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-    const existingItem = cart.find(item => item.id === itemId);
+    const existingItem = cart.find(item => item.id == itemId);
     
     if (existingItem) {
+        console.log('Item exists in cart, increasing quantity');
         existingItem.quantity += 1;
     } else {
         // Find item in menu data
         const menuItem = findItemById(itemId);
+        console.log('Item not in cart, looking for menu item:', menuItem);
         if (menuItem) {
-            cart.push({
+            const newItem = {
                 id: menuItem.id,
                 name: menuItem.name,
                 price: menuItem.price,
                 quantity: 1
-            });
+            };
+            console.log('Adding new item to cart:', newItem);
+            cart.push(newItem);
+        } else {
+            console.log('Menu item not found, cannot add to cart');
+            return;
         }
     }
     
+    console.log('Updated cart:', cart);
     localStorage.setItem('cart', JSON.stringify(cart));
     
     // Update cart navigation and sidebar
@@ -200,14 +246,19 @@ function removeFromCart(itemId) {
 }
 
 function findItemById(itemId) {
+    // First check if we have dishData from the current page
+    if (window.dishData && window.dishData.id == itemId) {
+        return window.dishData;
+    }
+    
     // Search in menuItems array
     if (window.menuItems) {
-        return window.menuItems.find(item => item.id === itemId);
+        return window.menuItems.find(item => item.id == itemId);
     }
     
     // Fallback: search in drinks data
     if (window.drinksData) {
-        return window.drinksData.find(item => item.id === itemId);
+        return window.drinksData.find(item => item.id == itemId);
     }
     
     return null;

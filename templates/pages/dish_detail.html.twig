@@ -193,12 +193,20 @@
     <script>
         // Initialize dish data for JavaScript
         window.dishData = {
-            id: '{{ item.id }}',
+            id: {{ item.id }},
             name: '{{ item.name|e('js') }}',
             price: {{ item.price }},
             image: '{{ image }}',
             category: '{{ item.category }}'
         };
+        
+        // Also add to menuItems array for compatibility
+        if (!window.menuItems) {
+            window.menuItems = [];
+        }
+        window.menuItems.push(window.dishData);
+        
+        console.log('Dish data initialized:', window.dishData);
     </script>
 {% endblock %}
 
