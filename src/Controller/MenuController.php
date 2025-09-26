@@ -91,4 +91,83 @@ final class MenuController extends AbstractController
             'drinksJson' => $drinksJson,
         ]);
     }
+
+    #[Route('/dish/{id}', name: 'app_dish_detail', requirements: ['id' => '\\d+'])]
+    public function show(MenuItem $item, MenuItemRepository $menuItemRepository): Response
+    {
+        // Préparer structure pour le template
+        $badges = [];
+        foreach ($item->getBadges() as $badge) {
+            $badges[] = method_exists($badge, 'getName') ? $badge->getName() : (string) $badge;
+        }
+
+        $allergens = [];
+        if (method_exists($item, 'getAllergens')) {
+            foreach ($item->getAllergens() as $allergen) {
+                $allergens[] = method_exists($allergen, 'getName') ? $allergen->getName() : (string) $allergen;
+            }
+        }
+
+        $image = $item->getImage();
+        if ($image) {
+            if (!str_starts_with($image, '/uploads/') && !str_starts_with($image, '/assets/') && !str_starts_with($image, 'http')) {
+                $image = '/uploads/menu/' . ltrim($image, '/');
+            }
+            if (str_starts_with($image, 'assets/')) {
+                $image = '/' . $image;
+            }
+        }
+
+        // Related dishes (same category)
+        $related = [];
+        $sameCategory = $menuItemRepository->findBy(['category' => $item->getCategory()]);
+        foreach ($sameCategory as $other) {
+            if ($other->getId() === $item->getId()) { continue; }
+            $rImage = $other->getImage();
+            if ($rImage) {
+                if (!str_starts_with($rImage, '/uploads/') && !str_starts_with($rImage, '/assets/') && !str_starts_with($rImage, 'http')) {
+                    $rImage = '/uploads/menu/' . ltrim($rImage, '/');
+                }
+                if (str_starts_with($rImage, 'assets/')) {
+                    $rImage = '/' . $rImage;
+                }
+            }
+            $related[] = [
+                'id' => (string) $other->getId(),
+                'name' => $other->getName(),
+                'description' => $other->getDescription(),
+                'price' => (float) $other->getPrice(),
+                'image' => $rImage,
+            ];
+            if (count($related) >= 3) { break; }
+        }
+
+        // Get ingredients as array
+        $ingredients = [];
+        if (method_exists($item, 'getIngredientsAsArray')) {
+            $ingredients = $item->getIngredientsAsArray();
+        }
+
+        // Prepare prep time display
+        $prepTimeDisplay = null;
+        if ($item->getPrepTimeMin() && $item->getPrepTimeMax()) {
+            $prepTimeDisplay = $item->getPrepTimeMin() . ' - ' . $item->getPrepTimeMax();
+        } elseif ($item->getPrepTimeMin()) {
+            $prepTimeDisplay = (string) $item->getPrepTimeMin();
+        } elseif ($item->getPrepTimeMax()) {
+            $prepTimeDisplay = (string) $item->getPrepTimeMax();
+        } elseif ($item->getPrepTimeMinutes()) {
+            $prepTimeDisplay = (string) $item->getPrepTimeMinutes();
+        }
+
+        return $this->render('pages/dish_detail.html.twig', [
+            'item' => $item,
+            'image' => $image,
+            'badges' => $badges,
+            'allergens' => $allergens,
+            'ingredients' => $ingredients,
+            'prepTimeDisplay' => $prepTimeDisplay,
+            'related' => $related,
+        ]);
+    }
 }
