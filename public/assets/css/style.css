@@ -784,8 +784,8 @@ footer a.text-white:hover {
 /* Carousel Banner Styles */
 .carousel-banner {
   position: relative;
-  height: 85vh !important;
-  min-height: 85vh !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
   width: 100vw;
   min-width: 100vw;
   background-size: cover;
@@ -2256,8 +2256,8 @@ footer a[href^="mailto:"] {
     background: url('https://images.pexels.com/photos/1267320/pexels-photo-1267320.jpeg?auto=compress&cs=tinysrgb&w=1600') center/cover;
     color: white;
     position: relative;
-    height: 85vh !important;
-    min-height: 85vh !important;
+    height: 100vh !important;
+    min-height: 100vh !important;
     display: flex;
     align-items: center;
     margin-top: 0;
@@ -2286,19 +2286,29 @@ footer a[href^="mailto:"] {
     z-index: 2;
 }
 
-.reservation-header h1 {
+.reservation-header h1,
+.menu-hero h1,
+.gallery-header h1,
+.contact-header h1,
+.reviews-header h1 {
     font-size: 4rem;
-    margin-bottom: 1rem;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
     text-align: center !important;
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
 }
 
-.reservation-header .lead {
+.reservation-header .lead,
+.menu-hero .lead,
+.gallery-header .lead,
+.contact-header .lead,
+.reviews-header .lead {
     font-size: 1.5rem;
     font-weight: 300;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
     margin-bottom: 1rem;
     text-align: center !important;
+    font-family: 'Inter', sans-serif;
 }
 
 .reservation-hero-divider {
