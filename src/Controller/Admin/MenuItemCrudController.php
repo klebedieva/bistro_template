@@ -140,6 +140,7 @@ class MenuItemCrudController extends AbstractCrudController
             TextField::new('nutrition.fiberG', 'Fibres (g)')->hideOnIndex(),
             IntegerField::new('nutrition.sodiumMg', 'Sodium (mg)')->hideOnIndex(),
             DateTimeField::new('createdAt', 'Créé le')->hideOnForm(),
+            DateTimeField::new('updatedAt', 'Modifiée le')->hideOnForm(),
         ];
     }
 

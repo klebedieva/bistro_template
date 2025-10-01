@@ -51,7 +51,7 @@ class DashboardController extends AbstractDashboardController
         // Get reservations statistics
         $totalReservations = $reservationRepository->count([]);
         $confirmedReservations = $reservationRepository->count(['status' => 'confirmed']);
-        $pendingReservations = $reservationRepository->count(['status' => 'pending']);
+        $pendingReservations = $reservationRepository->count(['status' => 'new']);
         $cancelledReservations = $reservationRepository->count(['status' => 'cancelled']);
         
         // Get average rating

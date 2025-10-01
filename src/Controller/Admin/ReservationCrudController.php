@@ -171,6 +171,7 @@ class ReservationCrudController extends AbstractCrudController
             BooleanField::new('isConfirmed', 'Confirmée')
                 ->hideOnForm()
                 ->hideOnIndex()
+                ->hideOnDetail()
                 ->setDisabled(true)
                 ->renderAsSwitch(false)
                 ->setHelp('Indique si la réservation a été confirmée'),

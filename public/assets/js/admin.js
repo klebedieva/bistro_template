@@ -99,72 +99,32 @@
     // Templates de réponses
     const templates = {
         // Utilisés dans l'UI (data-template)
-        reservation: `Bonjour ${clientFirstName},
+        reservation: `Nous avons bien reçu votre demande de réservation. Nous allons vérifier nos disponibilités et vous confirmer dans les plus brefs délais.
 
-Nous avons bien reçu votre demande de réservation. Nous allons vérifier nos disponibilités et vous confirmer dans les plus brefs délais.
+En attendant, vous pouvez également nous appeler au 04 91 92 96 16 pour une réservation immédiate.`,
 
-En attendant, vous pouvez également nous appeler au 04 91 92 96 16 pour une réservation immédiate.
+        commande: `Merci pour votre commande. Elle est en cours de préparation/validation. Nous vous recontactons très vite avec les détails (montant, délai, retrait/livraison).`,
 
-Cordialement,
-L'équipe du Trois Quarts`,
+        evenement_prive: `Merci pour votre intérêt pour l'organisation d'un évènement privé au Trois Quarts. Afin de vous proposer une offre adaptée, pouvez‑vous nous préciser la date souhaitée, le nombre de personnes et vos besoins (menu, boissons, budget) ?
 
-        commande: `Bonjour ${clientFirstName},
+Nous reviendrons vers vous rapidement avec une proposition personnalisée.`,
 
-Merci pour votre commande. Elle est en cours de préparation/validation. Nous vous recontactons très vite avec les détails (montant, délai, retrait/livraison).
+        reclamation: `Nous sommes désolés d'apprendre votre insatisfaction et vous remercions de nous l'avoir signalée. Afin de comprendre et corriger le problème, pouvez‑vous nous donner quelques précisions ?
 
-Belle journée,
-L'équipe du Trois Quarts`,
+Nous ferons le nécessaire pour vous apporter une solution rapidement.`,
 
-        evenement_prive: `Bonjour ${clientFirstName},
+        suggestion: `Merci pour votre suggestion ! Nous apprécions vos retours qui nous aident à nous améliorer. Votre message a été transmis à l'équipe concernée.`,
 
-Merci pour votre intérêt pour l'organisation d'un évènement privé au Trois Quarts. Afin de vous proposer une offre adaptée, pouvez‑vous nous préciser la date souhaitée, le nombre de personnes et vos besoins (menu, boissons, budget) ?
-
-Nous reviendrons vers vous rapidement avec une proposition personnalisée.
-
-Bien cordialement,
-L'équipe du Trois Quarts`,
-
-        reclamation: `Bonjour ${clientFirstName},
-
-Nous sommes désolés d'apprendre votre insatisfaction et vous remercions de nous l'avoir signalée. Afin de comprendre et corriger le problème, pouvez‑vous nous donner quelques précisions ?
-
-Nous ferons le nécessaire pour vous apporter une solution rapidement.
-
-Sincèrement,
-L'équipe du Trois Quarts`,
-
-        suggestion: `Bonjour ${clientFirstName},
-
-Merci pour votre suggestion ! Nous apprécions vos retours qui nous aident à nous améliorer. Votre message a été transmis à l'équipe concernée.
-
-Au plaisir de vous revoir bientôt,
-L'équipe du Trois Quarts`,
-
-        general: `Bonjour ${clientFirstName},
-
-Merci pour votre message. Nous revenons vers vous très prochainement avec plus d'informations.
-
-Bien cordialement,
-L'équipe du Trois Quarts`,
+        general: `Merci pour votre message. Nous revenons vers vous très prochainement avec plus d'informations.`,
 
         // Alias internes (pour compat éventuelle)
-        confirmation: `Bonjour ${clientFirstName},
+        confirmation: `Merci pour votre message. Nous avons bien reçu votre demande et nous vous répondrons dans les plus brefs délais.`,
 
-Merci pour votre message. Nous avons bien reçu votre demande et nous vous répondrons dans les plus brefs délais.
-
-Cordialement,
-L'équipe du Trois Quarts`,
-
-        information: `Bonjour ${clientFirstName},
-
-Pour répondre à votre demande, voici les informations que vous recherchez :
+        information: `Pour répondre à votre demande, voici les informations que vous recherchez :
 
 [Insérez ici les informations spécifiques]
 
-N'hésitez pas à nous contacter si vous avez d'autres questions.
-
-Cordialement,
-L'équipe du Trois Quarts`
+N'hésitez pas à nous contacter si vous avez d'autres questions.`
     };
     
     // Événements pour les boutons de templates

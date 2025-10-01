@@ -42,7 +42,7 @@ class ContactController extends AbstractController
                 error_log('Error sending notification to admin: ' . $e->getMessage());
             }
 
-            $this->addFlash('success', 'Merci! Votre message a été envoyé avec succès.');
+            $this->addFlash('success', 'Merci! Votre message a été envoyé avec succès. Nous vous répondrons dans les plus brefs délais.');
             return $this->redirectToRoute('app_contact');
         }
 

@@ -109,6 +109,17 @@
 .review-form .rating-stars .star-rating:hover, .review-form .rating-stars .star-rating.active { color: #ffc107; }
 .review-form .rating-stars .star-rating.filled { color: #ffc107; }
 
+/* Hide green checkmarks in form validation, keep only borders */
+.form-control.is-valid {
+    background-image: none !important;
+    padding-right: 0.75rem !important;
+}
+
+.form-control.is-invalid {
+    background-image: none !important;
+    padding-right: 0.75rem !important;
+}
+
 /* Success message */
 .success-message { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 10px; padding: 1rem; margin-bottom: 1rem; display: none; }
 .success-message.show { display: block; animation: fadeIn 0.5s ease-out; }

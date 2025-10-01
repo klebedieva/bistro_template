@@ -221,6 +221,14 @@ section.contact-section .contact-info {
     border-color: #27ae60;
     border-width: 1px;
     box-shadow: 0 0 0 0.1rem rgba(39, 174, 96, 0.15);
+    background-image: none !important;
+    padding-right: 0.75rem !important;
+}
+
+.contact-form .form-control.is-invalid,
+.contact-form .form-select.is-invalid {
+    background-image: none !important;
+    padding-right: 0.75rem !important;
 }
 
 .contact-form .invalid-feedback {

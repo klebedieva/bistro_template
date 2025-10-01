@@ -242,6 +242,17 @@
     box-shadow: 0 0 0 0.2rem rgba(212, 165, 116, 0.25);
 }
 
+/* Hide validation icons, keep only borders */
+.form-control.is-valid {
+    background-image: none !important;
+    padding-right: 0.75rem !important;
+}
+
+.form-control.is-invalid {
+    background-image: none !important;
+    padding-right: 0.75rem !important;
+}
+
 /* Load More Button */
 #loadMoreReviews {
     background: white;
