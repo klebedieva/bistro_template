@@ -2,6 +2,9 @@
 
 namespace App\Controller;
 
+use App\DTO\ApiResponseDTO;
+use App\DTO\CartItemDTO;
+use App\DTO\CartResponseDTO;
 use App\Service\CartService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -31,27 +34,12 @@ class CartController extends AbstractController
         response: 200,
         description: 'Successful response',
         content: new OA\JsonContent(
+            type: 'object',
             properties: [
                 new OA\Property(property: 'success', type: 'boolean', example: true),
-                new OA\Property(
-                    property: 'cart',
-                    properties: [
-                        new OA\Property(property: 'items', type: 'array', items: new OA\Items(
-                            properties: [
-                                new OA\Property(property: 'id', type: 'integer', example: 1),
-                                new OA\Property(property: 'name', type: 'string', example: 'Risotto aux champignons'),
-                                new OA\Property(property: 'price', type: 'number', format: 'float', example: 14.5),
-                                new OA\Property(property: 'quantity', type: 'integer', example: 2),
-                                new OA\Property(property: 'image', type: 'string', example: '/uploads/menu/plat_1.png'),
-                                new OA\Property(property: 'category', type: 'string', example: 'plats')
-                            ],
-                            type: 'object'
-                        )),
-                        new OA\Property(property: 'total', type: 'number', format: 'float', example: 29.0),
-                        new OA\Property(property: 'itemCount', type: 'integer', example: 2)
-                    ],
-                    type: 'object'
-                )
+                new OA\Property(property: 'message', type: 'string', example: 'Operation successful'),
+                new OA\Property(property: 'cart', type: 'object', description: 'Cart data'),
+                new OA\Property(property: 'count', type: 'integer', example: 3)
             ]
         )
     )]
@@ -60,15 +48,36 @@ class CartController extends AbstractController
         try {
             $cart = $this->cartService->getCart();
             
-            return $this->json([
-                'success' => true,
-                'cart' => $cart
-            ]);
+            // Convert cart items to DTOs
+            $cartItems = array_map(function($item) {
+                return new CartItemDTO(
+                    id: $item['id'],
+                    name: $item['name'],
+                    price: $item['price'],
+                    quantity: $item['quantity'],
+                    image: $item['image'],
+                    category: $item['category']
+                );
+            }, $cart['items']);
+
+            $cartResponse = new CartResponseDTO(
+                items: $cartItems,
+                total: $cart['total'],
+                itemCount: $cart['itemCount']
+            );
+
+            $response = new ApiResponseDTO(
+                success: true,
+                cart: $cartResponse
+            );
+            
+            return $this->json($response->toArray());
         } catch (\Exception $e) {
-            return $this->json([
-                'success' => false,
-                'message' => 'Erreur lors de la récupération du panier: ' . $e->getMessage()
-            ], 500);
+            $response = new ApiResponseDTO(
+                success: false,
+                message: 'Erreur lors de la récupération du panier: ' . $e->getMessage()
+            );
+            return $this->json($response->toArray(), 500);
         }
     }
 
@@ -96,18 +105,12 @@ class CartController extends AbstractController
         response: 200,
         description: 'Item added successfully',
         content: new OA\JsonContent(
+            type: 'object',
             properties: [
                 new OA\Property(property: 'success', type: 'boolean', example: true),
-                new OA\Property(property: 'message', type: 'string', example: 'Article ajouté au panier'),
-                new OA\Property(
-                    property: 'cart',
-                    properties: [
-                        new OA\Property(property: 'items', type: 'array', items: new OA\Items()),
-                        new OA\Property(property: 'total', type: 'number', example: 29.0),
-                        new OA\Property(property: 'itemCount', type: 'integer', example: 2)
-                    ],
-                    type: 'object'
-                )
+                new OA\Property(property: 'message', type: 'string', example: 'Operation successful'),
+                new OA\Property(property: 'cart', type: 'object', description: 'Cart data'),
+                new OA\Property(property: 'count', type: 'integer', example: 3)
             ]
         )
     )]
@@ -115,9 +118,12 @@ class CartController extends AbstractController
         response: 400,
         description: 'Invalid data',
         content: new OA\JsonContent(
+            type: 'object',
             properties: [
-                new OA\Property(property: 'success', type: 'boolean', example: false),
-                new OA\Property(property: 'message', type: 'string', example: 'itemId est requis')
+                new OA\Property(property: 'success', type: 'boolean', example: true),
+                new OA\Property(property: 'message', type: 'string', example: 'Operation successful'),
+                new OA\Property(property: 'cart', type: 'object', description: 'Cart data'),
+                new OA\Property(property: 'count', type: 'integer', example: 3)
             ]
         )
     )]
@@ -125,9 +131,12 @@ class CartController extends AbstractController
         response: 404,
         description: 'Item not found',
         content: new OA\JsonContent(
+            type: 'object',
             properties: [
-                new OA\Property(property: 'success', type: 'boolean', example: false),
-                new OA\Property(property: 'message', type: 'string', example: 'Menu item not found: 999')
+                new OA\Property(property: 'success', type: 'boolean', example: true),
+                new OA\Property(property: 'message', type: 'string', example: 'Operation successful'),
+                new OA\Property(property: 'cart', type: 'object', description: 'Cart data'),
+                new OA\Property(property: 'count', type: 'integer', example: 3)
             ]
         )
     )]
@@ -137,40 +146,64 @@ class CartController extends AbstractController
             $data = json_decode($request->getContent(), true);
             
             if (!isset($data['itemId'])) {
-                return $this->json([
-                    'success' => false,
-                    'message' => 'itemId est requis'
-                ], 400);
+                $response = new ApiResponseDTO(
+                    success: false,
+                    message: 'itemId est requis'
+                );
+                return $this->json($response->toArray(), 400);
             }
 
             $itemId = (int) $data['itemId'];
             $quantity = isset($data['quantity']) ? (int) $data['quantity'] : 1;
 
             if ($quantity < 1) {
-                return $this->json([
-                    'success' => false,
-                    'message' => 'La quantité doit être au moins 1'
-                ], 400);
+                $response = new ApiResponseDTO(
+                    success: false,
+                    message: 'La quantité doit être au moins 1'
+                );
+                return $this->json($response->toArray(), 400);
             }
 
             $cart = $this->cartService->add($itemId, $quantity);
 
-            return $this->json([
-                'success' => true,
-                'message' => 'Article ajouté au panier',
-                'cart' => $cart
-            ]);
+            // Convert cart items to DTOs
+            $cartItems = array_map(function($item) {
+                return new CartItemDTO(
+                    id: $item['id'],
+                    name: $item['name'],
+                    price: $item['price'],
+                    quantity: $item['quantity'],
+                    image: $item['image'],
+                    category: $item['category']
+                );
+            }, $cart['items']);
+
+            $cartResponse = new CartResponseDTO(
+                items: $cartItems,
+                total: $cart['total'],
+                itemCount: $cart['itemCount']
+            );
+
+            $response = new ApiResponseDTO(
+                success: true,
+                message: 'Article ajouté au panier',
+                cart: $cartResponse
+            );
+
+            return $this->json($response->toArray());
 
         } catch (\InvalidArgumentException $e) {
-            return $this->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 404);
+            $response = new ApiResponseDTO(
+                success: false,
+                message: $e->getMessage()
+            );
+            return $this->json($response->toArray(), 404);
         } catch (\Exception $e) {
-            return $this->json([
-                'success' => false,
-                'message' => 'Erreur lors de l\'ajout au panier: ' . $e->getMessage()
-            ], 500);
+            $response = new ApiResponseDTO(
+                success: false,
+                message: 'Erreur lors de l\'ajout au panier: ' . $e->getMessage()
+            );
+            return $this->json($response->toArray(), 500);
         }
     }
 
@@ -195,18 +228,12 @@ class CartController extends AbstractController
         response: 200,
         description: 'Item removed successfully',
         content: new OA\JsonContent(
+            type: 'object',
             properties: [
                 new OA\Property(property: 'success', type: 'boolean', example: true),
-                new OA\Property(property: 'message', type: 'string', example: 'Article retiré du panier'),
-                new OA\Property(
-                    property: 'cart',
-                    properties: [
-                        new OA\Property(property: 'items', type: 'array', items: new OA\Items()),
-                        new OA\Property(property: 'total', type: 'number', example: 0),
-                        new OA\Property(property: 'itemCount', type: 'integer', example: 0)
-                    ],
-                    type: 'object'
-                )
+                new OA\Property(property: 'message', type: 'string', example: 'Operation successful'),
+                new OA\Property(property: 'cart', type: 'object', description: 'Cart data'),
+                new OA\Property(property: 'count', type: 'integer', example: 3)
             ]
         )
     )]
@@ -215,21 +242,43 @@ class CartController extends AbstractController
         try {
             $cart = $this->cartService->remove($id);
 
-            return $this->json([
-                'success' => true,
-                'message' => 'Article retiré du panier',
-                'cart' => $cart
-            ]);
+            // Convert cart items to DTOs
+            $cartItems = array_map(function($item) {
+                return new CartItemDTO(
+                    id: $item['id'],
+                    name: $item['name'],
+                    price: $item['price'],
+                    quantity: $item['quantity'],
+                    image: $item['image'],
+                    category: $item['category']
+                );
+            }, $cart['items']);
+
+            $cartResponse = new CartResponseDTO(
+                items: $cartItems,
+                total: $cart['total'],
+                itemCount: $cart['itemCount']
+            );
+
+            $response = new ApiResponseDTO(
+                success: true,
+                message: 'Article retiré du panier',
+                cart: $cartResponse
+            );
+
+            return $this->json($response->toArray());
         } catch (\InvalidArgumentException $e) {
-            return $this->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 404);
+            $response = new ApiResponseDTO(
+                success: false,
+                message: $e->getMessage()
+            );
+            return $this->json($response->toArray(), 404);
         } catch (\Exception $e) {
-            return $this->json([
-                'success' => false,
-                'message' => 'Erreur lors de la suppression: ' . $e->getMessage()
-            ], 500);
+            $response = new ApiResponseDTO(
+                success: false,
+                message: 'Erreur lors de la suppression: ' . $e->getMessage()
+            );
+            return $this->json($response->toArray(), 500);
         }
     }
 
@@ -263,18 +312,12 @@ class CartController extends AbstractController
         response: 200,
         description: 'Quantity updated successfully',
         content: new OA\JsonContent(
+            type: 'object',
             properties: [
                 new OA\Property(property: 'success', type: 'boolean', example: true),
-                new OA\Property(property: 'message', type: 'string', example: 'Quantité mise à jour'),
-                new OA\Property(
-                    property: 'cart',
-                    properties: [
-                        new OA\Property(property: 'items', type: 'array', items: new OA\Items()),
-                        new OA\Property(property: 'total', type: 'number', example: 43.5),
-                        new OA\Property(property: 'itemCount', type: 'integer', example: 3)
-                    ],
-                    type: 'object'
-                )
+                new OA\Property(property: 'message', type: 'string', example: 'Operation successful'),
+                new OA\Property(property: 'cart', type: 'object', description: 'Cart data'),
+                new OA\Property(property: 'count', type: 'integer', example: 3)
             ]
         )
     )]
@@ -284,30 +327,53 @@ class CartController extends AbstractController
             $data = json_decode($request->getContent(), true);
             
             if (!isset($data['quantity'])) {
-                return $this->json([
-                    'success' => false,
-                    'message' => 'quantity est requis'
-                ], 400);
+                $response = new ApiResponseDTO(
+                    success: false,
+                    message: 'quantity est requis'
+                );
+                return $this->json($response->toArray(), 400);
             }
 
             $quantity = (int) $data['quantity'];
             $cart = $this->cartService->updateQuantity($id, $quantity);
 
-            return $this->json([
-                'success' => true,
-                'message' => 'Quantité mise à jour',
-                'cart' => $cart
-            ]);
+            // Convert cart items to DTOs
+            $cartItems = array_map(function($item) {
+                return new CartItemDTO(
+                    id: $item['id'],
+                    name: $item['name'],
+                    price: $item['price'],
+                    quantity: $item['quantity'],
+                    image: $item['image'],
+                    category: $item['category']
+                );
+            }, $cart['items']);
+
+            $cartResponse = new CartResponseDTO(
+                items: $cartItems,
+                total: $cart['total'],
+                itemCount: $cart['itemCount']
+            );
+
+            $response = new ApiResponseDTO(
+                success: true,
+                message: 'Quantité mise à jour',
+                cart: $cartResponse
+            );
+
+            return $this->json($response->toArray());
         } catch (\InvalidArgumentException $e) {
-            return $this->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 404);
+            $response = new ApiResponseDTO(
+                success: false,
+                message: $e->getMessage()
+            );
+            return $this->json($response->toArray(), 404);
         } catch (\Exception $e) {
-            return $this->json([
-                'success' => false,
-                'message' => 'Erreur lors de la mise à jour: ' . $e->getMessage()
-            ], 500);
+            $response = new ApiResponseDTO(
+                success: false,
+                message: 'Erreur lors de la mise à jour: ' . $e->getMessage()
+            );
+            return $this->json($response->toArray(), 500);
         }
     }
 
@@ -325,18 +391,12 @@ class CartController extends AbstractController
         response: 200,
         description: 'Cart cleared successfully',
         content: new OA\JsonContent(
+            type: 'object',
             properties: [
                 new OA\Property(property: 'success', type: 'boolean', example: true),
-                new OA\Property(property: 'message', type: 'string', example: 'Panier vidé'),
-                new OA\Property(
-                    property: 'cart',
-                    properties: [
-                        new OA\Property(property: 'items', type: 'array', items: new OA\Items()),
-                        new OA\Property(property: 'total', type: 'number', example: 0),
-                        new OA\Property(property: 'itemCount', type: 'integer', example: 0)
-                    ],
-                    type: 'object'
-                )
+                new OA\Property(property: 'message', type: 'string', example: 'Operation successful'),
+                new OA\Property(property: 'cart', type: 'object', description: 'Cart data'),
+                new OA\Property(property: 'count', type: 'integer', example: 3)
             ]
         )
     )]
@@ -345,16 +405,37 @@ class CartController extends AbstractController
         try {
             $cart = $this->cartService->clear();
 
-            return $this->json([
-                'success' => true,
-                'message' => 'Panier vidé',
-                'cart' => $cart
-            ]);
+            // Convert cart items to DTOs
+            $cartItems = array_map(function($item) {
+                return new CartItemDTO(
+                    id: $item['id'],
+                    name: $item['name'],
+                    price: $item['price'],
+                    quantity: $item['quantity'],
+                    image: $item['image'],
+                    category: $item['category']
+                );
+            }, $cart['items']);
+
+            $cartResponse = new CartResponseDTO(
+                items: $cartItems,
+                total: $cart['total'],
+                itemCount: $cart['itemCount']
+            );
+
+            $response = new ApiResponseDTO(
+                success: true,
+                message: 'Panier vidé',
+                cart: $cartResponse
+            );
+
+            return $this->json($response->toArray());
         } catch (\Exception $e) {
-            return $this->json([
-                'success' => false,
-                'message' => 'Erreur lors du vidage du panier: ' . $e->getMessage()
-            ], 500);
+            $response = new ApiResponseDTO(
+                success: false,
+                message: 'Erreur lors du vidage du panier: ' . $e->getMessage()
+            );
+            return $this->json($response->toArray(), 500);
         }
     }
 
@@ -372,9 +453,12 @@ class CartController extends AbstractController
         response: 200,
         description: 'Successful response',
         content: new OA\JsonContent(
+            type: 'object',
             properties: [
                 new OA\Property(property: 'success', type: 'boolean', example: true),
-                new OA\Property(property: 'count', type: 'integer', example: 3, description: 'Total number of items')
+                new OA\Property(property: 'message', type: 'string', example: 'Operation successful'),
+                new OA\Property(property: 'cart', type: 'object', description: 'Cart data'),
+                new OA\Property(property: 'count', type: 'integer', example: 3)
             ]
         )
     )]
@@ -383,15 +467,18 @@ class CartController extends AbstractController
         try {
             $count = $this->cartService->getItemCount();
 
-            return $this->json([
-                'success' => true,
-                'count' => $count
-            ]);
+            $response = new ApiResponseDTO(
+                success: true,
+                count: $count
+            );
+
+            return $this->json($response->toArray());
         } catch (\Exception $e) {
-            return $this->json([
-                'success' => false,
-                'message' => 'Erreur: ' . $e->getMessage()
-            ], 500);
+            $response = new ApiResponseDTO(
+                success: false,
+                message: 'Erreur: ' . $e->getMessage()
+            );
+            return $this->json($response->toArray(), 500);
         }
     }
 }
