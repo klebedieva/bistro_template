@@ -1,0 +1,336 @@
+<?php
+
+namespace App\Controller\Admin;
+
+use App\Entity\Order;
+use App\Entity\OrderItem;
+use App\Enum\OrderStatus;
+use App\Enum\DeliveryMode;
+use App\Enum\PaymentMode;
+use Doctrine\ORM\EntityManagerInterface;
+use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\TextFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\NumericFilter;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+
+#[IsGranted('ROLE_ADMIN')]
+class OrderCrudController extends AbstractCrudController
+{
+    public static function getEntityFqcn(): string
+    {
+        return Order::class;
+    }
+
+    public function configureCrud(Crud $crud): Crud
+    {
+        return $crud
+            ->setEntityLabelInSingular('Commande')
+            ->setEntityLabelInPlural('Commandes')
+            ->setPageTitle('index', 'Gestion des commandes')
+            ->setPageTitle('edit', 'Modifier la commande')
+            ->setPageTitle('new', 'Nouvelle commande')
+            ->setPageTitle('detail', 'Détails de la commande')
+            ->setDefaultSort(['createdAt' => 'DESC'])
+            ->setPaginatorPageSize(20)
+            ->setSearchFields(['no', 'deliveryAddress', 'deliveryZip']);
+    }
+
+    public function configureFields(string $pageName): iterable
+    {
+        return [
+            IdField::new('id')->hideOnForm(),
+            TextField::new('no', 'Numéro de commande')
+                ->setRequired(true)
+                ->setHelp('Numéro unique de la commande'),
+            
+            ChoiceField::new('status', 'Statut')
+                ->setChoices([
+                    'En attente' => OrderStatus::PENDING,
+                    'Confirmée' => OrderStatus::CONFIRMED,
+                    'En préparation' => OrderStatus::PREPARING,
+                    'Livrée' => OrderStatus::DELIVERED,
+                    'Annulée' => OrderStatus::CANCELLED,
+                ])
+                ->renderExpanded(false)
+                ->setRequired(true)
+                ->formatValue(function ($value, $entity) {
+                    return match($entity->getStatus()) {
+                        OrderStatus::PENDING => 'En attente',
+                        OrderStatus::CONFIRMED => 'Confirmée',
+                        OrderStatus::PREPARING => 'En préparation',
+                        OrderStatus::DELIVERED => 'Livrée',
+                        OrderStatus::CANCELLED => 'Annulée',
+                    };
+                }),
+
+            ChoiceField::new('deliveryMode', 'Mode de livraison')
+                ->setChoices([
+                    'Livraison' => DeliveryMode::DELIVERY,
+                    'À emporter' => DeliveryMode::PICKUP,
+                ])
+                ->renderExpanded(false)
+                ->setRequired(true)
+                ->formatValue(function ($value, $entity) {
+                    return match($entity->getDeliveryMode()) {
+                        DeliveryMode::DELIVERY => 'Livraison',
+                        DeliveryMode::PICKUP => 'À emporter',
+                    };
+                }),
+
+            TextField::new('deliveryAddress', 'Adresse de livraison')
+                ->hideOnIndex()
+                ->setRequired(false),
+
+            TextField::new('deliveryZip', 'Code postal')
+                ->hideOnIndex()
+                ->setRequired(false),
+
+            TextareaField::new('deliveryInstructions', 'Instructions de livraison')
+                ->hideOnIndex()
+                ->setNumOfRows(3)
+                ->setRequired(false),
+
+            MoneyField::new('deliveryFee', 'Frais de livraison')
+                ->setCurrency('EUR')
+                ->setStoredAsCents(false)
+                ->setRequired(true),
+
+            ChoiceField::new('paymentMode', 'Mode de paiement')
+                ->setChoices([
+                    'Carte bancaire' => PaymentMode::CARD,
+                    'Espèces' => PaymentMode::CASH,
+                    'Tickets restaurant' => PaymentMode::TICKETS,
+                ])
+                ->renderExpanded(false)
+                ->setRequired(true)
+                ->formatValue(function ($value, $entity) {
+                    return match($entity->getPaymentMode()) {
+                        PaymentMode::CARD => 'Carte bancaire',
+                        PaymentMode::CASH => 'Espèces',
+                        PaymentMode::TICKETS => 'Tickets restaurant',
+                    };
+                }),
+
+            MoneyField::new('subtotal', 'Sous-total')
+                ->setCurrency('EUR')
+                ->setStoredAsCents(false)
+                ->hideOnForm()
+                ->setRequired(false),
+
+            MoneyField::new('taxAmount', 'Montant des taxes')
+                ->setCurrency('EUR')
+                ->setStoredAsCents(false)
+                ->hideOnForm()
+                ->setRequired(false),
+
+            MoneyField::new('total', 'Total')
+                ->setCurrency('EUR')
+                ->setStoredAsCents(false)
+                ->hideOnForm()
+                ->setRequired(false),
+
+            DateTimeField::new('createdAt', 'Date de création')
+                ->hideOnForm()
+                ->setFormat('dd/MM/yyyy HH:mm')
+                ->setTimezone('Europe/Paris'),
+
+            CollectionField::new('items', 'Articles commandés')
+                ->useEntryCrudForm()
+                ->setEntryType(OrderItem::class)
+                ->hideOnIndex()
+                ->setFormTypeOptions([
+                    'by_reference' => false,
+                    'allow_add' => true,
+                    'allow_delete' => true,
+                ])
+                ->formatValue(function ($value, $entity) {
+                    if (!$entity || !$entity->getItems()) {
+                        return 'Aucun article';
+                    }
+                    
+                    $items = [];
+                    foreach ($entity->getItems() as $item) {
+                        $items[] = sprintf(
+                            '%d x %s - %s€ (Total: %s€)',
+                            $item->getQuantity(),
+                            $item->getProductName(),
+                            $item->getUnitPrice(),
+                            $item->getTotal()
+                        );
+                    }
+                    
+                    return implode('<br>', $items);
+                }),
+        ];
+    }
+
+    public function configureActions(Actions $actions): Actions
+    {
+        // Action pour confirmer une commande
+        $confirmOrder = Action::new('confirmOrder', 'Confirmer')
+            ->setIcon('fa fa-check')
+            ->linkToCrudAction('confirmOrder')
+            ->setCssClass('btn btn-soft-success btn-sm')
+            ->displayIf(function ($entity) {
+                return $entity->getStatus() === OrderStatus::PENDING;
+            });
+
+        // Action pour marquer en préparation
+        $prepareOrder = Action::new('prepareOrder', 'En préparation')
+            ->setIcon('fa fa-clock')
+            ->linkToCrudAction('prepareOrder')
+            ->setCssClass('btn btn-soft-warning btn-sm')
+            ->displayIf(function ($entity) {
+                return $entity->getStatus() === OrderStatus::CONFIRMED;
+            });
+
+        // Action pour marquer comme livrée
+        $deliverOrder = Action::new('deliverOrder', 'Livrée')
+            ->setIcon('fa fa-truck')
+            ->linkToCrudAction('deliverOrder')
+            ->setCssClass('btn btn-soft-info btn-sm')
+            ->displayIf(function ($entity) {
+                return $entity->getStatus() === OrderStatus::PREPARING;
+            });
+
+        // Action pour annuler
+        $cancelOrder = Action::new('cancelOrder', 'Annuler')
+            ->setIcon('fa fa-times')
+            ->linkToCrudAction('cancelOrder')
+            ->setCssClass('btn btn-soft-warning btn-sm')
+            ->displayIf(function ($entity) {
+                return in_array($entity->getStatus(), [OrderStatus::PENDING, OrderStatus::CONFIRMED, OrderStatus::PREPARING]);
+            });
+
+        return $actions
+            ->add(Crud::PAGE_INDEX, Action::DETAIL)
+            ->add(Crud::PAGE_INDEX, $confirmOrder)
+            ->add(Crud::PAGE_INDEX, $prepareOrder)
+            ->add(Crud::PAGE_INDEX, $deliverOrder)
+            ->add(Crud::PAGE_INDEX, $cancelOrder)
+            ->add(Crud::PAGE_DETAIL, $confirmOrder)
+            ->add(Crud::PAGE_DETAIL, $prepareOrder)
+            ->add(Crud::PAGE_DETAIL, $deliverOrder)
+            ->add(Crud::PAGE_DETAIL, $cancelOrder)
+            ->update(Crud::PAGE_INDEX, Action::DELETE, function(Action $action){
+                return $action->setIcon('fa fa-trash')
+                    ->setLabel('Supprimer')
+                    ->setCssClass('action-delete btn btn-soft-danger btn-sm');
+            })
+            ->update(Crud::PAGE_INDEX, Action::EDIT, function(Action $action){
+                return $action->setIcon('fa fa-edit')
+                    ->setLabel('Modifier')
+                    ->setCssClass('btn btn-soft-secondary btn-sm');
+            })
+            ->update(Crud::PAGE_INDEX, Action::DETAIL, function(Action $action){
+                return $action->setIcon('fa fa-eye')
+                    ->setLabel('Voir')
+                    ->setCssClass('btn btn-soft-info btn-sm');
+            })
+            ->setPermission(Action::DELETE, 'ROLE_ADMIN');
+    }
+
+    public function configureFilters(Filters $filters): Filters
+    {
+        return $filters
+            ->add(TextFilter::new('no', 'Numéro de commande'))
+            ->add(ChoiceFilter::new('status', 'Statut')
+                ->setChoices([
+                    'En attente' => OrderStatus::PENDING,
+                    'Confirmée' => OrderStatus::CONFIRMED,
+                    'En préparation' => OrderStatus::PREPARING,
+                    'Livrée' => OrderStatus::DELIVERED,
+                    'Annulée' => OrderStatus::CANCELLED,
+                ]))
+            ->add(ChoiceFilter::new('deliveryMode', 'Mode de livraison')
+                ->setChoices([
+                    'Livraison' => DeliveryMode::DELIVERY,
+                    'À emporter' => DeliveryMode::PICKUP,
+                ]))
+            ->add(ChoiceFilter::new('paymentMode', 'Mode de paiement')
+                ->setChoices([
+                    'Carte bancaire' => PaymentMode::CARD,
+                    'Espèces' => PaymentMode::CASH,
+                    'Tickets restaurant' => PaymentMode::TICKETS,
+                ]))
+            ->add(DateTimeFilter::new('createdAt', 'Date de création'))
+            ->add(NumericFilter::new('total', 'Total'));
+    }
+
+    /**
+     * Confirmer une commande
+     */
+    public function confirmOrder(AdminContext $context): Response
+    {
+        $entity = $context->getEntity()->getInstance();
+        $entity->setStatus(OrderStatus::CONFIRMED);
+        
+        $this->container->get(EntityManagerInterface::class)->flush();
+        
+        $this->addFlash('success', 'Commande confirmée avec succès !');
+        
+        return $this->redirect($context->getReferrer());
+    }
+
+    /**
+     * Marquer une commande en préparation
+     */
+    public function prepareOrder(AdminContext $context): Response
+    {
+        $entity = $context->getEntity()->getInstance();
+        $entity->setStatus(OrderStatus::PREPARING);
+        
+        $this->container->get(EntityManagerInterface::class)->flush();
+        
+        $this->addFlash('success', 'Commande marquée en préparation !');
+        
+        return $this->redirect($context->getReferrer());
+    }
+
+    /**
+     * Marquer une commande comme livrée
+     */
+    public function deliverOrder(AdminContext $context): Response
+    {
+        $entity = $context->getEntity()->getInstance();
+        $entity->setStatus(OrderStatus::DELIVERED);
+        
+        $this->container->get(EntityManagerInterface::class)->flush();
+        
+        $this->addFlash('success', 'Commande marquée comme livrée !');
+        
+        return $this->redirect($context->getReferrer());
+    }
+
+    /**
+     * Annuler une commande
+     */
+    public function cancelOrder(AdminContext $context): Response
+    {
+        $entity = $context->getEntity()->getInstance();
+        $entity->setStatus(OrderStatus::CANCELLED);
+        
+        $this->container->get(EntityManagerInterface::class)->flush();
+        
+        $this->addFlash('success', 'Commande annulée !');
+        
+        return $this->redirect($context->getReferrer());
+    }
+}

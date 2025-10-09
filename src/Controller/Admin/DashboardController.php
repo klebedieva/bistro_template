@@ -8,9 +8,12 @@ use App\Entity\Drink;
 use App\Entity\Reservation;
 use App\Entity\Review;
 use App\Entity\Table;
+use App\Entity\Order;
+use App\Entity\OrderItem;
 use App\Repository\ContactMessageRepository;
 use App\Repository\ReservationRepository;
 use App\Repository\ReviewRepository;
+use App\Repository\OrderRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
@@ -38,6 +41,7 @@ class DashboardController extends AbstractDashboardController
         $reviewRepository = $this->entityManager->getRepository(Review::class);
         $contactRepository = $this->entityManager->getRepository(ContactMessage::class);
         $reservationRepository = $this->entityManager->getRepository(Reservation::class);
+        $orderRepository = $this->entityManager->getRepository(Order::class);
         
         $totalReviews = $reviewRepository->count([]);
         $approvedReviews = $reviewRepository->count(['isApproved' => true]);
@@ -53,6 +57,24 @@ class DashboardController extends AbstractDashboardController
         $confirmedReservations = $reservationRepository->count(['status' => 'confirmed']);
         $pendingReservations = $reservationRepository->count(['status' => 'new']);
         $cancelledReservations = $reservationRepository->count(['status' => 'cancelled']);
+        
+        // Get orders statistics
+        $totalOrders = $orderRepository->count([]);
+        $pendingOrders = $orderRepository->count(['status' => 'pending']);
+        $confirmedOrders = $orderRepository->count(['status' => 'confirmed']);
+        $preparingOrders = $orderRepository->count(['status' => 'preparing']);
+        $deliveredOrders = $orderRepository->count(['status' => 'delivered']);
+        $cancelledOrders = $orderRepository->count(['status' => 'cancelled']);
+        
+        // Get total revenue
+        $totalRevenue = $orderRepository->createQueryBuilder('o')
+            ->select('SUM(o.total)')
+            ->where('o.status IN (:deliveredStatuses)')
+            ->setParameter('deliveredStatuses', ['delivered'])
+            ->getQuery()
+            ->getSingleScalarResult();
+        
+        $totalRevenue = $totalRevenue ? (float) $totalRevenue : 0;
         
         // Get average rating
         $avgRating = $reviewRepository->createQueryBuilder('r')
@@ -84,6 +106,13 @@ class DashboardController extends AbstractDashboardController
             'confirmedReservations' => $confirmedReservations,
             'pendingReservations' => $pendingReservations,
             'cancelledReservations' => $cancelledReservations,
+            'totalOrders' => $totalOrders,
+            'pendingOrders' => $pendingOrders,
+            'confirmedOrders' => $confirmedOrders,
+            'preparingOrders' => $preparingOrders,
+            'deliveredOrders' => $deliveredOrders,
+            'cancelledOrders' => $cancelledOrders,
+            'totalRevenue' => $totalRevenue,
         ]);
     }
 
@@ -112,6 +141,10 @@ class DashboardController extends AbstractDashboardController
         ]);
         yield EaMenuItem::linkToCrud('Tables', 'fas fa-chair', Table::class);
         yield EaMenuItem::linkToCrud('Réservations', 'fas fa-calendar-check', Reservation::class);
+        yield EaMenuItem::subMenu('Commandes', 'fas fa-shopping-cart')->setSubItems([
+            EaMenuItem::linkToCrud('Commandes', 'fas fa-receipt', Order::class),
+            EaMenuItem::linkToCrud('Articles de commande', 'fas fa-list', OrderItem::class),
+        ]);
         yield EaMenuItem::linkToCrud('Messages de contact', 'fas fa-envelope', ContactMessage::class);
         yield EaMenuItem::linkToCrud('Avis', 'fas fa-comments', Review::class);
         yield EaMenuItem::linkToUrl('Retour au site', 'fas fa-external-link-alt', '/');
@@ -125,5 +158,7 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::class => MenuItemCrudController::class;
         yield Drink::class => DrinkCrudController::class;
         yield Table::class => TableCrudController::class;
+        yield Order::class => OrderCrudController::class;
+        yield OrderItem::class => OrderItemCrudController::class;
     }
 }
