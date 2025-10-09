@@ -238,6 +238,38 @@ td .btn {
     to { transform: rotate(360deg); }
 }
 
+/* Order item form improvements - более агрессивные стили */
+.field-collection input[type="number"] {
+    width: 120px !important;
+    min-width: 120px !important;
+    max-width: 120px !important;
+}
+
+/* Для всех полей количества */
+input[name*="quantity"],
+input[id*="quantity"] {
+    width: 120px !important;
+    min-width: 120px !important;
+    max-width: 120px !important;
+}
+
+/* Улучшение отступов */
+.field-collection .form-group {
+    margin-bottom: 15px !important;
+}
+
+.field-collection label {
+    margin-right: 20px !important;
+    white-space: nowrap !important;
+    min-width: 120px !important;
+}
+
+/* Специально для коллекций заказов */
+.collection-item .field-quantity input {
+    width: 120px !important;
+    margin-left: 10px !important;
+}
+
 
 
 
