@@ -36,6 +36,16 @@
                 </div>
             </div>
         </div>
+
+        <div class="col-lg-4 col-md-4 mb-4">
+            <div class="card text-white shadow-sm gradient-red">
+                <div class="card-body text-center">
+                    <i class="fas fa-shopping-cart fa-2x mb-2 opacity-75"></i>
+                    <h3 class="card-title mb-1">{{ pendingOrders|default(0) }}</h3>
+                    <p class="card-text mb-0">Commandes en attente</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Statistiques générales -->
@@ -69,6 +79,26 @@
                 </div>
             </div>
         </div>
+
+        <div class="col-lg-4 col-md-4 mb-4">
+            <div class="card text-white shadow-sm gradient-purple">
+                <div class="card-body text-center">
+                    <i class="fas fa-receipt fa-2x mb-2 opacity-75"></i>
+                    <h3 class="card-title mb-1">{{ totalOrders|default(0) }}</h3>
+                    <p class="card-text mb-0">Total commandes</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-4 mb-4">
+            <div class="card text-white shadow-sm gradient-gold">
+                <div class="card-body text-center">
+                    <i class="fas fa-euro-sign fa-2x mb-2 opacity-75"></i>
+                    <h3 class="card-title mb-1">{{ totalRevenue|number_format(2, ',', ' ') }}€</h3>
+                    <p class="card-text mb-0">Chiffre d'affaires</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Actions rapides -->
@@ -98,6 +128,12 @@
                             <a href="{{ ea_url().setController('App\\Controller\\Admin\\ReviewCrudController').setAction('index').set('filters[isApproved][value]', false) }}" 
                                class="btn btn-secondary w-100 btn-lg">
                                 <i class="fas fa-comments me-2"></i>Avis en attente
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <a href="{{ ea_url().setController('App\\Controller\\Admin\\OrderCrudController').setAction('index').set('filters[status][comparison]', '=').set('filters[status][value]', 'pending') }}" 
+                               class="btn btn-danger w-100 btn-lg">
+                                <i class="fas fa-shopping-cart me-2"></i>Commandes en attente
                             </a>
                         </div>
                     </div>

@@ -94,6 +94,22 @@ body {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
 }
 
+.btn.btn-soft-secondary.btn-sm {
+    background-color: transparent !important;
+    border: 1px solid transparent !important;
+    color: #495057 !important;
+    margin: 0 2px !important;
+    box-shadow: none !important;
+}
+
+.btn.btn-soft-secondary.btn-sm:hover {
+    background-color: transparent !important;
+    border: 1px solid transparent !important;
+    color: #343a40 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: none !important;
+}
+
 /* Make buttons slightly smaller and more rounded */
 .btn-sm {
     border-radius: 8px !important;
@@ -132,6 +148,10 @@ td .btn {
     box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
 }
 
+.btn.btn-soft-secondary.btn-sm:focus {
+    box-shadow: none !important;
+}
+
 /* Additional admin panel improvements */
 .card {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
@@ -156,6 +176,9 @@ td .btn {
 .gradient-indigo { background: linear-gradient(135deg, #5c6bc0 0%, #3f51b5 100%) !important; }
 .gradient-violet { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
 .gradient-green  { background: linear-gradient(135deg, #66bb6a 0%, #43a047 100%) !important; }
+.gradient-red    { background: linear-gradient(135deg, #ef5350 0%, #e53935 100%) !important; }
+.gradient-purple { background: linear-gradient(135deg, #ab47bc 0%, #8e24aa 100%) !important; }
+.gradient-gold   { background: linear-gradient(135deg, #ffca28 0%, #ffc107 100%) !important; }
 
 
 
