@@ -34,9 +34,71 @@ class OrderItemCrudController extends AbstractCrudController
             ->setPageTitle('index', 'Gestion des articles de commande')
             ->setPageTitle('edit', 'Modifier l\'article')
             ->setPageTitle('new', 'Nouvel article')
+            ->setPageTitle('detail', 'Détails de l\'article')
             ->setDefaultSort(['id' => 'DESC'])
             ->setPaginatorPageSize(20)
             ->setSearchFields(['productName', 'productId']);
+    }
+
+    public function getPageTitle(string $pageName): string
+    {
+        if ($pageName === Crud::PAGE_EDIT) {
+            $entity = $this->getContext()->getEntity()->getInstance();
+            if ($entity && $entity->getProductName()) {
+                return 'Modifier: ' . $entity->getProductName();
+            }
+        }
+        
+        return parent::getPageTitle($pageName);
+    }
+
+    /**
+     * Обновляет заказ после изменения статьи
+     */
+    public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        // Пересчитываем суммы статьи
+        if ($entityInstance->getUnitPrice() && $entityInstance->getQuantity()) {
+            $total = (float) $entityInstance->getUnitPrice() * $entityInstance->getQuantity();
+            $entityInstance->setTotal(number_format($total, 2, '.', ''));
+        }
+        
+        parent::updateEntity($entityManager, $entityInstance);
+        
+        // Пересчитываем общие суммы заказа
+        if ($entityInstance->getOrderRef()) {
+            $order = $entityInstance->getOrderRef();
+            $order->recalculateTotals();
+            
+            // Принудительно обновляем заказ в EntityManager
+            $entityManager->persist($order);
+            $entityManager->flush();
+            
+            // Добавляем сообщение для отладки
+            $this->addFlash('success', 'Суммы заказа пересчитаны автоматически');
+        }
+    }
+
+    /**
+     * Создает новую статью заказа
+     */
+    public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        // Пересчитываем суммы статьи
+        if ($entityInstance->getUnitPrice() && $entityInstance->getQuantity()) {
+            $total = (float) $entityInstance->getUnitPrice() * $entityInstance->getQuantity();
+            $entityInstance->setTotal(number_format($total, 2, '.', ''));
+        }
+        
+        parent::persistEntity($entityManager, $entityInstance);
+        
+        // Пересчитываем общие суммы заказа
+        if ($entityInstance->getOrderRef()) {
+            $order = $entityInstance->getOrderRef();
+            $order->recalculateTotals();
+            $entityManager->persist($order);
+            $entityManager->flush();
+        }
     }
 
     public function configureFields(string $pageName): iterable
@@ -52,22 +114,25 @@ class OrderItemCrudController extends AbstractCrudController
                 ->setRequired(true)
                 ->setHelp('Nom du produit tel qu\'affiché au client'),
 
-            MoneyField::new('unitPrice', 'Prix unitaire')
-                ->setCurrency('EUR')
-                ->setStoredAsCents(false)
-                ->setRequired(true)
-                ->setHelp('Prix unitaire du produit'),
+                   MoneyField::new('unitPrice', 'Prix unitaire TTC')
+                       ->setCurrency('EUR')
+                       ->setStoredAsCents(false)
+                       ->setRequired(true)
+                       ->setHelp('Prix unitaire du produit (toutes taxes comprises)'),
 
             IntegerField::new('quantity', 'Quantité')
                 ->setRequired(true)
-                ->setHelp('Quantité commandée'),
+                ->setHelp('Quantité commandée')
+                ->setFormTypeOptions([
+                    'attr' => ['style' => 'width: 80px; min-width: 80px;']
+                ]),
 
-            MoneyField::new('total', 'Total')
+            MoneyField::new('total', 'Total TTC')
                 ->setCurrency('EUR')
                 ->setStoredAsCents(false)
                 ->setRequired(true)
                 ->hideOnForm()
-                ->setHelp('Total calculé automatiquement (prix × quantité)'),
+                ->setHelp('Total calculé automatiquement (prix × quantité, toutes taxes comprises)'),
 
             AssociationField::new('orderRef', 'Commande')
                 ->setRequired(true)
@@ -76,7 +141,7 @@ class OrderItemCrudController extends AbstractCrudController
                     'placeholder' => 'Sélectionnez une commande',
                 ])
                 ->formatValue(function ($value, $entity) {
-                    return $entity->getOrderRef() ? $entity->getOrderRef()->getNo() : 'Aucune commande';
+                    return $entity && $entity->getOrderRef() ? $entity->getOrderRef()->getNo() : 'Aucune commande';
                 }),
         ];
     }
@@ -110,24 +175,5 @@ class OrderItemCrudController extends AbstractCrudController
     /**
      * Calculer automatiquement le total avant la persistance
      */
-    public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
-    {
-        /** @var OrderItem $entityInstance */
-        $total = (float) $entityInstance->getUnitPrice() * $entityInstance->getQuantity();
-        $entityInstance->setTotal(number_format($total, 2, '.', ''));
-        
-        parent::persistEntity($entityManager, $entityInstance);
-    }
 
-    /**
-     * Recalculer le total avant la mise à jour
-     */
-    public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
-    {
-        /** @var OrderItem $entityInstance */
-        $total = (float) $entityInstance->getUnitPrice() * $entityInstance->getQuantity();
-        $entityInstance->setTotal(number_format($total, 2, '.', ''));
-        
-        parent::updateEntity($entityManager, $entityInstance);
-    }
 }

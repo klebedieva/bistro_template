@@ -71,6 +71,7 @@ class OrderItem
     public function setUnitPrice(string $unitPrice): static
     {
         $this->unitPrice = $unitPrice;
+        $this->recalculateTotal();
 
         return $this;
     }
@@ -83,12 +84,18 @@ class OrderItem
     public function setQuantity(int $quantity): static
     {
         $this->quantity = $quantity;
+        $this->recalculateTotal();
 
         return $this;
     }
 
     public function getTotal(): ?string
     {
+        // Если total не установлен, рассчитываем автоматически
+        if ($this->total === null && $this->unitPrice !== null && $this->quantity !== null) {
+            $this->recalculateTotal();
+        }
+        
         return $this->total;
     }
 
@@ -109,5 +116,16 @@ class OrderItem
         $this->orderRef = $orderRef;
 
         return $this;
+    }
+
+    /**
+     * Пересчитывает общую стоимость на основе количества и цены за единицу
+     */
+    public function recalculateTotal(): void
+    {
+        if ($this->unitPrice !== null && $this->quantity !== null) {
+            $total = (float) $this->unitPrice * $this->quantity;
+            $this->total = number_format($total, 2, '.', '');
+        }
     }
 }

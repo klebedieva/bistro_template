@@ -317,4 +317,31 @@ class Order
 
         return $this;
     }
+
+    /**
+     * Пересчитывает общие суммы заказа на основе всех элементов
+     */
+    public function recalculateTotals(): void
+    {
+        $subtotalWithTax = 0; // Сумма включая налоги
+        
+        foreach ($this->items as $item) {
+            $item->recalculateTotal();
+            $subtotalWithTax += (float) $item->getTotal();
+        }
+        
+        // Цены в меню уже включают налоги (TTC)
+        // Рассчитываем сумму без налогов (HT) и налог отдельно
+        $taxRate = 0.10; // 10% TVA
+        $subtotalWithoutTax = $subtotalWithTax / (1 + $taxRate);
+        $taxAmount = $subtotalWithTax - $subtotalWithoutTax;
+        
+        $this->subtotal = number_format($subtotalWithoutTax, 2, '.', '');
+        $this->taxAmount = number_format($taxAmount, 2, '.', '');
+        
+        // Общая сумма (subtotal + taxes + frais de livraison)
+        $deliveryFee = (float) ($this->deliveryFee ?? 0);
+        $total = $subtotalWithTax + $deliveryFee;
+        $this->total = number_format($total, 2, '.', '');
+    }
 }

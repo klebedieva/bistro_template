@@ -150,23 +150,26 @@ class OrderCrudController extends AbstractCrudController
                     };
                 }),
 
-            MoneyField::new('subtotal', 'Sous-total')
-                ->setCurrency('EUR')
-                ->setStoredAsCents(false)
-                ->hideOnForm()
-                ->setRequired(false),
+                   MoneyField::new('subtotal', 'Sous-total (HT)')
+                       ->setCurrency('EUR')
+                       ->setStoredAsCents(false)
+                       ->hideOnForm()
+                       ->setRequired(false)
+                       ->setHelp('Montant hors taxes'),
 
-            MoneyField::new('taxAmount', 'Montant des taxes')
-                ->setCurrency('EUR')
-                ->setStoredAsCents(false)
-                ->hideOnForm()
-                ->setRequired(false),
+                   MoneyField::new('taxAmount', 'TVA (10%)')
+                       ->setCurrency('EUR')
+                       ->setStoredAsCents(false)
+                       ->hideOnForm()
+                       ->setRequired(false)
+                       ->setHelp('Taxe sur la valeur ajoutée'),
 
-            MoneyField::new('total', 'Total')
-                ->setCurrency('EUR')
-                ->setStoredAsCents(false)
-                ->hideOnForm()
-                ->setRequired(false),
+                   MoneyField::new('total', 'Total TTC')
+                       ->setCurrency('EUR')
+                       ->setStoredAsCents(false)
+                       ->hideOnForm()
+                       ->setRequired(false)
+                       ->setHelp('Total toutes taxes comprises'),
 
             DateTimeField::new('createdAt', 'Date de création')
                 ->hideOnForm()
@@ -175,7 +178,6 @@ class OrderCrudController extends AbstractCrudController
 
             CollectionField::new('items', 'Articles commandés')
                 ->useEntryCrudForm()
-                ->setEntryType(OrderItem::class)
                 ->hideOnIndex()
                 ->setFormTypeOptions([
                     'by_reference' => false,
