@@ -1,0 +1,18 @@
+parameters:
+    # Restaurant settings
+    restaurant:
+        delivery:
+            fee: 5.00
+            free_delivery_threshold: 50.00
+            radius_km: 5
+        contact:
+            phone: '+33 4 91 XX XX XX'
+            email: 'contact@letroisquarts.fr'
+            address: 'Marseille, France'
+        business_hours:
+            # График работы: 7 дней в неделю с 7:00 до 23:00
+            daily:
+                start: '07:00'
+                end: '23:00'
+        tax:
+            vat_rate: 0.10  # 10% TVA

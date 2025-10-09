@@ -16,13 +16,14 @@ use Symfony\Component\HttpFoundation\RequestStack;
  */
 class OrderService
 {
-    private const TAX_RATE = 0.10; // 10% tax
+    // TAX_RATE moved to RestaurantSettingsService
 
     public function __construct(
         private EntityManagerInterface $entityManager,
         private OrderRepository $orderRepository,
         private CartService $cartService,
-        private RequestStack $requestStack
+        private RequestStack $requestStack,
+        private RestaurantSettingsService $restaurantSettings
     ) {}
 
     /**
@@ -57,7 +58,7 @@ class OrderService
             $order->setDeliveryAddress($orderData['deliveryAddress']);
             $order->setDeliveryZip($orderData['deliveryZip'] ?? null);
             $order->setDeliveryInstructions($orderData['deliveryInstructions'] ?? null);
-            $order->setDeliveryFee($orderData['deliveryFee'] ?? '5.00');
+            $order->setDeliveryFee($orderData['deliveryFee'] ?? number_format($this->restaurantSettings->getDeliveryFee(), 2, '.', ''));
         } else {
             $order->setDeliveryFee('0.00');
         }
@@ -80,14 +81,17 @@ class OrderService
         }
 
         // Calculer les montants
-        $subtotal = $cart['total'];
-        $taxAmount = round($subtotal * self::TAX_RATE, 2);
+        // Цены в корзине уже включают налоги (TTC)
+        $subtotalWithTax = $cart['total'];
+        $taxRate = $this->restaurantSettings->getVatRate();
+        $subtotalWithoutTax = $subtotalWithTax / (1 + $taxRate);
+        $taxAmount = $subtotalWithTax - $subtotalWithoutTax;
         $deliveryFee = (float) $order->getDeliveryFee();
-        $total = $subtotal + $taxAmount + $deliveryFee;
+        $total = $subtotalWithTax + $deliveryFee;
 
-        $order->setSubtotal((string) $subtotal);
-        $order->setTaxAmount((string) $taxAmount);
-        $order->setTotal((string) $total);
+        $order->setSubtotal(number_format($subtotalWithoutTax, 2, '.', ''));
+        $order->setTaxAmount(number_format($taxAmount, 2, '.', ''));
+        $order->setTotal(number_format($total, 2, '.', ''));
 
         // Ajouter les items de commande
         foreach ($cart['items'] as $cartItem) {

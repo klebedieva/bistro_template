@@ -132,7 +132,10 @@ class OrderCrudController extends AbstractCrudController
             MoneyField::new('deliveryFee', 'Frais de livraison')
                 ->setCurrency('EUR')
                 ->setStoredAsCents(false)
-                ->setRequired(true),
+                ->setRequired(true)
+                ->setFormTypeOptions([
+                    'attr' => ['value' => '5.00']
+                ]),
 
             ChoiceField::new('paymentMode', 'Mode de paiement')
                 ->setChoices([

@@ -140,7 +140,7 @@ function initDeliveryOptions() {
     const details = document.getElementById('deliveryDetails');
     options.forEach(opt => {
         opt.addEventListener('change', function() {
-            if (this.value === 'delivery') { if (details) details.style.display = 'block'; updateDeliveryFee(3); }
+            if (this.value === 'delivery') { if (details) details.style.display = 'block'; updateDeliveryFee(5); }
             else { if (details) details.style.display = 'none'; updateDeliveryFee(0); }
             updateOrderSummary();
         });
@@ -168,24 +168,30 @@ function updateDeliveryFee(fee) {
 function updateOrderSummary() {
     const container = document.getElementById('summaryItems');
     if (!container) return;
-    let subtotal = 0; let html = '';
+    let subtotalWithTax = 0; let html = '';
     orderData.items.forEach(it => {
         const itemTotal = Number(it.price) * Number(it.quantity);
-        subtotal += itemTotal;
+        subtotalWithTax += itemTotal;
         html += `<div class="summary-item"><div class="summary-item-info"><span class="summary-item-name">${it.name}</span><small class="text-muted">x${it.quantity}</small></div><span class="summary-item-price">${itemTotal.toFixed(2)}€</span></div>`;
     });
     container.innerHTML = html;
 
+    // Цены в меню уже включают налоги (TTC)
+    // Рассчитываем сумму без налогов (HT) и налог отдельно
+    const taxRate = 0.10; // 10% TVA - TODO: load from backend config
+    const subtotalWithoutTax = subtotalWithTax / (1 + taxRate);
+    const taxAmount = subtotalWithTax - subtotalWithoutTax;
+    
     const deliveryFee = orderData.deliveryFee || 0;
-    const tax = subtotal * 0.10;
-    const total = subtotal + deliveryFee + tax;
+    const total = subtotalWithTax + deliveryFee;
+    
     const subEl = document.getElementById('subtotal');
     const taxEl = document.getElementById('taxAmount');
     const totalEl = document.getElementById('totalAmount');
-    if (subEl) subEl.textContent = subtotal.toFixed(2) + '€';
-    if (taxEl) taxEl.textContent = tax.toFixed(2) + '€';
+    if (subEl) subEl.textContent = subtotalWithoutTax.toFixed(2) + '€';
+    if (taxEl) taxEl.textContent = taxAmount.toFixed(2) + '€';
     if (totalEl) totalEl.textContent = total.toFixed(2) + '€';
-    orderData.subtotal = subtotal; orderData.taxAmount = tax; orderData.total = total;
+    orderData.subtotal = subtotalWithoutTax; orderData.taxAmount = taxAmount; orderData.total = total;
 }
 
 function nextStep(step) { if (validateCurrentStep()) { showStep(step); } }
@@ -370,12 +376,38 @@ function updateTimeOptions() {
     const currentTime = new Date();
     timeSelect.innerHTML = '<option value="">Choisir un créneau</option>';
     const timeSlots = [
+        { value: '07:00', text: '07h00 - 07h30' },
+        { value: '07:30', text: '07h30 - 08h00' },
+        { value: '08:00', text: '08h00 - 08h30' },
+        { value: '08:30', text: '08h30 - 09h00' },
+        { value: '09:00', text: '09h00 - 09h30' },
+        { value: '09:30', text: '09h30 - 10h00' },
+        { value: '10:00', text: '10h00 - 10h30' },
+        { value: '10:30', text: '10h30 - 11h00' },
+        { value: '11:00', text: '11h00 - 11h30' },
+        { value: '11:30', text: '11h30 - 12h00' },
         { value: '12:00', text: '12h00 - 12h30' },
         { value: '12:30', text: '12h30 - 13h00' },
         { value: '13:00', text: '13h00 - 13h30' },
+        { value: '13:30', text: '13h30 - 14h00' },
+        { value: '14:00', text: '14h00 - 14h30' },
+        { value: '14:30', text: '14h30 - 15h00' },
+        { value: '15:00', text: '15h00 - 15h30' },
+        { value: '15:30', text: '15h30 - 16h00' },
+        { value: '16:00', text: '16h00 - 16h30' },
+        { value: '16:30', text: '16h30 - 17h00' },
+        { value: '17:00', text: '17h00 - 17h30' },
+        { value: '17:30', text: '17h30 - 18h00' },
+        { value: '18:00', text: '18h00 - 18h30' },
+        { value: '18:30', text: '18h30 - 19h00' },
         { value: '19:00', text: '19h00 - 19h30' },
         { value: '19:30', text: '19h30 - 20h00' },
-        { value: '20:00', text: '20h00 - 20h30' }
+        { value: '20:00', text: '20h00 - 20h30' },
+        { value: '20:30', text: '20h30 - 21h00' },
+        { value: '21:00', text: '21h00 - 21h30' },
+        { value: '21:30', text: '21h30 - 22h00' },
+        { value: '22:00', text: '22h00 - 22h30' },
+        { value: '22:30', text: '22h30 - 23h00' }
     ];
     if (selectedDate === today) {
         timeSlots.forEach(slot => { const t = new Date(`${selectedDate}T${slot.value}`); if (t > currentTime) { const o = document.createElement('option'); o.value = slot.value; o.textContent = slot.text; timeSelect.appendChild(o); } });

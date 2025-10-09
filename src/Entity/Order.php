@@ -332,7 +332,7 @@ class Order
         
         // Цены в меню уже включают налоги (TTC)
         // Рассчитываем сумму без налогов (HT) и налог отдельно
-        $taxRate = 0.10; // 10% TVA
+        $taxRate = 0.10; // 10% TVA - используется стандартная ставка
         $subtotalWithoutTax = $subtotalWithTax / (1 + $taxRate);
         $taxAmount = $subtotalWithTax - $subtotalWithoutTax;
         
