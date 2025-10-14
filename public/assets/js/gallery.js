@@ -31,19 +31,11 @@ function initImageErrorHandling() {
         }
         
         img.addEventListener('error', function() {
-            // Replace broken image with a placeholder
-            this.src = 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=400';
-            this.alt = 'Image non disponible';
             this.classList.remove('loaded', 'loading');
             this.classList.add('error');
             if (card) {
                 card.classList.remove('loaded', 'loading');
                 card.classList.add('error');
-            }
-            
-            // Update the modal data as well
-            if (card) {
-                card.setAttribute('data-image', 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=800');
             }
         });
         
@@ -120,7 +112,7 @@ function initGalleryModal() {
             const imageDescription = this.getAttribute('data-description');
             
             // Find the index in visible images
-            const visibleCards = Array.from(document.querySelectorAll('.gallery-item:not(.hidden) .gallery-card'));
+            const visibleCards = Array.from(document.querySelectorAll('.gallery-item:not(.hidden):not(.gallery-item-hidden) .gallery-card'));
             currentImageIndex = visibleCards.indexOf(this);
             
             updateModalContent(imageSrc, imageTitle, imageDescription);
@@ -198,7 +190,7 @@ function initGalleryModal() {
 }
 
 function collectGalleryImages() {
-    const visibleCards = document.querySelectorAll('.gallery-item:not(.hidden) .gallery-card');
+    const visibleCards = document.querySelectorAll('.gallery-item:not(.hidden):not(.gallery-item-hidden) .gallery-card');
     galleryImages = Array.from(visibleCards).map(card => ({
         src: card.getAttribute('data-image'),
         title: card.getAttribute('data-title'),
@@ -214,15 +206,28 @@ function updateModalContent(imageSrc, imageTitle, imageDescription) {
     if (modalImage) {
         // Add loading state
         modalImage.style.opacity = '0.5';
+        
+        // Remove any existing event listeners
+        modalImage.onload = null;
+        modalImage.onerror = null;
+        
         modalImage.onload = function() {
             this.style.opacity = '1';
         };
+        
         modalImage.onerror = function() {
-            // Fallback image if modal image fails to load
-            this.src = 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=800';
             this.style.opacity = '1';
         };
-        modalImage.src = imageSrc;
+        
+        // Clear the src first to ensure clean state
+        modalImage.src = '';
+        modalImage.removeAttribute('src');
+        
+        // Small delay before setting new src to prevent null assignment
+        setTimeout(() => {
+            modalImage.src = imageSrc;
+            modalImage.setAttribute('src', imageSrc);
+        }, 10);
         modalImage.alt = imageTitle;
     }
     
@@ -251,7 +256,7 @@ function navigateModal(direction) {
     }
     
     const currentImage = galleryImages[currentImageIndex];
-    if (currentImage) {
+    if (currentImage && currentImage.src) {
         updateModalContent(currentImage.src, currentImage.title, currentImage.description);
     }
 }
@@ -274,62 +279,65 @@ function initLoadMore() {
     
     if (!loadMoreBtn) return;
     
+    // Check initial state
+    updateLoadMoreButton();
+    
     loadMoreBtn.addEventListener('click', function() {
-        // Simulate loading more images
+        // Show loading state
         this.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Chargement...';
         this.disabled = true;
         
         setTimeout(() => {
-            // In a real application, you would load more images from the server
-            addMoreImages();
+            // Show next 6 hidden images
+            showMoreImages();
             
+            // Reset button state
             this.innerHTML = '<i class="bi bi-plus-circle me-2"></i>Voir plus de photos';
             this.disabled = false;
-        }, 1500);
+            
+            // Check if there are more images to load
+            updateLoadMoreButton();
+        }, 500);
     });
 }
 
-function addMoreImages() {
-    const galleryContainer = document.getElementById('galleryContainer');
+function showMoreImages() {
+    const hiddenItems = document.querySelectorAll('.gallery-item-hidden');
+    const itemsToShow = Array.from(hiddenItems).slice(0, 6);
     
-    // Additional images to add
-    const newImages = [
-        {
-            category: 'ambiance',
-            src: 'https://images.pexels.com/photos/2253643/pexels-photo-2253643.jpeg?auto=compress&cs=tinysrgb&w=400',
-            largeSrc: 'https://images.pexels.com/photos/2253643/pexels-photo-2253643.jpeg?auto=compress&cs=tinysrgb&w=800',
-            title: 'Soirée conviviale',
-            description: 'Moments de partage entre amis'
-        },
-        {
-            category: 'plats',
-            src: 'https://images.pexels.com/photos/1449773/pexels-photo-1449773.jpeg?auto=compress&cs=tinysrgb&w=400',
-            largeSrc: 'https://images.pexels.com/photos/1449773/pexels-photo-1449773.jpeg?auto=compress&cs=tinysrgb&w=800',
-            title: 'Plateau de fromages',
-            description: 'Sélection de fromages artisanaux'
-        },
-        {
-            category: 'terrasse',
-            src: 'https://images.pexels.com/photos/1395967/pexels-photo-1395967.jpeg?auto=compress&cs=tinysrgb&w=400',
-            largeSrc: 'https://images.pexels.com/photos/1395967/pexels-photo-1395967.jpeg?auto=compress&cs=tinysrgb&w=800',
-            title: 'Terrasse de jour',
-            description: 'Profitez du soleil méditerranéen'
-        }
-    ];
-    
-    newImages.forEach(image => {
-        const galleryItem = createGalleryItem(image);
-        galleryContainer.appendChild(galleryItem);
+    itemsToShow.forEach((item, index) => {
+        setTimeout(() => {
+            item.classList.remove('gallery-item-hidden');
+            item.style.opacity = '0';
+            item.style.transform = 'scale(0.8)';
+            item.style.display = 'block';
+            
+            setTimeout(() => {
+                item.style.opacity = '1';
+                item.style.transform = 'scale(1)';
+            }, 50);
+        }, index * 100);
     });
     
-    // Update gallery images array
-    collectGalleryImages();
+    // Update gallery images array for modal
+    setTimeout(() => {
+        collectGalleryImages();
+    }, 700);
+}
+
+function updateLoadMoreButton() {
+    const loadMoreBtn = document.getElementById('loadMoreBtn');
+    if (!loadMoreBtn) return;
     
-    // Show notification
-    if (window.LesTroisQuarts && window.LesTroisQuarts.showNotification) {
-        window.LesTroisQuarts.showNotification('Nouvelles photos ajoutées !', 'success');
+    const hiddenItems = document.querySelectorAll('.gallery-item-hidden');
+    
+    if (hiddenItems.length === 0) {
+        loadMoreBtn.style.display = 'none';
+    } else {
+        loadMoreBtn.style.display = 'inline-block';
     }
 }
+
 
 // Sticky fallback for filters: ensures it stays under the navbar
 function initStickyFiltersFallback() {
@@ -430,7 +438,7 @@ function createGalleryItem(image) {
         const imageDescription = this.getAttribute('data-description');
         
         // Find the index in visible images
-        const visibleCards = Array.from(document.querySelectorAll('.gallery-item:not(.hidden) .gallery-card'));
+        const visibleCards = Array.from(document.querySelectorAll('.gallery-item:not(.hidden):not(.gallery-item-hidden) .gallery-card'));
         currentImageIndex = visibleCards.indexOf(this);
         
         updateModalContent(imageSrc, imageTitle, imageDescription);
@@ -454,8 +462,6 @@ function createGalleryItem(image) {
     }
     
     img.addEventListener('error', function() {
-        this.src = 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=400';
-        this.alt = 'Image non disponible';
         this.classList.remove('loaded', 'loading');
         this.classList.add('error');
         if (card) {

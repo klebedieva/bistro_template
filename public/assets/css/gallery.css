@@ -138,6 +138,11 @@
     display: none;
 }
 
+/* Hidden items that will be shown on "Load More" click */
+.gallery-item-hidden {
+    display: none;
+}
+
 /* Loading indicator for images */
 .gallery-card {
     position: relative;

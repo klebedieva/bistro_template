@@ -47,12 +47,12 @@
         <div class="container">
             <div class="row g-3" id="galleryContainer">
                 {% for image in images %}
-                <div class="col-lg-4 col-md-6 gallery-item" data-category="{{ image.category }}">
+                <div class="col-lg-4 col-md-6 gallery-item{% if loop.index > 12 %} gallery-item-hidden{% endif %}" data-category="{{ image.category }}">
                     <div class="gallery-card" 
-                         data-image="{{ asset(image.fullImagePath) }}" 
+                         data-image="{{ asset('assets/img/' ~ image.imagePath) }}" 
                          data-title="{{ image.title }}" 
                          data-description="{{ image.description }}">
-                        <img src="{{ asset(image.fullImagePath) }}" alt="{{ image.title }}" class="img-fluid">
+                        <img src="{{ asset('assets/img/' ~ image.imagePath) }}" alt="{{ image.title }}" class="img-fluid">
                         <div class="gallery-overlay">
                             <div class="gallery-content">
                                 <h5>{{ image.title }}</h5>
