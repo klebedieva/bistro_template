@@ -3,6 +3,9 @@
 let currentImageIndex = 0;
 let galleryImages = [];
 let currentFilter = 'all';
+let galleryCache = null;
+let cacheTimestamp = 0;
+const CACHE_DURATION = 90 * 1000; // 90 seconds
 
 document.addEventListener('DOMContentLoaded', function() {
     initGalleryPage();
@@ -87,6 +90,9 @@ function initGalleryFilters() {
                 }
             });
             
+            // Clear cache when filter changes
+            galleryCache = null;
+            
             // Update gallery images array for modal navigation
             setTimeout(() => {
                 collectGalleryImages();
@@ -105,7 +111,7 @@ function initGalleryModal() {
     const nextBtn = document.getElementById('nextBtn');
     
     galleryCards.forEach((card, index) => {
-        card.addEventListener('click', function(e) {
+        card.addEventListener('click', async function(e) {
             e.preventDefault();
             const imageSrc = this.getAttribute('data-image');
             const imageTitle = this.getAttribute('data-title');
@@ -114,6 +120,9 @@ function initGalleryModal() {
             // Find the index in visible images
             const visibleCards = Array.from(document.querySelectorAll('.gallery-item:not(.hidden):not(.gallery-item-hidden) .gallery-card'));
             currentImageIndex = visibleCards.indexOf(this);
+            
+            // Refresh gallery images from API before opening modal
+            await refreshGalleryImagesFromApi();
             
             updateModalContent(imageSrc, imageTitle, imageDescription);
             
@@ -127,28 +136,28 @@ function initGalleryModal() {
     
     // Navigation buttons
     if (prevBtn) {
-        prevBtn.addEventListener('click', function(e) {
+        prevBtn.addEventListener('click', async function(e) {
             e.preventDefault();
-            navigateModal(-1);
+            await navigateModal(-1);
         });
     }
     
     if (nextBtn) {
-        nextBtn.addEventListener('click', function(e) {
+        nextBtn.addEventListener('click', async function(e) {
             e.preventDefault();
-            navigateModal(1);
+            await navigateModal(1);
         });
     }
     
     // Keyboard navigation
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', async function(e) {
         if (modal && modal.classList.contains('show')) {
             if (e.key === 'ArrowLeft') {
                 e.preventDefault();
-                navigateModal(-1);
+                await navigateModal(-1);
             } else if (e.key === 'ArrowRight') {
                 e.preventDefault();
-                navigateModal(1);
+                await navigateModal(1);
             } else if (e.key === 'Escape') {
                 const modalInstance = bootstrap.Modal.getInstance(modal);
                 if (modalInstance) {
@@ -173,29 +182,57 @@ function initGalleryModal() {
         });
     }
     
-    function handleSwipe() {
+    async function handleSwipe() {
         const swipeThreshold = 50;
         const diff = touchStartX - touchEndX;
         
         if (Math.abs(diff) > swipeThreshold) {
             if (diff > 0) {
                 // Swipe left - next
-                navigateModal(1);
+                await navigateModal(1);
             } else {
                 // Swipe right - previous
-                navigateModal(-1);
+                await navigateModal(-1);
             }
         }
     }
 }
 
-function collectGalleryImages() {
+async function collectGalleryImages() {
     const visibleCards = document.querySelectorAll('.gallery-item:not(.hidden):not(.gallery-item-hidden) .gallery-card');
     galleryImages = Array.from(visibleCards).map(card => ({
         src: card.getAttribute('data-image'),
         title: card.getAttribute('data-title'),
         description: card.getAttribute('data-description')
     }));
+}
+
+async function refreshGalleryImagesFromApi() {
+    const now = Date.now();
+    if (galleryCache && (now - cacheTimestamp) < CACHE_DURATION) {
+        galleryImages = galleryCache;
+        return;
+    }
+
+    try {
+        const category = currentFilter === 'all' ? '' : currentFilter;
+        const url = `/api/gallery?limit=100${category ? `&category=${category}` : ''}`;
+        const response = await fetch(url);
+        const result = await response.json();
+
+        if (result.success) {
+            galleryImages = result.data.map(item => ({
+                src: item.imageUrl,
+                title: item.title,
+                description: item.description
+            }));
+            galleryCache = galleryImages;
+            cacheTimestamp = now;
+        }
+    } catch (error) {
+        console.warn('Failed to fetch gallery images from API, falling back to DOM:', error);
+        await collectGalleryImages();
+    }
 }
 
 function updateModalContent(imageSrc, imageTitle, imageDescription) {
@@ -243,8 +280,11 @@ function updateModalContent(imageSrc, imageTitle, imageDescription) {
     updateNavigationButtons();
 }
 
-function navigateModal(direction) {
+async function navigateModal(direction) {
     if (galleryImages.length === 0) return;
+    
+    // Refresh gallery images from API before navigation
+    await refreshGalleryImagesFromApi();
     
     currentImageIndex += direction;
     
