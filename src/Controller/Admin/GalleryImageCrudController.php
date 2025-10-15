@@ -21,15 +21,18 @@ use EasyCorp\Bundle\EasyAdminBundle\Filter\BooleanFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[IsGranted('ROLE_ADMIN')]
 class GalleryImageCrudController extends AbstractCrudController
 {
     private EntityManagerInterface $entityManager;
+    private ValidatorInterface $validator;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager, ValidatorInterface $validator)
     {
         $this->entityManager = $entityManager;
+        $this->validator = $validator;
     }
 
     public static function getEntityFqcn(): string
@@ -53,7 +56,7 @@ class GalleryImageCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
-        $imageBasePath = 'assets/img/';
+        $imageBasePath = '/assets/img/';
         $imageUploadPath = 'public/assets/img/';
 
         return [
@@ -99,13 +102,9 @@ class GalleryImageCrudController extends AbstractCrudController
             ImageField::new('imagePath', 'Image')
                 ->setBasePath($imageBasePath)
                 ->setUploadDir($imageUploadPath)
-                ->setRequired(true)
+                ->setRequired($pageName === Crud::PAGE_NEW)
                 ->setHelp('Nom du fichier (ex: terrasse_1.jpg). Le fichier doit être dans public/assets/img/')
-                ->setFormTypeOptions([
-                    'upload_new' => function ($file) {
-                        return $file->getClientOriginalName();
-                    }
-                ])
+                ->setUploadedFileNamePattern('[randomhash].[extension]')
                 ->setColumns(12),
             
             IntegerField::new('displayOrder', 'Ordre d\'affichage')
@@ -183,8 +182,71 @@ class GalleryImageCrudController extends AbstractCrudController
     {
         if ($entityInstance instanceof GalleryImage) {
             $entityInstance->setUpdatedAt(new \DateTime());
+            
+            // If imagePath is empty, keep the existing value
+            if (empty($entityInstance->getImagePath())) {
+                $originalEntity = $entityManager->getRepository(GalleryImage::class)->find($entityInstance->getId());
+                if ($originalEntity) {
+                    $entityInstance->setImagePath($originalEntity->getImagePath());
+                }
+            }
         }
         parent::updateEntity($entityManager, $entityInstance);
+    }
+
+    /**
+     * Persist entity with validation groups
+     */
+    public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        if ($entityInstance instanceof GalleryImage) {
+            //
+            
+            // Обработка загрузки файла
+            $this->handleFileUpload($entityInstance);
+            
+            // Use 'create' validation group for new entities
+            $violations = $this->validator->validate($entityInstance, null, ['create']);
+            
+            if (count($violations) > 0) {
+                throw new \InvalidArgumentException('Validation failed: ' . (string) $violations);
+            }
+            
+            // Убеждаемся, что изображение загружено
+            if (empty($entityInstance->getImagePath())) {
+                throw new \InvalidArgumentException('Image is required for new gallery items');
+            }
+        }
+        parent::persistEntity($entityManager, $entityInstance);
+    }
+
+    /**
+     * Handle file upload for gallery images
+     */
+    private function handleFileUpload(GalleryImage $galleryImage): void
+    {
+        $request = $this->container->get('request_stack')->getCurrentRequest();
+        
+        if ($request && $request->files->has('GalleryImage')) {
+            $formData = $request->files->get('GalleryImage');
+            
+            if (isset($formData['imagePath']) && $formData['imagePath']) {
+                $uploadedFile = $formData['imagePath'];
+                
+                if ($uploadedFile instanceof \Symfony\Component\HttpFoundation\File\UploadedFile) {
+                    $uploadDir = 'public/assets/img/';
+                    $extension = $uploadedFile->guessExtension() ?: $uploadedFile->getClientOriginalExtension();
+                    $fileName = uniqid() . '.' . $extension;
+                    
+                    try {
+                        $uploadedFile->move($uploadDir, $fileName);
+                        $galleryImage->setImagePath($fileName);
+                    } catch (\Exception $e) {
+                        throw new \InvalidArgumentException('Erreur lors de l\'upload du fichier: ' . $e->getMessage());
+                    }
+                }
+            }
+        }
     }
 }
 

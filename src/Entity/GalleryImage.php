@@ -26,7 +26,7 @@ class GalleryImage
     private ?string $description = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(message: 'Le nom du fichier est requis')]
+    #[Assert\NotBlank(message: 'Le nom du fichier est requis', groups: ['create'])]
     private ?string $imagePath = null;
 
     #[ORM\Column(length: 50)]
