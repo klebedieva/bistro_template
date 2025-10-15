@@ -96,14 +96,29 @@ function initGallery() {
     
     let currentImageIndex = 0;
     
-    // Function to refresh gallery images (for dynamic updates)
-    function refreshGalleryImages() {
-        const newGalleryItems = document.querySelectorAll('.gallery-item');
-        galleryImages = Array.from(newGalleryItems).map(item => ({
-            src: item.getAttribute('data-image'),
-            alt: item.querySelector('img').getAttribute('alt')
-        }));
-        updateCounter();
+    // Function to refresh gallery images from API
+    async function refreshGalleryImages() {
+        try {
+            const response = await fetch('/api/gallery?limit=50');
+            const result = await response.json();
+            
+            if (result.success) {
+                galleryImages = result.data.map(item => ({
+                    src: item.imageUrl,
+                    alt: item.title
+                }));
+                updateCounter();
+            }
+        } catch (error) {
+            console.warn('Failed to fetch gallery images from API, falling back to DOM:', error);
+            // Fallback to DOM method
+            const newGalleryItems = document.querySelectorAll('.gallery-item');
+            galleryImages = Array.from(newGalleryItems).map(item => ({
+                src: item.getAttribute('data-image'),
+                alt: item.querySelector('img').getAttribute('alt')
+            }));
+            updateCounter();
+        }
     }
     
     // Update the counter
@@ -117,9 +132,9 @@ function initGallery() {
     }
     
     // Show the image at a specific index
-    function showImage(index) {
+    async function showImage(index) {
         // Refresh gallery images to get latest data
-        refreshGalleryImages();
+        await refreshGalleryImages();
         
         if (index < 0) {
             currentImageIndex = galleryImages.length - 1;
@@ -146,36 +161,34 @@ function initGallery() {
     
     // Bind click events to gallery items
     galleryItems.forEach((item, index) => {
-        item.addEventListener('click', function() {
-            // Refresh gallery images first
-            refreshGalleryImages();
-            // Find the current item index in the refreshed list
+        item.addEventListener('click', async function() {
+            // Find the current item index in the current list
             const newIndex = Array.from(document.querySelectorAll('.gallery-item')).indexOf(this);
             currentImageIndex = newIndex >= 0 ? newIndex : index;
-            showImage(currentImageIndex);
+            await showImage(currentImageIndex);
         });
     });
     
     // Bind navigation button events
     if (prevBtn) {
-        prevBtn.addEventListener('click', function() {
-            showImage(currentImageIndex - 1);
+        prevBtn.addEventListener('click', async function() {
+            await showImage(currentImageIndex - 1);
         });
     }
     
     if (nextBtn) {
-        nextBtn.addEventListener('click', function() {
-            showImage(currentImageIndex + 1);
+        nextBtn.addEventListener('click', async function() {
+            await showImage(currentImageIndex + 1);
         });
     }
     
     // Add keyboard navigation
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', async function(e) {
         if (modal && modal.classList.contains('show')) {
             if (e.key === 'ArrowLeft') {
-                showImage(currentImageIndex - 1);
+                await showImage(currentImageIndex - 1);
             } else if (e.key === 'ArrowRight') {
-                showImage(currentImageIndex + 1);
+                await showImage(currentImageIndex + 1);
             } else if (e.key === 'Escape') {
                 const modalInstance = bootstrap.Modal.getInstance(modal);
                 if (modalInstance) {
