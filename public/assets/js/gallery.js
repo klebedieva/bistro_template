@@ -379,42 +379,43 @@ function updateLoadMoreButton() {
 }
 
 
-// Sticky fallback for filters: ensures it stays under the navbar
+// Sticky behavior for filters: use reliable JS (sentinel + spacer) and keep CSS var in sync
 function initStickyFiltersFallback() {
     const filtersSection = document.querySelector('.gallery-filters');
     if (!filtersSection) return;
 
-    // Create spacer to avoid layout jump when fixed
+    // Helper: exact navbar height
+    function getNavbarOffsetExact() {
+        const nav = document.getElementById('mainNav');
+        if (!nav) return 72;
+        const rect = nav.getBoundingClientRect();
+        return Math.round(rect.height);
+    }
+
+    function updateNavOffsetVar() {
+        const navOffset = getNavbarOffsetExact();
+        filtersSection.style.setProperty('--nav-offset', navOffset + 'px');
+    }
+
+    // Spacer to avoid layout jump when fixed
     const spacer = document.createElement('div');
     spacer.style.display = 'none';
     filtersSection.parentNode.insertBefore(spacer, filtersSection.nextSibling);
 
-
-    function supportsSticky() {
-        const el = document.createElement('a');
-        const styles = ['sticky', '-webkit-sticky'];
-        for (let i = 0; i < styles.length; i++) {
-            el.style.position = styles[i];
-            if (el.style.position === styles[i]) return true;
-        }
-        return false;
-    }
-
-    // Always compute absolute trigger point to ensure consistent behavior
-    function getAbsoluteTop(el) {
-        const rect = el.getBoundingClientRect();
-        return rect.top + window.pageYOffset;
-    }
-
-    let initialTop = getAbsoluteTop(filtersSection);
+    // Sentinel placed right before filters to decide the exact sticking moment
+    let sentinel = document.createElement('div');
+    sentinel.style.position = 'relative';
+    sentinel.style.height = '1px';
+    sentinel.style.margin = '0';
+    sentinel.style.padding = '0';
+    filtersSection.parentNode.insertBefore(sentinel, filtersSection);
 
     function onScroll() {
-        const navOffset = getNavbarOffset();
-        // Keep CSS var in sync for sticky case
+        const navOffset = getNavbarOffsetExact();
         filtersSection.style.setProperty('--nav-offset', navOffset + 'px');
 
-        const scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
-        const shouldFix = scrollY + navOffset >= initialTop;
+        const sentinelTop = sentinel.getBoundingClientRect().top;
+        const shouldFix = sentinelTop <= navOffset;
 
         if (shouldFix) {
             if (!filtersSection.classList.contains('is-fixed')) {
@@ -432,18 +433,23 @@ function initStickyFiltersFallback() {
         }
     }
 
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', function() {
-        // Recalculate initial position on layout changes
-        initialTop = getAbsoluteTop(filtersSection);
+    function recompute() {
+        updateNavOffsetVar();
         onScroll();
-    });
-    onScroll();
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', recompute);
+    window.addEventListener('load', recompute);
+
+    requestAnimationFrame(recompute);
+    setTimeout(recompute, 300);
+    setTimeout(recompute, 1000);
 }
 
 // Compute current navbar offset so filters sit just below it
 function getNavbarOffset() {
-    // Fixed offsets per breakpoint: <576px => 64px, <992px => 68px, >=992px => 72px
+    // Backward-compat (unused for sticky; kept for other callers if any)
     const width = window.innerWidth || document.documentElement.clientWidth || 1024;
     if (width < 576) return 64;
     if (width < 992) return 68;

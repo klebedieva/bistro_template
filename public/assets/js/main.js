@@ -7,8 +7,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize all components
     initNavbar();
     
-    // Only initialize gallery if gallery items exist
-    if (document.querySelectorAll('.gallery-item').length > 0) {
+    // Only initialize homepage gallery if gallery items exist AND we are not on the gallery page (which uses .gallery-card)
+    if (document.querySelectorAll('.gallery-item').length > 0 && !document.querySelector('.gallery-card')) {
         initGallery();
     }
     
@@ -78,10 +78,16 @@ function initGallery() {
     const galleryItems = document.querySelectorAll('.gallery-item');
     const modalImage = document.getElementById('modalImage');
     const modal = document.getElementById('galleryModal');
-    const prevBtn = document.getElementById('galleryPrev');
-    const nextBtn = document.getElementById('galleryNext');
+    // Support both ID variants used across pages
+    const prevBtn = document.getElementById('galleryPrev') || document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('galleryNext') || document.getElementById('nextBtn');
     const currentIndexSpan = document.getElementById('currentImageIndex');
     const totalImagesSpan = document.getElementById('totalImages');
+
+    // Simple in-memory cache to avoid refetching on every navigation
+    let galleryCache = null;
+    let cacheTimestamp = 0;
+    const CACHE_DURATION = 90 * 1000; // 90 seconds
     
     // Guard: ensure required elements exist
     if (galleryItems.length === 0 || !modalImage) {
@@ -98,15 +104,45 @@ function initGallery() {
     
     // Function to refresh gallery images from API
     async function refreshGalleryImages() {
+        // Use cache if fresh
+        const now = Date.now();
+        if (galleryCache && (now - cacheTimestamp) < CACHE_DURATION) {
+            galleryImages = galleryCache;
+            updateCounter();
+            return;
+        }
+        
         try {
-            const response = await fetch('/api/gallery?limit=50');
+            const response = await fetch('/api/gallery?limit=20');
             const result = await response.json();
             
             if (result.success) {
-                galleryImages = result.data.map(item => ({
+                // Build DOM list (6 images actually rendered on homepage)
+                const domItems = Array.from(document.querySelectorAll('.gallery-item'));
+                const domSourcesInOrder = domItems.map(item => item.getAttribute('data-image'));
+                const domSet = new Set(domSourcesInOrder);
+                
+                // Map API -> simple objects
+                const apiImages = result.data.map(item => ({
                     src: item.imageUrl,
                     alt: item.title
                 }));
+                
+                // Intersect by src and keep DOM order
+                const intersected = domSourcesInOrder
+                    .filter(src => domSet.has(src))
+                    .map(src => apiImages.find(ai => ai.src === src) || { src, alt: '' });
+                
+                // Fallback if intersection empty (e.g., different base URLs)
+                galleryImages = intersected.length > 0 ? intersected : domItems.map(item => ({
+                    src: item.getAttribute('data-image'),
+                    alt: item.querySelector('img').getAttribute('alt')
+                }));
+                
+                // Save to cache
+                galleryCache = galleryImages;
+                cacheTimestamp = now;
+                
                 updateCounter();
             }
         } catch (error) {
@@ -133,8 +169,12 @@ function initGallery() {
     
     // Show the image at a specific index
     async function showImage(index) {
-        // Refresh gallery images to get latest data
+        // Refresh gallery images to get latest data (but we still limit to DOM 6)
         await refreshGalleryImages();
+        
+        if (galleryImages.length === 0) {
+            return;
+        }
         
         if (index < 0) {
             currentImageIndex = galleryImages.length - 1;
@@ -146,7 +186,18 @@ function initGallery() {
         
         const currentImage = galleryImages[currentImageIndex];
         modalImage.src = currentImage.src;
-        modalImage.alt = currentImage.alt;
+        modalImage.alt = currentImage.alt || '';
+        
+        // Populate title/description if available in DOM
+        const domItem = document.querySelectorAll('.gallery-item')[currentImageIndex];
+        const titleEl = document.getElementById('modalImageTitle');
+        const descEl = document.getElementById('modalImageDescription');
+        if (domItem) {
+            const t = domItem.getAttribute('data-title') || '';
+            const d = domItem.getAttribute('data-description') || '';
+            if (titleEl) titleEl.textContent = t;
+            if (descEl) descEl.textContent = d;
+        }
         
         updateCounter();
         

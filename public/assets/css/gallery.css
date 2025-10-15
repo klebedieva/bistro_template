@@ -43,15 +43,38 @@
     border-radius: 2px;
 }
 
+/* Enable native sticky just under the navbar */
 .gallery-filters {
-    position: sticky;
-    top: var(--nav-offset, 72px);
-    z-index: 1020;
-    background: white;
-    border-bottom: 1px solid #e9ecef;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    padding-top: 0.9rem;
-    padding-bottom: 0.5rem;
+    /* position: sticky; top: var(--nav-offset, 72px); z-index: 1020; */
+}
+
+/* Smooth sticky behavior for gallery filters */
+.gallery-filters {
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+.gallery-filters.is-fixed {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    transform: translateZ(0);
+    background: rgba(255,255,255,0.98);
+    backdrop-filter: saturate(120%) blur(6px);
+}
+
+/* Adjust vertical padding for filters */
+.gallery-filters {
+    padding-top: 0.9rem;  /* as before */
+    padding-bottom: 0.5rem; /* as before */
+}
+
+/* When sticky, use tighter padding only while fixed */
+.gallery-filters.is-fixed {
+    padding-top: 0.45rem;
+    padding-bottom: 0.3rem;
+}
+
+/* When sticky, remove vertical padding (overrides py-4) */
+.gallery-filters.is-fixed {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
 }
 
 /* JS fallback class when sticky is not supported or overridden */
@@ -61,6 +84,7 @@
     right: 0;
     width: 100%;
     top: var(--nav-offset, 72px) !important;
+    z-index: 1030 !important; /* stay above gallery cards/images */
 }
 
 .filter-buttons {

@@ -13,6 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}?v={{ 'now'|date('YmdHis') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/gallery.css') }}?v={{ 'now'|date('YmdHis') }}">
     
     
 {% endblock %}
@@ -145,7 +146,7 @@
                 {% else %}
                     {% for image in galleryImages %}
                         <div class="col-lg-4 col-md-6">
-                            <div class="gallery-item rounded-2" data-bs-toggle="modal" data-bs-target="#galleryModal" data-image="{{ asset(image.fullImagePath) }}">
+                            <div class="gallery-item rounded-2" data-bs-toggle="modal" data-bs-target="#galleryModal" data-image="{{ asset(image.fullImagePath) }}" data-title="{{ image.title }}" data-description="{{ image.description }}">
                                 <img src="{{ asset(image.fullImagePath) }}" alt="{{ image.title }}" class="img-fluid">
                                 <div class="gallery-overlay">
                                     <i class="bi bi-zoom-in"></i>
@@ -206,31 +207,7 @@
 
 
     <!-- Gallery Modal -->
-    <div class="modal fade" id="galleryModal" tabindex="-1">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header border-0">
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-0 position-relative">
-                    <img id="modalImage" src="" alt="" class="img-fluid w-100">
-                    
-                    <!-- Navigation arrows -->
-                    <button class="gallery-nav-btn gallery-prev" id="galleryPrev">
-                        <i class="bi bi-chevron-left"></i>
-                    </button>
-                    <button class="gallery-nav-btn gallery-next" id="galleryNext">
-                        <i class="bi bi-chevron-right"></i>
-                    </button>
-                    
-                    <!-- Image counter -->
-                    <div class="gallery-counter">
-                        <span id="currentImageIndex">1</span> / <span id="totalImages">{{ galleryImages|length }}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    {% include 'partials/gallery-modal.html.twig' %}
 
     <!-- Add Review Modal -->
     <div class="modal fade" id="addReviewModal" tabindex="-1">

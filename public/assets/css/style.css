@@ -550,6 +550,8 @@ section .text-center.mb-5 {
     height: 100%;
     object-fit: cover;
     transition: var(--transition);
+    display: block;
+    border-radius: inherit;
 }
 
 .gallery-overlay {
@@ -564,6 +566,8 @@ section .text-center.mb-5 {
     justify-content: center;
     opacity: 0;
     transition: var(--transition);
+    border-radius: inherit;
+    z-index: 2;
 }
 
 .gallery-overlay i {
@@ -2722,4 +2726,9 @@ textarea[name="reservation[message]"].is-valid {
 select[name="reservation[time]"].is-valid,
 select[name="reservation[guests]"].is-valid {
     padding-right: 2.25rem !important;
+}
+
+/* Homepage gallery overlay override to match container corners */
+.gallery-item .gallery-overlay {
+    border-radius: inherit !important;
 }
