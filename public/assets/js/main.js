@@ -89,12 +89,22 @@ function initGallery() {
     }
     
     // Collect all gallery images
-    const galleryImages = Array.from(galleryItems).map(item => ({
+    let galleryImages = Array.from(galleryItems).map(item => ({
         src: item.getAttribute('data-image'),
         alt: item.querySelector('img').getAttribute('alt')
     }));
     
     let currentImageIndex = 0;
+    
+    // Function to refresh gallery images (for dynamic updates)
+    function refreshGalleryImages() {
+        const newGalleryItems = document.querySelectorAll('.gallery-item');
+        galleryImages = Array.from(newGalleryItems).map(item => ({
+            src: item.getAttribute('data-image'),
+            alt: item.querySelector('img').getAttribute('alt')
+        }));
+        updateCounter();
+    }
     
     // Update the counter
     function updateCounter() {
@@ -108,6 +118,9 @@ function initGallery() {
     
     // Show the image at a specific index
     function showImage(index) {
+        // Refresh gallery images to get latest data
+        refreshGalleryImages();
+        
         if (index < 0) {
             currentImageIndex = galleryImages.length - 1;
         } else if (index >= galleryImages.length) {
@@ -134,7 +147,11 @@ function initGallery() {
     // Bind click events to gallery items
     galleryItems.forEach((item, index) => {
         item.addEventListener('click', function() {
-            currentImageIndex = index;
+            // Refresh gallery images first
+            refreshGalleryImages();
+            // Find the current item index in the refreshed list
+            const newIndex = Array.from(document.querySelectorAll('.gallery-item')).indexOf(this);
+            currentImageIndex = newIndex >= 0 ? newIndex : index;
             showImage(currentImageIndex);
         });
     });
