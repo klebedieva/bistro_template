@@ -100,5 +100,22 @@ class GalleryImageRepository extends ServiceEntityRepository
 
         return $counts;
     }
+
+    /**
+     * Find latest N active images for homepage
+     *
+     * @param int $limit
+     * @return GalleryImage[]
+     */
+    public function findLatestForHomepage(int $limit = 6): array
+    {
+        return $this->createQueryBuilder('g')
+            ->where('g.isActive = :active')
+            ->setParameter('active', true)
+            ->orderBy('g.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }
 

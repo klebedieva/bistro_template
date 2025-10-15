@@ -404,14 +404,14 @@
     right: 0;
     background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
     color: white;
-    padding: 1.8rem;
+    padding: 1.3rem;
     text-align: center;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(8px);
 }
 
 .modal-info h4 {
     font-family: 'Playfair Display', serif;
-    font-size: 1.8rem;
+    font-size: 1.5rem;
     margin-bottom: 0.5rem;
     font-weight: 600;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.5);

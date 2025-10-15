@@ -7,6 +7,7 @@ use App\Entity\Reservation;
 use App\Form\ReviewType;
 use App\Form\ReservationType;
 use App\Repository\ReviewRepository;
+use App\Repository\GalleryImageRepository;
 use App\Service\SymfonyEmailService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -24,13 +25,17 @@ class HomeController extends AbstractController
     ) {}
 
     #[Route('/', name: 'app_home')]
-    public function index(ReviewRepository $reviewRepository): Response
+    public function index(ReviewRepository $reviewRepository, GalleryImageRepository $galleryRepository): Response
     {
         // Get approved reviews for display on homepage
         $reviews = $reviewRepository->findApprovedReviews();
         
+        // Get latest 6 gallery images for homepage
+        $galleryImages = $galleryRepository->findLatestForHomepage(6);
+        
         return $this->render('home/homepage.html.twig', [
-            'reviews' => $reviews
+            'reviews' => $reviews,
+            'galleryImages' => $galleryImages
         ]);
     }
 
