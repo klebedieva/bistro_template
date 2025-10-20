@@ -117,19 +117,14 @@
                         <div class="mb-3">
                             <label for="confirmationMessage" class="form-label">Message de confirmation</label>
                             <textarea class="form-control" id="confirmationMessage" name="confirmationMessage" rows="8" required 
-                                placeholder="Rédigez un message personnalisé pour le client...">Bonjour,
-
-Votre commande #{{ order.no }} a été confirmée et sera préparée rapidement.
+                                placeholder="Rédigez un message personnalisé pour le client...">Votre commande #{{ order.no }} a été confirmée et sera préparée rapidement.
 
 {% if order.deliveryMode.value == 'delivery' %}
-Nous vous livrerons à l'adresse indiquée.
+Nous vous la livrerons à l'adresse indiquée. Notre coursier vous contactera à son arrivée.
 {% else %}
 Vous pourrez récupérer votre commande au restaurant.
 {% endif %}
-
-Nous vous remercions pour votre commande !
-
-L'équipe du Trois Quarts</textarea>
+</textarea>
                         </div>
                         
                         <div class="d-grid gap-2">

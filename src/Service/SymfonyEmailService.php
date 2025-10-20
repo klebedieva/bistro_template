@@ -508,9 +508,8 @@ class SymfonyEmailService
                 <div class='content'>
                     <h2 style='font-family: Playfair Display, serif; color: #8b4513; margin-bottom: 20px;'>Bonjour {$clientName},</h2>
                     
-                    <div class='message-box'>
-                        " . nl2br(htmlspecialchars($message)) . "
-                    </div>
+                    <p style='font-size: 16px; margin: 0 0 12px 0;'>Votre commande <strong>#{$orderNumber}</strong> a été confirmée et sera préparée rapidement.</p>
+                    <p style='font-size: 16px; margin: 0 0 20px 0;'>Nous vous la livrerons à l'adresse indiquée. Notre coursier vous contactera à son arrivée.</p>
                     
                     <div class='order-details'>
                         <h3>🍽️ Détails de votre commande</h3>
@@ -535,7 +534,7 @@ class SymfonyEmailService
                         </div>
                     </div>
                     
-                    <p style='font-size: 16px; margin-top: 25px; margin-bottom: 15px;'>Nous commençons la préparation de votre commande.</p>
+                    <p style='font-size: 16px; margin-top: 25px; margin-bottom: 15px;'>Nous vous remercions pour votre commande !</p>
                     <p style='font-size: 16px; margin-bottom: 0;'>Cordialement,<br><strong>L'équipe du Trois Quarts</strong></p>
                 </div>
                 <div class='footer'>
