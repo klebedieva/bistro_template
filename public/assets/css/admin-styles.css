@@ -95,19 +95,19 @@ body {
 }
 
 .btn.btn-soft-secondary.btn-sm {
-    background-color: transparent !important;
-    border: 1px solid transparent !important;
-    color: #495057 !important;
+    background-color: #f8f9fa !important;
+    border: 1px solid #dee2e6 !important;
+    color: #6c757d !important;
     margin: 0 2px !important;
     box-shadow: none !important;
 }
 
 .btn.btn-soft-secondary.btn-sm:hover {
-    background-color: transparent !important;
-    border: 1px solid transparent !important;
-    color: #343a40 !important;
+    background-color: #e9ecef !important;
+    border: 1px solid #adb5bd !important;
+    color: #495057 !important;
     transform: translateY(-1px) !important;
-    box-shadow: none !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
 }
 
 /* Make buttons slightly smaller and more rounded */

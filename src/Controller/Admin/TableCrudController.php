@@ -7,6 +7,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 
 class TableCrudController extends AbstractCrudController
 {
@@ -23,5 +26,26 @@ class TableCrudController extends AbstractCrudController
             IntegerField::new('capacity', 'Capacité'),
             TextField::new('zone', 'Zone')->hideOnIndex(),
         ];
+    }
+
+    public function configureActions(Actions $actions): Actions
+    {
+        return $actions
+            ->add(Crud::PAGE_INDEX, Action::DETAIL)
+            ->update(Crud::PAGE_INDEX, Action::DELETE, function(Action $action){
+                return $action->setIcon('fa fa-trash')
+                    ->setLabel('Supprimer')
+                    ->setCssClass('action-delete btn btn-soft-danger btn-sm');
+            })
+            ->update(Crud::PAGE_INDEX, Action::EDIT, function(Action $action){
+                return $action->setIcon('fa fa-edit')
+                    ->setLabel('Modifier')
+                    ->setCssClass('btn btn-soft-secondary btn-sm');
+            })
+            ->update(Crud::PAGE_INDEX, Action::DETAIL, function(Action $action){
+                return $action->setIcon('fa fa-eye')
+                    ->setLabel('Voir')
+                    ->setCssClass('btn btn-soft-info btn-sm');
+            });
     }
 }
