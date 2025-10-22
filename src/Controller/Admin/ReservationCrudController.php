@@ -152,6 +152,7 @@ class ReservationCrudController extends AbstractCrudController
                 ->setRequired(true)
                 ->setChoices($statusChoices)
                 ->setHelp('Statut de la réservation')
+                ->setFormTypeOption('data', 'pending')
                 ->setTemplatePath('admin/reservation/_status_badge.html.twig')
                 ->renderAsBadges([
                     'pending' => 'warning',
@@ -224,11 +225,16 @@ class ReservationCrudController extends AbstractCrudController
 
 
         $actions = $actions
-            ->remove(Crud::PAGE_INDEX, Action::NEW)
             ->remove(Crud::PAGE_INDEX, Action::EDIT)
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
             ->add(Crud::PAGE_INDEX, $confirmAction)
             ->add(Crud::PAGE_INDEX, $cancelAction)
+            ->update(Crud::PAGE_INDEX, Action::NEW, function (Action $action) {
+                return $action
+                    ->setIcon('fa fa-plus')
+                    ->setLabel('Nouvelle réservation')
+                    ->setCssClass('btn btn-success');
+            })
             ->update(Crud::PAGE_INDEX, Action::DETAIL, function (Action $action) {
                 return $action
                     ->setIcon('fa fa-eye')
@@ -245,7 +251,7 @@ class ReservationCrudController extends AbstractCrudController
                 return $action
                     ->setIcon('fa fa-trash')
                     ->setLabel('Supprimer')
-                    // keep required EasyAdmin class 'action-delete' so the modal submits the form
+                    // Keep required EasyAdmin class 'action-delete' so the modal submits the form
                     ->setCssClass('action-delete btn btn-soft-danger btn-sm')
                     ->displayIf(function ($entity) {
                         return $entity instanceof Reservation && $entity->getId() !== null;
@@ -295,19 +301,19 @@ class ReservationCrudController extends AbstractCrudController
             return $this->redirectToRoute('admin');
         }
 
-        // status cycle for click: pending -> confirmed -> completed -> no_show -> pending
+        // Status cycle for click: pending -> confirmed -> completed -> no_show -> pending
         $cycle = ['pending', 'confirmed', 'completed', 'no_show'];
         $current = $reservation->getStatus() ?? 'pending';
         $currentIndex = array_search($current, $cycle, true);
         if ($currentIndex === false) {
-            // если статус вне цикла (cancelled) — начинаем с 'pending'
+            // If status is outside cycle (cancelled) — start with 'pending'
             $next = 'pending';
         } else {
             $next = $cycle[($currentIndex + 1) % count($cycle)];
         }
 
         $reservation->setStatus($next);
-        // синхронизация вспомогательных полей
+        // Synchronize auxiliary fields
         if ($next === 'confirmed') {
             $reservation->setIsConfirmed(true);
             $reservation->setConfirmedAt(new \DateTimeImmutable());
@@ -498,5 +504,19 @@ class ReservationCrudController extends AbstractCrudController
         }
 
         return $this->redirectToRoute('admin');
+    }
+
+    public function createEntity(string $entityFqcn): object
+    {
+        $reservation = new Reservation();
+        
+        // Set default values for new reservation
+        $reservation->setStatus('pending');
+        $reservation->setIsConfirmed(false);
+        
+        // Set default date to today
+        $reservation->setDate(new \DateTime());
+        
+        return $reservation;
     }
 }
