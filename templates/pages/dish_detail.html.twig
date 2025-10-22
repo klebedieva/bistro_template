@@ -132,52 +132,14 @@
     </div>
 </section>
 
-{# Review Modal for dish page #}
-<div class="modal fade" id="dishReviewModal" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-chat-dots me-2"></i>Ajouter votre avis</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="reviewForm">
-                    <div class="mb-3">
-                        <label class="form-label">Votre nom *</label>
-                        <input type="text" class="form-control" id="reviewerName" required>
-                        <div id="reviewerNameError" class="invalid-feedback"></div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Note *</label>
-                        <div class="rating-stars">
-                            <i class="bi bi-star star-rating" data-rating="1"></i>
-                            <i class="bi bi-star star-rating" data-rating="2"></i>
-                            <i class="bi bi-star star-rating" data-rating="3"></i>
-                            <i class="bi bi-star star-rating" data-rating="4"></i>
-                            <i class="bi bi-star star-rating" data-rating="5"></i>
-                        </div>
-                        <input type="hidden" id="ratingValue" value="0">
-                        <div id="ratingError" class="invalid-feedback"></div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Votre avis *</label>
-                        <textarea class="form-control" id="reviewText" rows="4" required></textarea>
-                        <div id="reviewTextError" class="invalid-feedback"></div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Email (optionnel)</label>
-                        <input type="email" class="form-control" id="reviewEmail">
-                        <div id="reviewEmailError" class="invalid-feedback"></div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-primary" id="submitReview"><i class="bi bi-send me-2"></i>Envoyer l'avis</button>
-            </div>
-        </div>
-    </div>
-    </div>
+<!-- Dish Review Modal -->
+{% include 'components/review_modal.html.twig' with {
+    'modal_id': 'dishReviewModal',
+    'title': 'Ajouter votre avis sur ce plat',
+    'submit_text': 'Envoyer l\'avis',
+    'review_type': 'dish',
+    'dish_id': item.id
+} %}
 
 {% endblock %}
 

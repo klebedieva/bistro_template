@@ -1,0 +1,73 @@
+{# Review Modal Component #}
+{# 
+Usage: 
+{% include 'components/review_modal.html.twig' with {
+    'modal_id': 'addReviewModal',
+    'title': 'Ajouter votre avis',
+    'submit_text': 'Envoyer l\'avis',
+    'review_type': 'restaurant' // or 'dish'
+} %}
+#}
+
+<div class="modal fade" id="{{ modal_id|default('addReviewModal') }}" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-chat-dots me-2"></i>{{ title|default('Ajouter votre avis') }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="{{ modal_id|default('addReviewModal') }}Form" novalidate>
+                    <div class="mb-3">
+                        <label for="{{ modal_id|default('addReviewModal') }}Name" class="form-label">Votre nom *</label>
+                        <input type="text" class="form-control" id="{{ modal_id|default('addReviewModal') }}Name" name="name" required>
+                        <div class="invalid-feedback" id="{{ modal_id|default('addReviewModal') }}NameError"></div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Note *</label>
+                        <div class="rating-stars">
+                            <i class="bi bi-star star-rating" data-rating="1"></i>
+                            <i class="bi bi-star star-rating" data-rating="2"></i>
+                            <i class="bi bi-star star-rating" data-rating="3"></i>
+                            <i class="bi bi-star star-rating" data-rating="4"></i>
+                            <i class="bi bi-star star-rating" data-rating="5"></i>
+                        </div>
+                        <input type="hidden" id="{{ modal_id|default('addReviewModal') }}Rating" name="rating" value="0">
+                        <small class="text-muted">Cliquez sur les étoiles pour noter</small>
+                        <div class="invalid-feedback" id="{{ modal_id|default('addReviewModal') }}RatingError"></div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ modal_id|default('addReviewModal') }}Text" class="form-label">Votre avis *</label>
+                        <textarea class="form-control" id="{{ modal_id|default('addReviewModal') }}Text" name="comment" rows="4" 
+                                  placeholder="{% if review_type|default('restaurant') == 'dish' %}Partagez votre avis sur ce plat...{% else %}Partagez votre expérience au Trois Quarts...{% endif %}" required></textarea>
+                        <div class="invalid-feedback" id="{{ modal_id|default('addReviewModal') }}TextError"></div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ modal_id|default('addReviewModal') }}Email" class="form-label">Email (optionnel)</label>
+                        <input type="email" class="form-control" id="{{ modal_id|default('addReviewModal') }}Email" name="email" placeholder="votre@email.com">
+                        <div class="invalid-feedback" id="{{ modal_id|default('addReviewModal') }}EmailError"></div>
+                    </div>
+                    
+                    {# Hidden field for review type #}
+                    <input type="hidden" name="review_type" value="{{ review_type|default('restaurant') }}">
+                    
+                    {# Hidden field for dish ID if it's a dish review #}
+                    {% if review_type|default('restaurant') == 'dish' and dish_id is defined %}
+                        <input type="hidden" name="dish_id" value="{{ dish_id }}">
+                    {% endif %}
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="{{ modal_id|default('addReviewModal') }}Submit">
+                    <i class="bi bi-send me-2"></i>{{ submit_text|default('Envoyer l\'avis') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

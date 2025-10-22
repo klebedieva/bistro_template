@@ -1899,6 +1899,66 @@ footer a[href^="mailto:"] {
     }
 }
 
+/* Alert Fixed Center - для сообщений об успехе/ошибке */
+.alert-fixed-center {
+    position: fixed !important;
+    top: 20px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    z-index: 9999 !important;
+    width: fit-content !important; /* shrink to content */
+    max-width: 90% !important;
+    text-align: center !important;
+    display: inline-block !important;
+    padding: 0.75rem 1rem !important;
+    white-space: normal !important; /* allow wrapping when narrow */
+}
+
+/* Alert message styling - универсальные стили для всех страниц */
+.alert-fixed-center.alert-danger,
+.contact-form .alert-danger {
+    background-color: #f8d7da !important;
+    border-color: #f5c6cb !important;
+    color: #721c24 !important;
+    border-radius: 0.5rem !important;
+    padding: 0.75rem 1rem !important;
+    margin-bottom: 1rem !important;
+}
+
+.alert-fixed-center.alert-success,
+.contact-form .alert-success {
+    background-color: #d1e7dd !important;
+    border-color: #badbcc !important;
+    color: #0f5132 !important;
+    border-radius: 0.5rem !important;
+    padding: 0.75rem 1rem !important;
+    margin-bottom: 1rem !important;
+}
+
+/* Отступ для кнопки закрытия в alert сообщениях */
+.alert-fixed-center .btn-close,
+.contact-form .btn-close {
+    margin-left: 1rem;
+    margin-right: 0;
+    position: relative;
+}
+
+/* Fade анимация для alert сообщений */
+.alert-fixed-center {
+    opacity: 1 !important;
+    transition: opacity 0.5s ease-in !important;
+}
+
+.alert-fixed-center.fade.show {
+    /* Ensure Bootstrap 'fade show' state is visible */
+    opacity: 1 !important;
+}
+
+.alert-fixed-center.fade {
+    opacity: 0 !important;
+    transition: opacity 0.5s ease-out !important;
+}
+
 /* Custom Button Styles */
 .btn-custom-outline {
     background: transparent;
@@ -2442,11 +2502,13 @@ footer a[href^="mailto:"] {
 
 .notification {
     position: fixed;
-    top: 100px;
-    right: 20px;
+    top: 20px; /* align with alert-fixed-center */
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 9999;
-    min-width: 300px;
-    max-width: 500px;
+    min-width: unset; /* allow shrink */
+    max-width: 90%;
+    width: fit-content; /* shrink to text */
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 

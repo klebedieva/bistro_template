@@ -14,6 +14,21 @@
         setupStarRating();
         setupRealTimeValidation();
         setupFormSubmission();
+        
+        // Also setup star rating for modals when they are shown
+        document.addEventListener('shown.bs.modal', function(e) {
+            const modal = e.target;
+            const modalId = modal.id;
+            
+            setupModalStarRating(modalId);
+        });
+        
+        // Clean up modal styles when modal is hidden
+        document.addEventListener('hidden.bs.modal', function(e) {
+            
+            cleanupModalStyles();
+        });
+        
         // If a list endpoint is provided, fetch and render reviews from API
         if (window.REVIEWS_LIST_ENDPOINT) {
             fetchAndRenderReviews(window.REVIEWS_LIST_ENDPOINT).then(() => {
@@ -25,39 +40,126 @@
     });
 
     function setupStarRating() {
-        const stars = document.querySelectorAll('.star-rating');
-        const ratingInput = document.getElementById('ratingValue');
+        
+        
+        // Use event delegation to handle dynamically added elements
+        document.addEventListener('click', function(e) {
+            if (e.target && e.target.classList && e.target.classList.contains('star-rating')) {
+                
+                const star = e.target;
+                const group = star.closest('.rating-stars');
+                if (group) {
+                    const modalId = group.closest('.modal')?.id || 'addReviewModal';
+                    const ratingInput = document.getElementById(modalId + 'Rating');
+                    
+                    if (!ratingInput) { return; }
+                    
+                    const rating = parseInt(star.getAttribute('data-rating'));
+                    setRating(rating, ratingInput);
+                    validateRating(ratingInput);
+                }
+            }
+        });
+        
+        document.addEventListener('mouseenter', function(e) {
+            if (e.target && e.target.classList && e.target.classList.contains('star-rating')) {
+                const star = e.target;
+                const group = star.closest('.rating-stars');
+                if (group) {
+                    const stars = group.querySelectorAll('.star-rating');
+                    const rating = parseInt(star.getAttribute('data-rating'));
+                    highlightStars(rating, stars);
+                }
+            }
+        }, true);
+        
+        document.addEventListener('mouseleave', function(e) {
+            if (e.target && e.target.classList && e.target.classList.contains('rating-stars')) {
+                const group = e.target;
+                const modalId = group.closest('.modal')?.id || 'addReviewModal';
+                const ratingInput = document.getElementById(modalId + 'Rating');
+                const stars = group.querySelectorAll('.star-rating');
+                
+                if (!ratingInput) return;
+                
+                const currentRating = parseInt(ratingInput.value);
+                highlightStars(currentRating, stars);
+            }
+        }, true);
+    }
+
+    function cleanupModalStyles() {
+        // Remove backdrop
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+            backdrop.remove();
+        }
+        
+        // Clean up all modal-related styles
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+        document.body.style.paddingLeft = '';
+        document.body.style.marginRight = '';
+        document.body.style.marginLeft = '';
+        
+        // Remove any remaining modal classes from html element
+        document.documentElement.classList.remove('modal-open');
+        document.documentElement.style.overflow = '';
+        document.documentElement.style.paddingRight = '';
+        
+        
+    }
+
+    function setupModalStarRating(modalId) {
+        
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+        
+        const stars = modal.querySelectorAll('.star-rating');
+        const ratingInput = document.getElementById(modalId + 'Rating');
+        
+        if (!ratingInput) return;
         
         stars.forEach((star, index) => {
+            // Remove existing listeners to avoid duplicates
+            star.replaceWith(star.cloneNode(true));
+        });
+        
+        // Re-query after cloning
+        const newStars = modal.querySelectorAll('.star-rating');
+        
+        newStars.forEach((star, index) => {
             star.addEventListener('click', function() {
                 const rating = parseInt(this.getAttribute('data-rating'));
-                setRating(rating);
-                validateRating();
+                
+                setRating(rating, ratingInput);
+                validateRating(ratingInput);
             });
             
             star.addEventListener('mouseenter', function() {
                 const rating = parseInt(this.getAttribute('data-rating'));
-                highlightStars(rating);
+                highlightStars(rating, newStars);
             });
         });
         
-        const ratingContainer = document.querySelector('.rating-stars');
-        if (ratingContainer) {
-            ratingContainer.addEventListener('mouseleave', function() {
+        const group = modal.querySelector('.rating-stars');
+        if (group) {
+            group.addEventListener('mouseleave', function() {
                 const currentRating = parseInt(ratingInput.value);
-                highlightStars(currentRating);
+                highlightStars(currentRating, newStars);
             });
         }
     }
 
-    function setRating(rating) {
-        const ratingInput = document.getElementById('ratingValue');
+    function setRating(rating, ratingInput) {
         ratingInput.value = rating;
-        highlightStars(rating);
+        const stars = ratingInput.closest('.modal').querySelectorAll('.star-rating');
+        highlightStars(rating, stars);
     }
 
-    function highlightStars(rating) {
-        const stars = document.querySelectorAll('.star-rating');
+    function highlightStars(rating, stars) {
+        
         stars.forEach((star, index) => {
             if (index < rating) {
                 star.classList.remove('bi-star');
@@ -70,59 +172,72 @@
     }
 
     function setupRealTimeValidation() {
+        // Find all review forms on the page
+        const reviewForms = document.querySelectorAll('form[id$="Form"]');
+        
+        reviewForms.forEach(function(form) {
+            const modalId = form.id.replace('Form', '');
+            const nameInput = document.getElementById(modalId + 'Name');
+            const emailInput = document.getElementById(modalId + 'Email');
+            const textInput = document.getElementById(modalId + 'Text');
+            
         // Name validation
-        const nameInput = document.getElementById('reviewerName');
         if (nameInput) {
-            nameInput.addEventListener('input', () => validateName());
-            nameInput.addEventListener('blur', () => validateName());
+                nameInput.addEventListener('input', () => validateName(nameInput, modalId));
+                nameInput.addEventListener('blur', () => validateName(nameInput, modalId));
         }
         
         // Email validation
-        const emailInput = document.getElementById('reviewEmail');
         if (emailInput) {
-            emailInput.addEventListener('input', () => validateEmail());
-            emailInput.addEventListener('blur', () => validateEmail());
+                emailInput.addEventListener('input', () => validateEmail(emailInput, modalId));
+                emailInput.addEventListener('blur', () => validateEmail(emailInput, modalId));
         }
         
         // Comment validation
-        const commentInput = document.getElementById('reviewText');
-        if (commentInput) {
-            commentInput.addEventListener('input', () => validateComment());
-            commentInput.addEventListener('blur', () => validateComment());
-        }
+            if (textInput) {
+                textInput.addEventListener('input', () => validateComment(textInput, modalId));
+                textInput.addEventListener('blur', () => validateComment(textInput, modalId));
+            }
+        });
     }
 
     function setupFormSubmission() {
-        const submitBtn = document.getElementById('submitReview');
+        // Find all submit buttons for review forms
+        const submitButtons = document.querySelectorAll('button[id$="Submit"]');
         
-        if (submitBtn) {
-            submitBtn.addEventListener('click', function(e) {
+        submitButtons.forEach(function(button) {
+            button.addEventListener('click', function(e) {
                 e.preventDefault();
                 
+                const modalId = button.id.replace('Submit', '');
+                const form = document.getElementById(modalId + 'Form');
+                
+                if (!form) return;
+                
                 // Validate all fields
-                const isNameValid = validateName();
-                const isEmailValid = validateEmail();
-                const isRatingValid = validateRating();
-                const isCommentValid = validateComment();
+                const isNameValid = validateName(document.getElementById(modalId + 'Name'), modalId);
+                const isEmailValid = validateEmail(document.getElementById(modalId + 'Email'), modalId);
+                const isRatingValid = validateRating(document.getElementById(modalId + 'Rating'));
+                const isCommentValid = validateComment(document.getElementById(modalId + 'Text'), modalId);
                 
                 if (isNameValid && isEmailValid && isRatingValid && isCommentValid) {
-                    submitReview();
+                    submitReview(form, modalId);
                 } else {
                     // Scroll to first invalid field
-                    const firstInvalid = document.querySelector('.is-invalid');
+                    const firstInvalid = form.querySelector('.is-invalid');
                     if (firstInvalid) {
                         firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         firstInvalid.focus();
                     }
                 }
             });
-        }
+        });
     }
 
-    function validateName() {
-        const input = document.getElementById('reviewerName');
+    function validateName(input, modalId) {
+        if (!input) return true;
         const value = input.value.trim();
-        const errorElement = document.getElementById('reviewerNameError');
+        const errorElement = document.getElementById(modalId + 'NameError');
         
         if (value === '') {
             input.classList.add('is-invalid');
@@ -135,17 +250,17 @@
             showFieldError(errorElement, 'Le nom ne peut contenir que des lettres, espaces et tirets');
             return false;
         } else {
-            input.classList.add('is-valid');
             input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
             clearFieldError(errorElement);
             return true;
         }
     }
 
-    function validateEmail() {
-        const input = document.getElementById('reviewEmail');
+    function validateEmail(input, modalId) {
+        if (!input) return true;
         const value = input.value.trim();
-        const errorElement = document.getElementById('reviewEmailError');
+        const errorElement = document.getElementById(modalId + 'EmailError');
         
         if (value === '') {
             input.classList.remove('is-valid', 'is-invalid');
@@ -154,20 +269,21 @@
         } else if (!validationPatterns.email.test(value)) {
             input.classList.add('is-invalid');
             input.classList.remove('is-valid');
-            showFieldError(errorElement, 'L\'email n\'est pas valide');
+            showFieldError(errorElement, 'Veuillez saisir une adresse email valide');
             return false;
         } else {
-            input.classList.add('is-valid');
             input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
             clearFieldError(errorElement);
             return true;
         }
     }
 
-    function validateRating() {
-        const ratingInput = document.getElementById('ratingValue');
+    function validateRating(ratingInput) {
+        if (!ratingInput) return true;
         const value = parseInt(ratingInput.value);
-        const errorElement = document.getElementById('ratingError');
+        const modalId = ratingInput.id.replace('Rating', '');
+        const errorElement = document.getElementById(modalId + 'RatingError');
         
         if (value === 0 || isNaN(value)) {
             ratingInput.classList.add('is-invalid');
@@ -175,17 +291,17 @@
             showFieldError(errorElement, 'Veuillez sélectionner une note');
             return false;
         } else {
-            ratingInput.classList.add('is-valid');
             ratingInput.classList.remove('is-invalid');
+            ratingInput.classList.add('is-valid');
             clearFieldError(errorElement);
             return true;
         }
     }
 
-    function validateComment() {
-        const input = document.getElementById('reviewText');
+    function validateComment(input, modalId) {
+        if (!input) return true;
         const value = input.value.trim();
-        const errorElement = document.getElementById('reviewTextError');
+        const errorElement = document.getElementById(modalId + 'TextError');
         
         if (value === '') {
             input.classList.add('is-invalid');
@@ -202,16 +318,16 @@
             input.classList.remove('is-valid');
             showFieldError(errorElement, 'L\'avis ne peut pas dépasser 1000 caractères');
             return false;
-        } else if (validationPatterns.comment.test(value)) {
-            input.classList.add('is-valid');
-            input.classList.remove('is-invalid');
-            clearFieldError(errorElement);
-            return true;
-        } else {
+        } else if (!validationPatterns.comment.test(value)) {
             input.classList.add('is-invalid');
             input.classList.remove('is-valid');
-            showFieldError(errorElement, 'L\'avis ne peut pas contenir de balises HTML');
+            showFieldError(errorElement, 'L\'avis contient des caractères non autorisés');
             return false;
+        } else {
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+            clearFieldError(errorElement);
+            return true;
         }
     }
 
@@ -229,8 +345,8 @@
         }
     }
 
-    function submitReview() {
-        const submitBtn = document.getElementById('submitReview');
+    function submitReview(form, modalId) {
+        const submitBtn = document.getElementById(modalId + 'Submit');
         const originalText = submitBtn.innerHTML;
         
         // Show loading state
@@ -238,59 +354,76 @@
         submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Envoi en cours...';
         
         // Gather fields
-        const name = document.getElementById('reviewerName').value.trim();
-        const email = document.getElementById('reviewEmail').value.trim();
-        const rating = document.getElementById('ratingValue').value;
-        const comment = document.getElementById('reviewText').value.trim();
+        const name = document.getElementById(modalId + 'Name').value.trim();
+        const email = document.getElementById(modalId + 'Email').value.trim();
+        const rating = document.getElementById(modalId + 'Rating').value;
+        const comment = document.getElementById(modalId + 'Text').value.trim();
 
         // Choose endpoint and payload format
         const endpoint = window.REVIEWS_ENDPOINT || '/api/review';
         const isApiEndpoint = endpoint.startsWith('/api/');
 
-        let options = { method: 'POST' };
+        let payload;
         if (isApiEndpoint) {
-            // Send JSON for API endpoint
-            options.headers = {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
+            payload = {
+                name: name,
+                email: email || null,
+                rating: parseInt(rating),
+                comment: comment
             };
-            options.body = JSON.stringify({
-                name,
-                email,
-                rating: Number(rating),
-                comment
-            });
+            
+            // Add dish_id if it's a dish review
+            const dishIdInput = form.querySelector('input[name="dish_id"]');
+            if (dishIdInput) {
+                payload.dish_id = parseInt(dishIdInput.value);
+            }
         } else {
-            // Fallback to form submission for legacy endpoint
-            const formData = new FormData();
-            formData.append('name', name);
-            formData.append('email', email);
-            formData.append('rating', rating);
-            formData.append('comment', comment);
-            options.body = formData;
-            options.headers = { 'X-Requested-With': 'XMLHttpRequest' };
+            payload = new FormData();
+            payload.append('name', name);
+            payload.append('email', email);
+            payload.append('rating', rating);
+            payload.append('comment', comment);
         }
 
-        // Submit via AJAX
-        fetch(endpoint, options)
+        fetch(endpoint, {
+            method: 'POST',
+            headers: isApiEndpoint ? {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            } : {},
+            body: isApiEndpoint ? JSON.stringify(payload) : payload
+        })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
                 // Show success message
-                showSuccessMessage('Votre avis a été envoyé avec succès ! Il sera publié après modération.');
+                showSuccessMessage('Votre avis a été envoyé avec succès !');
                 
-                // Close the modal gracefully (supports both restaurant and dish modals)
-                const openModalEl = submitBtn.closest('.modal')
-                    || document.querySelector('.modal.show')
-                    || document.getElementById('dishReviewModal')
-                    || document.getElementById('addReviewModal');
+                // Close the modal gracefully
+                const openModalEl = document.getElementById(modalId);
                 if (openModalEl) {
-                    const modal = bootstrap.Modal.getInstance(openModalEl) || new bootstrap.Modal(openModalEl);
-                    modal.hide();
+                    
+                    const modalInstance = bootstrap.Modal.getInstance(openModalEl);
+                    if (modalInstance) {
+                        modalInstance.hide();
+                        
+                    } else {
+                        // If no instance, create one and hide
+                        const newModalInstance = new bootstrap.Modal(openModalEl);
+                        newModalInstance.hide();
+                        
+                    }
+                } else {
+                    
                 }
                 
+                // Force remove backdrop if modal doesn't close properly
+                setTimeout(() => {
+                    cleanupModalStyles();
+                }, 100);
+                
                 // Reset form
-                resetForm();
+                resetForm(modalId);
                 
                 // Notify dish page (if any) to refresh its list without reloading
                 document.dispatchEvent(new CustomEvent('review:submitted'));
@@ -300,8 +433,17 @@
             }
         })
         .catch(error => {
-            console.error('Error:', error);
+            
             showErrorMessage('Une erreur est survenue lors de l\'envoi de votre avis.');
+            
+            // Force close modal on error too
+            const openModalEl = document.getElementById(modalId);
+            if (openModalEl) {
+                const modalInstance = bootstrap.Modal.getInstance(openModalEl);
+                if (modalInstance) {
+                    modalInstance.hide();
+                }
+            }
         })
         .finally(() => {
             // Restore button state
@@ -310,149 +452,34 @@
         });
     }
 
-    // Client-side pagination for server-rendered reviews
-    function initLoadMoreExistingReviews() {
-        const container = document.getElementById('reviewsContainer');
-        if (!container) return;
-
-        const reviewCols = Array.from(container.querySelectorAll('.col-lg-6, .col-md-6, .col-lg-4, .col-md-4'));
-        if (reviewCols.length === 0) return;
-
-        const loadMoreBtn = document.getElementById('loadMoreReviews');
-        const PAGE_SIZE = 6;
-        let visibleCount = 0;
-
-        function updateVisibility() {
-            reviewCols.forEach((el, idx) => {
-                if (idx < visibleCount) {
-                    el.classList.remove('d-none');
-                } else {
-                    el.classList.add('d-none');
-                }
-            });
-
-            if (loadMoreBtn) {
-                if (visibleCount >= reviewCols.length) {
-                    loadMoreBtn.style.display = 'none';
-                } else {
-                    loadMoreBtn.style.display = '';
-                }
-            }
-        }
-
-        // Show initial set
-        visibleCount = Math.min(PAGE_SIZE, reviewCols.length);
-        updateVisibility();
-
-        // Wire button
-        if (loadMoreBtn) {
-            loadMoreBtn.addEventListener('click', function() {
-                visibleCount = Math.min(visibleCount + PAGE_SIZE, reviewCols.length);
-                updateVisibility();
-            });
-        }
-    }
-
-    async function fetchAndRenderReviews(endpoint) {
-        const container = document.getElementById('reviewsContainer');
-        if (!container) return;
-
-        // Show loading state
-        container.innerHTML = '<div class="col-12 text-center py-5"><div class="spinner-border" role="status"></div><div class="mt-3 text-muted">Chargement des avis...</div></div>';
-
-        try {
-            const response = await fetch(endpoint, { headers: { 'Accept': 'application/json' } });
-            const data = await response.json();
-
-            if (!data.success) {
-                container.innerHTML = '<div class="col-12 text-center py-5 text-danger">Impossible de charger les avis</div>';
-                return;
-            }
-
-            const reviews = Array.isArray(data.reviews) ? data.reviews : [];
-            if (reviews.length === 0) {
-                container.innerHTML = `
-                    <div class="col-12 text-center">
-                        <div class="py-5">
-                            <i class="bi bi-chat-dots icon-large"></i>
-                            <h4 class="mt-3">Aucun avis trouvé</h4>
-                            <p class="text-muted">Aucun avis disponible pour le moment.</p>
-                        </div>
-                    </div>`;
-                return;
-            }
-
-            // Build HTML similar to server-rendered cards
-            const html = reviews.map(review => {
-                const safeName = (review.name || '').toString();
-                const safeDate = (review.createdAt || '').toString();
-                const safeComment = (review.comment || '').toString();
-                const rating = Number(review.rating || 0);
-
-                const stars = Array.from({ length: 5 }).map((_, i) => {
-                    if (i < rating) {
-                        return '<i class="bi bi-star-fill text-warning"></i>';
-                    }
-                    return '<i class="bi bi-star text-warning"></i>';
-                }).join('');
-
-                return `
-                <div class="col-lg-6 col-md-6 mb-4">
-                    <div class="review-item" data-rating="${rating}">
-                        <div class="review-header">
-                            <div class="reviewer-info">
-                                <div class="reviewer-avatar">${(safeName.charAt(0) || 'U').toUpperCase()}</div>
-                                <div class="reviewer-details">
-                                    <h5>${escapeHtml(safeName)}</h5>
-                                    <small>${escapeHtml(safeDate)}</small>
-                                </div>
-                            </div>
-                            <div class="review-rating">
-                                <span class="rating-number">${rating}/5</span>
-                            </div>
-                        </div>
-                        <div class="review-stars">${stars}</div>
-                        <p class="review-text">"${escapeHtml(safeComment)}"</p>
-                    </div>
-                </div>`;
-            }).join('');
-
-            container.innerHTML = html;
-        } catch (e) {
-            console.error(e);
-            container.innerHTML = '<div class="col-12 text-center py-5 text-danger">Erreur lors du chargement des avis</div>';
-        }
-    }
-
-    function escapeHtml(str) {
-        return str
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
-    }
-
     function showSuccessMessage(message) {
-        // Create success alert
-        const alert = document.createElement('div');
-        alert.className = 'alert alert-success alert-dismissible fade show position-fixed';
-        alert.style.cssText = 'top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; min-width: 300px; text-align: center;';
-        alert.innerHTML = `
-            <i class="bi bi-check-circle me-2"></i>${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        
+        
+        // Remove existing notifications
+        const existingNotifications = document.querySelectorAll('.notification');
+        existingNotifications.forEach(notification => notification.remove());
+        
+        
+        
+        // Create the notification element
+        const notification = document.createElement('div');
+        notification.className = 'notification alert alert-success alert-dismissible show alert-fixed-center';
+        
+        notification.innerHTML = `
+            <i class="bi bi-check-circle me-2"></i>Votre avis a été envoyé et sera publié après modération.
+            <button type="button" class="btn-close" onclick="this.parentElement.classList.add('fade'); setTimeout(() => this.parentElement.remove(), 500)"></button>
         `;
         
-        document.body.appendChild(alert);
+        document.body.appendChild(notification);
+        
         
         // Auto-hide after 5 seconds
         setTimeout(() => {
-            if (alert.parentNode) {
-                alert.style.transition = 'opacity 0.5s ease-out';
-                alert.style.opacity = '0';
+            if (notification.parentNode) {
+                notification.classList.add('fade');
                 setTimeout(() => {
-                    if (alert.parentNode) {
-                        alert.remove();
+                    if (notification.parentNode) {
+                        notification.remove();
                     }
                 }, 500);
             }
@@ -460,51 +487,125 @@
     }
 
     function showErrorMessage(message) {
-        // Create error alert
-        const alert = document.createElement('div');
-        alert.className = 'alert alert-danger alert-dismissible fade show position-fixed';
-        alert.style.cssText = 'top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; min-width: 300px; text-align: center;';
-        alert.innerHTML = `
+        
+        
+        // Remove existing notifications
+        const existingNotifications = document.querySelectorAll('.notification');
+        existingNotifications.forEach(notification => notification.remove());
+        
+        // Create the notification element
+        const notification = document.createElement('div');
+        notification.className = 'notification alert alert-danger alert-dismissible show alert-fixed-center';
+        
+        notification.innerHTML = `
             <i class="bi bi-exclamation-triangle me-2"></i>${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button type="button" class="btn-close" onclick="this.parentElement.classList.add('fade'); setTimeout(() => this.parentElement.remove(), 500)"></button>
         `;
         
-        document.body.appendChild(alert);
+        document.body.appendChild(notification);
         
         // Auto-hide after 5 seconds
         setTimeout(() => {
-            if (alert.parentNode) {
-                alert.style.transition = 'opacity 0.5s ease-out';
-                alert.style.opacity = '0';
+            if (notification.parentNode) {
+                notification.classList.add('fade');
                 setTimeout(() => {
-                    if (alert.parentNode) {
-                        alert.remove();
+                    if (notification.parentNode) {
+                        notification.remove();
                     }
                 }, 500);
             }
         }, 5000);
     }
 
-    function resetForm() {
-        document.getElementById('reviewerName').value = '';
-        document.getElementById('reviewEmail').value = '';
-        document.getElementById('ratingValue').value = '0';
-        document.getElementById('reviewText').value = '';
+    function resetForm(modalId) {
+        document.getElementById(modalId + 'Name').value = '';
+        document.getElementById(modalId + 'Email').value = '';
+        document.getElementById(modalId + 'Rating').value = '0';
+        document.getElementById(modalId + 'Text').value = '';
         
         // Reset validation states
-        const inputs = document.querySelectorAll('#reviewForm input, #reviewForm textarea');
+        const form = document.getElementById(modalId + 'Form');
+        const inputs = form.querySelectorAll('input, textarea');
         inputs.forEach(input => {
             input.classList.remove('is-valid', 'is-invalid');
         });
         
         // Reset stars
-        highlightStars(0);
+        const stars = form.querySelectorAll('.star-rating');
+        highlightStars(0, stars);
         
         // Clear error messages
-        const errorElements = document.querySelectorAll('.invalid-feedback');
+        const errorElements = form.querySelectorAll('.invalid-feedback');
         errorElements.forEach(element => {
             element.textContent = '';
             element.classList.remove('show');
         });
+    }
+
+    // Load more reviews functionality
+    function initLoadMoreExistingReviews() {
+        const loadMoreBtn = document.getElementById('loadMoreReviews');
+        if (loadMoreBtn) {
+            loadMoreBtn.addEventListener('click', function() {
+                // This would load more reviews from the server
+                
+            });
+        }
+    }
+
+    // Fetch and render reviews from API
+    async function fetchAndRenderReviews(endpoint) {
+        try {
+            const response = await fetch(endpoint);
+            const data = await response.json();
+            
+            if (data.success && data.reviews) {
+                renderReviews(data.reviews);
+            }
+        } catch (error) {
+            
+        }
+    }
+
+    function renderReviews(reviews) {
+        const container = document.getElementById('reviewsContainer');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        reviews.forEach(review => {
+            const reviewElement = createReviewElement(review);
+            container.appendChild(reviewElement);
+        });
+    }
+
+    function createReviewElement(review) {
+        const div = document.createElement('div');
+        div.className = 'col-lg-6 col-md-6 mb-4';
+        
+        const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+        
+        div.innerHTML = `
+            <div class="review-item" data-rating="${review.rating}">
+                <div class="review-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar">${review.name.charAt(0).toUpperCase()}</div>
+                        <div class="reviewer-details">
+                            <h5>${review.name}</h5>
+                            <small>${new Date(review.createdAt).toLocaleDateString('fr-FR')}</small>
+                        </div>
+                    </div>
+                    <div class="review-rating">
+                        <span class="rating-number">${review.rating}/5</span>
+                    </div>
+                </div>
+                <div class="review-stars">
+                    ${stars}
+                </div>
+                <p class="review-text">"${review.comment}"</p>
+            </div>
+        `;
+        
+        return div;
     }
 })();

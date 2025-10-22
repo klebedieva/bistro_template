@@ -271,9 +271,8 @@
             // Auto-hide after 5 seconds with smooth fade
             setTimeout(() => {
                 if (successMessage && successMessage.parentNode) {
-                    // Start fade out animation
-                    successMessage.style.transition = 'opacity 0.5s ease-out';
-                    successMessage.style.opacity = '0';
+                    // Use CSS class for fade out animation
+                    successMessage.classList.add('fade');
                     
                     // Remove element after animation completes
                     setTimeout(() => {

@@ -57,16 +57,7 @@
     border-radius: 2px;
 }
 
-/* Alerte succès fixée et centrée (remplace le style inline du template) */
-.alert-fixed-center {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 9999;
-    min-width: 300px;
-    text-align: center;
-}
+/* Alerte succès fixée et centrée - стили перенесены в style.css */
 
 
 
@@ -266,21 +257,4 @@ section.contact-section .contact-info {
     color: #000 !important;
 }
 
-/* Error message styling */
-.contact-form .alert-danger {
-    background-color: #f8d7da;
-    border-color: #f5c6cb;
-    color: #721c24;
-    border-radius: 0.5rem;
-    padding: 0.75rem 1rem;
-    margin-bottom: 1rem;
-}
-
-.contact-form .alert-success {
-    background-color: #d1e7dd;
-    border-color: #badbcc;
-    color: #0f5132;
-    border-radius: 0.5rem;
-    padding: 0.75rem 1rem;
-    margin-bottom: 1rem;
-}
+/* Alert message styling - стили перенесены в style.css */

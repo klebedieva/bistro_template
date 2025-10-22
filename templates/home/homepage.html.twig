@@ -210,59 +210,12 @@
     {% include 'partials/gallery-modal.html.twig' %}
 
     <!-- Add Review Modal -->
-    <div class="modal fade" id="addReviewModal" tabindex="-1">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <i class="bi bi-chat-dots me-2"></i>Ajouter votre avis
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="reviewForm" novalidate>
-                        <div class="mb-3">
-                            <label for="reviewerName" class="form-label">Votre nom *</label>
-                            <input type="text" class="form-control" id="reviewerName" name="name" required>
-                            <div class="invalid-feedback" id="reviewerNameError"></div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Note *</label>
-                            <div class="rating-stars">
-                                <i class="bi bi-star star-rating" data-rating="1"></i>
-                                <i class="bi bi-star star-rating" data-rating="2"></i>
-                                <i class="bi bi-star star-rating" data-rating="3"></i>
-                                <i class="bi bi-star star-rating" data-rating="4"></i>
-                                <i class="bi bi-star star-rating" data-rating="5"></i>
-                            </div>
-                            <input type="hidden" id="ratingValue" name="rating" value="0">
-                            <small class="text-muted">Cliquez sur les étoiles pour noter</small>
-                            <div class="invalid-feedback" id="ratingError"></div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="reviewText" class="form-label">Votre avis *</label>
-                            <textarea class="form-control" id="reviewText" name="comment" rows="4" placeholder="Partagez votre expérience au Trois Quarts..." required></textarea>
-                            <div class="invalid-feedback" id="reviewTextError"></div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="reviewEmail" class="form-label">Email (optionnel)</label>
-                            <input type="email" class="form-control" id="reviewEmail" name="email" placeholder="votre@email.com">
-                            <div class="invalid-feedback" id="reviewEmailError"></div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="button" class="btn btn-primary" id="submitReview">
-                        <i class="bi bi-send me-2"></i>Envoyer l'avis
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+    {% include 'components/review_modal.html.twig' with {
+        'modal_id': 'addReviewModal',
+        'title': 'Ajouter votre avis',
+        'submit_text': 'Envoyer l\'avis',
+        'review_type': 'restaurant'
+    } %}
 
     <!-- Cart sidebar is now included in base template -->
 
