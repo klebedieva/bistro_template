@@ -142,7 +142,7 @@ class GalleryImageCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
-        return $actions
+        $actions = $actions
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
             ->update(Crud::PAGE_INDEX, Action::DETAIL, function (Action $action) {
                 return $action
@@ -162,14 +162,22 @@ class GalleryImageCrudController extends AbstractCrudController
                     ->setLabel('Modifier')
                     ->setCssClass('btn btn-soft-success btn-sm');
             })
-            ->update(Crud::PAGE_INDEX, Action::DELETE, function (Action $action) {
+            ->setPermission(Action::NEW, 'ROLE_ADMIN');
+
+        // Only admins can see delete action
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $actions = $actions->update(Crud::PAGE_INDEX, Action::DELETE, function (Action $action) {
                 return $action
                     ->setIcon('fa fa-trash')
                     ->setLabel('Supprimer')
                     ->setCssClass('action-delete btn btn-soft-danger btn-sm');
-            })
-            ->setPermission(Action::DELETE, 'ROLE_ADMIN')
-            ->setPermission(Action::NEW, 'ROLE_ADMIN');
+            });
+        } else {
+            // Remove delete action completely for moderators
+            $actions = $actions->remove(Crud::PAGE_INDEX, Action::DELETE);
+        }
+
+        return $actions;
     }
 
     public function configureFilters(Filters $filters): Filters

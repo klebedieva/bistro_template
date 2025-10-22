@@ -117,7 +117,7 @@ class ReviewCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
-        return $actions
+        $actions = $actions
             ->remove(Crud::PAGE_INDEX, Action::NEW)
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
             ->update(Crud::PAGE_INDEX, Action::DETAIL, function (Action $action) {
@@ -137,8 +137,11 @@ class ReviewCrudController extends AbstractCrudController
                     ->displayIf(function ($entity) {
                         return $entity instanceof Review && $entity->getId() !== null;
                     });
-            })
-            ->update(Crud::PAGE_INDEX, Action::DELETE, function (Action $action) {
+            });
+
+        // Only admins can see delete action
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $actions = $actions->update(Crud::PAGE_INDEX, Action::DELETE, function (Action $action) {
                 return $action
                     ->setIcon('fa fa-trash')
                     ->setLabel('Supprimer')
@@ -147,9 +150,13 @@ class ReviewCrudController extends AbstractCrudController
                     ->displayIf(function ($entity) {
                         return $entity instanceof Review && $entity->getId() !== null;
                     });
-            })
-            // Only admins can delete
-            ->setPermission(Action::DELETE, 'ROLE_ADMIN');
+            });
+        } else {
+            // Remove delete action completely for moderators
+            $actions = $actions->remove(Crud::PAGE_INDEX, Action::DELETE);
+        }
+
+        return $actions;
     }
 
 

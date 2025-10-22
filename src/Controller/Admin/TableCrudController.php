@@ -32,13 +32,8 @@ class TableCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
-        return $actions
+        $actions = $actions
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
-            ->update(Crud::PAGE_INDEX, Action::DELETE, function(Action $action){
-                return $action->setIcon('fa fa-trash')
-                    ->setLabel('Supprimer')
-                    ->setCssClass('action-delete btn btn-soft-danger btn-sm');
-            })
             ->update(Crud::PAGE_INDEX, Action::EDIT, function(Action $action){
                 return $action->setIcon('fa fa-edit')
                     ->setLabel('Modifier')
@@ -48,8 +43,21 @@ class TableCrudController extends AbstractCrudController
                 return $action->setIcon('fa fa-eye')
                     ->setLabel('Voir')
                     ->setCssClass('btn btn-soft-info btn-sm');
-            })
-            ->setPermission(Action::DELETE, 'ROLE_ADMIN')
+            });
+
+        // Only admins can see delete action
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $actions = $actions->update(Crud::PAGE_INDEX, Action::DELETE, function(Action $action){
+                return $action->setIcon('fa fa-trash')
+                    ->setLabel('Supprimer')
+                    ->setCssClass('action-delete btn btn-soft-danger btn-sm');
+            });
+        } else {
+            // Remove delete action completely for moderators
+            $actions = $actions->remove(Crud::PAGE_INDEX, Action::DELETE);
+        }
+
+        return $actions
             ->setPermission(Action::NEW, 'ROLE_ADMIN')
             ->setPermission(Action::EDIT, 'ROLE_ADMIN');
     }

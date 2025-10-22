@@ -190,8 +190,7 @@ class HomeController extends AbstractController
             $reservation->setTime($time);
             $reservation->setGuests((int)$guests);
             $reservation->setMessage($message ?: null);
-            $reservation->setStatus('new');
-            $reservation->setStatus('new');
+            $reservation->setStatus('pending');
             $reservation->setIsConfirmed(false);
             
             $entityManager->persist($reservation);

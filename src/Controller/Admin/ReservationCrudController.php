@@ -63,7 +63,6 @@ class ReservationCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         $statusChoices = [
-            'Nouveau' => 'new',
             'En attente' => 'pending',
             'Confirmée' => 'confirmed',
             'Annulée' => 'cancelled',
@@ -155,7 +154,6 @@ class ReservationCrudController extends AbstractCrudController
                 ->setHelp('Statut de la réservation')
                 ->setTemplatePath('admin/reservation/_status_badge.html.twig')
                 ->renderAsBadges([
-                    'new' => 'primary',
                     'pending' => 'warning',
                     'confirmed' => 'success',
                     'cancelled' => 'danger',
@@ -211,7 +209,7 @@ class ReservationCrudController extends AbstractCrudController
             ->displayIf(function ($entity) {
                 return $entity instanceof Reservation && 
                        $entity->getId() !== null && 
-                       in_array($entity->getStatus(), ['new', 'pending']);
+                       in_array($entity->getStatus(), ['pending']);
             });
 
         $cancelAction = Action::new('cancel', 'Annuler')
@@ -221,11 +219,11 @@ class ReservationCrudController extends AbstractCrudController
             ->displayIf(function ($entity) {
                 return $entity instanceof Reservation && 
                        $entity->getId() !== null && 
-                       in_array($entity->getStatus(), ['new', 'pending', 'confirmed']);
+                       in_array($entity->getStatus(), ['pending', 'confirmed']);
             });
 
 
-        return $actions
+        $actions = $actions
             ->remove(Crud::PAGE_INDEX, Action::NEW)
             ->remove(Crud::PAGE_INDEX, Action::EDIT)
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
@@ -239,8 +237,11 @@ class ReservationCrudController extends AbstractCrudController
                     ->displayIf(function ($entity) {
                         return $entity instanceof Reservation && $entity->getId() !== null;
                     });
-            })
-            ->update(Crud::PAGE_INDEX, Action::DELETE, function (Action $action) {
+            });
+
+        // Only admins can see delete action
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $actions = $actions->update(Crud::PAGE_INDEX, Action::DELETE, function (Action $action) {
                 return $action
                     ->setIcon('fa fa-trash')
                     ->setLabel('Supprimer')
@@ -249,8 +250,13 @@ class ReservationCrudController extends AbstractCrudController
                     ->displayIf(function ($entity) {
                         return $entity instanceof Reservation && $entity->getId() !== null;
                     });
-            })
-            ->setPermission(Action::DELETE, 'ROLE_ADMIN');
+            });
+        } else {
+            // Remove delete action completely for moderators
+            $actions = $actions->remove(Crud::PAGE_INDEX, Action::DELETE);
+        }
+
+        return $actions;
     }
 
     public function configureFilters(Filters $filters): Filters
@@ -261,7 +267,6 @@ class ReservationCrudController extends AbstractCrudController
             ->add(TextFilter::new('email', 'Email'))
             ->add(ChoiceFilter::new('status', 'Statut')
                 ->setChoices([
-                    'Nouveau' => 'new',
                     'En attente' => 'pending',
                     'Confirmée' => 'confirmed',
                     'Annulée' => 'cancelled',
@@ -290,13 +295,13 @@ class ReservationCrudController extends AbstractCrudController
             return $this->redirectToRoute('admin');
         }
 
-        // status cycle for click: new -> pending -> confirmed -> completed -> no_show -> new
-        $cycle = ['new', 'pending', 'confirmed', 'completed', 'no_show'];
-        $current = $reservation->getStatus() ?? 'new';
+        // status cycle for click: pending -> confirmed -> completed -> no_show -> pending
+        $cycle = ['pending', 'confirmed', 'completed', 'no_show'];
+        $current = $reservation->getStatus() ?? 'pending';
         $currentIndex = array_search($current, $cycle, true);
         if ($currentIndex === false) {
-            // если статус вне цикла (cancelled/no_show) — начинаем с 'new'
-            $next = 'new';
+            // если статус вне цикла (cancelled) — начинаем с 'pending'
+            $next = 'pending';
         } else {
             $next = $cycle[($currentIndex + 1) % count($cycle)];
         }

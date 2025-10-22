@@ -172,7 +172,7 @@ class ContactMessageCrudController extends AbstractCrudController
                 return $entity instanceof ContactMessage && $entity->getId() !== null && !$entity->isReplied();
             });
 
-        return $actions
+        $actions = $actions
             ->remove(Crud::PAGE_INDEX, Action::NEW)
             ->remove(Crud::PAGE_INDEX, Action::EDIT)
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
@@ -185,8 +185,11 @@ class ContactMessageCrudController extends AbstractCrudController
                     ->displayIf(function ($entity) {
                         return $entity instanceof ContactMessage && $entity->getId() !== null;
                     });
-            })
-            ->update(Crud::PAGE_INDEX, Action::DELETE, function (Action $action) {
+            });
+
+        // Only admins can see delete action
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $actions = $actions->update(Crud::PAGE_INDEX, Action::DELETE, function (Action $action) {
                 return $action
                     ->setIcon('fa fa-trash')
                     ->setLabel('Supprimer')
@@ -195,9 +198,13 @@ class ContactMessageCrudController extends AbstractCrudController
                     ->displayIf(function ($entity) {
                         return $entity instanceof ContactMessage && $entity->getId() !== null;
                     });
-            })
-            // Only admins can delete contact messages
-            ->setPermission(Action::DELETE, 'ROLE_ADMIN');
+            });
+        } else {
+            // Remove delete action completely for moderators
+            $actions = $actions->remove(Crud::PAGE_INDEX, Action::DELETE);
+        }
+
+        return $actions;
     }
 
     public function configureFilters(Filters $filters): Filters

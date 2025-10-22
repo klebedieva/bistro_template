@@ -259,11 +259,6 @@ class OrderCrudController extends AbstractCrudController
             ->add(Crud::PAGE_DETAIL, $prepareOrder)
             ->add(Crud::PAGE_DETAIL, $deliverOrder)
             ->add(Crud::PAGE_DETAIL, $cancelOrder)
-            ->update(Crud::PAGE_INDEX, Action::DELETE, function(Action $action){
-                return $action->setIcon('fa fa-trash')
-                    ->setLabel('Supprimer')
-                    ->setCssClass('action-delete btn btn-soft-danger btn-sm');
-            })
             ->update(Crud::PAGE_INDEX, Action::EDIT, function(Action $action){
                 return $action->setIcon('fa fa-edit')
                     ->setLabel('Modifier')
@@ -273,8 +268,21 @@ class OrderCrudController extends AbstractCrudController
                 return $action->setIcon('fa fa-eye')
                     ->setLabel('Voir')
                     ->setCssClass('btn btn-soft-info btn-sm');
-            })
-            ->setPermission(Action::DELETE, 'ROLE_ADMIN');
+            });
+
+        // Only admins can see delete action
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $actions = $actions->update(Crud::PAGE_INDEX, Action::DELETE, function(Action $action){
+                return $action->setIcon('fa fa-trash')
+                    ->setLabel('Supprimer')
+                    ->setCssClass('action-delete btn btn-soft-danger btn-sm');
+            });
+        } else {
+            // Remove delete action completely for moderators
+            $actions = $actions->remove(Crud::PAGE_INDEX, Action::DELETE);
+        }
+
+        return $actions;
     }
 
     /**

@@ -57,7 +57,7 @@ class Reservation
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(length: 20)]
-    private ?string $status = 'new';
+    private ?string $status = 'pending';
 
     #[ORM\Column(type: Types::BOOLEAN)]
     private ?bool $isConfirmed = false;
@@ -71,7 +71,7 @@ class Reservation
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
-        $this->status = 'new';
+        $this->status = 'pending';
         $this->isConfirmed = false;
     }
 

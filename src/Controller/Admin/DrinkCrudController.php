@@ -50,12 +50,20 @@ class DrinkCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
-        return $actions
+        $actions = $actions
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
-            ->update(Crud::PAGE_INDEX, Action::DELETE, fn(Action $a) => $a->setCssClass('action-delete btn btn-soft-danger btn-sm'))
             ->update(Crud::PAGE_INDEX, Action::EDIT, fn(Action $a) => $a->setCssClass('btn btn-soft-success btn-sm'))
-            ->update(Crud::PAGE_INDEX, Action::DETAIL, fn(Action $a) => $a->setCssClass('btn btn-soft-info btn-sm'))
-            ->setPermission(Action::DELETE, 'ROLE_ADMIN')
+            ->update(Crud::PAGE_INDEX, Action::DETAIL, fn(Action $a) => $a->setCssClass('btn btn-soft-info btn-sm'));
+
+        // Only admins can see delete action
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $actions = $actions->update(Crud::PAGE_INDEX, Action::DELETE, fn(Action $a) => $a->setCssClass('action-delete btn btn-soft-danger btn-sm'));
+        } else {
+            // Remove delete action completely for moderators
+            $actions = $actions->remove(Crud::PAGE_INDEX, Action::DELETE);
+        }
+
+        return $actions
             ->setPermission(Action::NEW, 'ROLE_ADMIN');
     }
 }

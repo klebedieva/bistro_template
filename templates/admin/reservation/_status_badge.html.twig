@@ -2,7 +2,6 @@
 {% set value = field.value %}
 {# Use EasyAdmin-like badge colors (filled), closer to renderAsBadges output #}
 {% set badgeClasses = {
-    'new': 'badge badge-primary',
     'pending': 'badge badge-warning',
     'confirmed': 'badge badge-success',
     'cancelled': 'badge badge-danger',
@@ -11,7 +10,6 @@
 } %}
 
 {% set labels = {
-    'new': 'Nouveau',
     'pending': 'En attente',
     'confirmed': 'Confirmée',
     'cancelled': 'Annulée',
