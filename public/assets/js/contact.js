@@ -1,8 +1,8 @@
-// Contact form validation
+// Contact form validation and AJAX submission
 (function() {
     'use strict';
 
-    // Regex patterns for validation
+    // Validation patterns
     const validationPatterns = {
         firstName: /^[a-zA-ZÀ-ÿ\s\-]+$/,
         lastName: /^[a-zA-ZÀ-ÿ\s\-]+$/,
@@ -19,21 +19,21 @@
     });
 
     function setupRealTimeValidation() {
-    // First name validation
+        // First name validation
         const firstNameInput = document.querySelector('input[name="contact_message[firstName]"]');
         if (firstNameInput) {
             firstNameInput.addEventListener('input', () => validateFirstName());
             firstNameInput.addEventListener('blur', () => validateFirstName());
-    }
-    
-    // Last name validation
+        }
+        
+        // Last name validation
         const lastNameInput = document.querySelector('input[name="contact_message[lastName]"]');
         if (lastNameInput) {
             lastNameInput.addEventListener('input', () => validateLastName());
             lastNameInput.addEventListener('blur', () => validateLastName());
-    }
-    
-    // Email validation
+        }
+        
+        // Email validation
         const emailInput = document.querySelector('input[name="contact_message[email]"]');
         if (emailInput) {
             emailInput.addEventListener('input', () => validateEmail());
@@ -45,16 +45,16 @@
         if (phoneInput) {
             phoneInput.addEventListener('input', () => validatePhone());
             phoneInput.addEventListener('blur', () => validatePhone());
-    }
-    
-    // Subject validation
+        }
+        
+        // Subject validation
         const subjectInput = document.querySelector('select[name="contact_message[subject]"]');
         if (subjectInput) {
             subjectInput.addEventListener('change', () => validateSubject());
             subjectInput.addEventListener('blur', () => validateSubject());
-    }
-    
-    // Message validation
+        }
+        
+        // Message validation
         const messageInput = document.querySelector('textarea[name="contact_message[message]"]');
         if (messageInput) {
             messageInput.addEventListener('input', () => validateMessage());
@@ -76,7 +76,7 @@
             submitBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 
-                // Validate all fields
+                // Validate all fields before submission
                 const isFirstNameValid = validateFirstName();
                 const isLastNameValid = validateLastName();
                 const isEmailValid = validateEmail();
@@ -86,7 +86,7 @@
                 const isConsentValid = validateConsent();
                 
                 if (isFirstNameValid && isLastNameValid && isEmailValid && isPhoneValid && isSubjectValid && isMessageValid && isConsentValid) {
-                    form.submit();
+                    submitContactForm();
                 }
             });
         }
@@ -282,6 +282,126 @@
                     }, 500); // Wait for fade animation to complete
                 }
             }, 5000);
+        }
+    }
+
+    // AJAX form submission
+    function submitContactForm() {
+        const submitBtn = document.querySelector('.contact-form button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Envoi en cours...';
+        
+        // Prepare form data
+        const formData = new FormData();
+        const form = document.querySelector('.contact-form');
+        
+        formData.append('firstName', form.querySelector('input[name="contact_message[firstName]"]').value.trim());
+        formData.append('lastName', form.querySelector('input[name="contact_message[lastName]"]').value.trim());
+        formData.append('email', form.querySelector('input[name="contact_message[email]"]').value.trim());
+        formData.append('phone', form.querySelector('input[name="contact_message[phone]"]').value.trim());
+        formData.append('subject', form.querySelector('select[name="contact_message[subject]"]').value);
+        formData.append('message', form.querySelector('textarea[name="contact_message[message]"]').value.trim());
+        formData.append('consent', form.querySelector('input[name="contact_message[consent]"]').checked ? '1' : '0');
+        
+        // Submit via AJAX
+        fetch('/contact-ajax', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showSuccessMessage(data.message);
+                resetForm();
+            } else {
+                showErrorMessage(data.message || 'Une erreur est survenue lors de l\'envoi de votre message.');
+            }
+        })
+        .catch(error => {
+            showErrorMessage('Une erreur est survenue lors de l\'envoi de votre message.');
+        })
+        .finally(() => {
+            // Restore button state
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        });
+    }
+
+    function showSuccessMessage(message) {
+        // Create success notification
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-success alert-dismissible fade show position-fixed';
+        alert.style.cssText = 'top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; min-width: 300px; text-align: center;';
+        alert.innerHTML = `
+            <i class="bi bi-check-circle me-2"></i>${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        document.body.appendChild(alert);
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            if (alert.parentNode) {
+                alert.style.transition = 'opacity 0.5s ease-out';
+                alert.style.opacity = '0';
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.remove();
+                    }
+                }, 500);
+            }
+        }, 5000);
+    }
+
+    function showErrorMessage(message) {
+        // Create error notification
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-danger alert-dismissible fade show position-fixed';
+        alert.style.cssText = 'top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; min-width: 300px; text-align: center;';
+        alert.innerHTML = `
+            <i class="bi bi-exclamation-triangle me-2"></i>${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        document.body.appendChild(alert);
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            if (alert.parentNode) {
+                alert.style.transition = 'opacity 0.5s ease-out';
+                alert.style.opacity = '0';
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.remove();
+                    }
+                }, 500);
+            }
+        }, 5000);
+    }
+
+    function resetForm() {
+        const form = document.querySelector('.contact-form');
+        if (form) {
+            form.reset();
+            
+            // Reset validation states
+            const inputs = form.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                input.classList.remove('is-valid', 'is-invalid');
+            });
+            
+            // Clear error messages
+            const errorElements = form.querySelectorAll('.invalid-feedback');
+            errorElements.forEach(element => {
+                element.textContent = '';
+                element.classList.remove('show');
+            });
         }
     }
 })();
