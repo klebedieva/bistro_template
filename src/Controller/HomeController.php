@@ -15,6 +15,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Csrf\CsrfToken;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use App\Service\TableAvailabilityService;
 
 class HomeController extends AbstractController
@@ -94,8 +96,22 @@ class HomeController extends AbstractController
     }
 
     #[Route('/reservation-ajax', name: 'app_reservation_ajax', methods: ['POST'])]
-    public function reservationAjax(Request $request, EntityManagerInterface $entityManager): JsonResponse
+    public function reservationAjax(Request $request, EntityManagerInterface $entityManager, CsrfTokenManagerInterface $csrfTokenManager): JsonResponse
     {
+        // CSRF Protection
+        $csrfToken = $request->request->get('_token') ?: $request->headers->get('X-CSRF-Token');
+        
+        // Debug information
+        error_log('CSRF Debug - Received token: ' . ($csrfToken ?: 'NULL'));
+        error_log('CSRF Debug - All request data: ' . json_encode($request->request->all()));
+        
+        if (!$csrfToken || !$csrfTokenManager->isTokenValid(new CsrfToken('submit', $csrfToken))) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Token CSRF invalide'
+            ], 403);
+        }
+        
         return $this->handleReservationAjax($request, $entityManager);
     }
     

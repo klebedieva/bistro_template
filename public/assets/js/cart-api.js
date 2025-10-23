@@ -54,11 +54,8 @@ class CartAPI {
      */
     async addItem(itemId, quantity = 1) {
         try {
-            const response = await fetch(`${this.baseUrl}/add`, {
+            const response = await window.apiRequest(`${this.baseUrl}/add`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
                 body: JSON.stringify({ itemId, quantity })
             });
       // invalidate cache
@@ -81,11 +78,8 @@ class CartAPI {
      */
     async removeItem(itemId) {
         try {
-            const response = await fetch(`${this.baseUrl}/remove/${itemId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+            const response = await window.apiRequest(`${this.baseUrl}/remove/${itemId}`, {
+                method: 'DELETE'
             });
       // invalidate cache
       this._cartCacheAt = 0;
@@ -107,11 +101,8 @@ class CartAPI {
      */
     async updateQuantity(itemId, quantity) {
         try {
-            const response = await fetch(`${this.baseUrl}/update/${itemId}`, {
+            const response = await window.apiRequest(`${this.baseUrl}/update/${itemId}`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
                 body: JSON.stringify({ quantity })
             });
       // invalidate cache
@@ -134,11 +125,8 @@ class CartAPI {
      */
     async clearCart() {
         try {
-            const response = await fetch(`${this.baseUrl}/clear`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+            const response = await window.apiRequest(`${this.baseUrl}/clear`, {
+                method: 'POST'
             });
       // invalidate cache
       this._cartCacheAt = 0;

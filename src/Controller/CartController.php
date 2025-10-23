@@ -10,6 +10,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Csrf\CsrfToken;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use OpenApi\Attributes as OA;
 
 #[Route('/api/cart')]
@@ -19,6 +21,18 @@ class CartController extends AbstractController
     public function __construct(
         private CartService $cartService
     ) {}
+
+    private function validateCsrfToken(Request $request, CsrfTokenManagerInterface $csrfTokenManager): ?JsonResponse
+    {
+        $csrfToken = $request->headers->get('X-CSRF-Token');
+        if (!$csrfToken || !$csrfTokenManager->isTokenValid(new CsrfToken('submit', $csrfToken))) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Token CSRF invalide'
+            ], 403);
+        }
+        return null;
+    }
 
     /**
      * Get cart contents
@@ -140,8 +154,14 @@ class CartController extends AbstractController
             ]
         )
     )]
-    public function addToCart(Request $request): JsonResponse
+    public function addToCart(Request $request, CsrfTokenManagerInterface $csrfTokenManager): JsonResponse
     {
+        // CSRF Protection
+        $csrfError = $this->validateCsrfToken($request, $csrfTokenManager);
+        if ($csrfError) {
+            return $csrfError;
+        }
+
         try {
             $data = json_decode($request->getContent(), true);
             
@@ -237,8 +257,14 @@ class CartController extends AbstractController
             ]
         )
     )]
-    public function removeFromCart(int $id): JsonResponse
+    public function removeFromCart(int $id, Request $request, CsrfTokenManagerInterface $csrfTokenManager): JsonResponse
     {
+        // CSRF Protection
+        $csrfError = $this->validateCsrfToken($request, $csrfTokenManager);
+        if ($csrfError) {
+            return $csrfError;
+        }
+
         try {
             $cart = $this->cartService->remove($id);
 
@@ -321,8 +347,14 @@ class CartController extends AbstractController
             ]
         )
     )]
-    public function updateQuantity(int $id, Request $request): JsonResponse
+    public function updateQuantity(int $id, Request $request, CsrfTokenManagerInterface $csrfTokenManager): JsonResponse
     {
+        // CSRF Protection
+        $csrfError = $this->validateCsrfToken($request, $csrfTokenManager);
+        if ($csrfError) {
+            return $csrfError;
+        }
+
         try {
             $data = json_decode($request->getContent(), true);
             
@@ -400,8 +432,14 @@ class CartController extends AbstractController
             ]
         )
     )]
-    public function clearCart(): JsonResponse
+    public function clearCart(Request $request, CsrfTokenManagerInterface $csrfTokenManager): JsonResponse
     {
+        // CSRF Protection
+        $csrfError = $this->validateCsrfToken($request, $csrfTokenManager);
+        if ($csrfError) {
+            return $csrfError;
+        }
+
         try {
             $cart = $this->cartService->clear();
 

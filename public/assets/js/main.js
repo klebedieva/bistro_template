@@ -3,6 +3,39 @@
 
 // Cart functionality moved to cart.js
 
+// CSRF Token helper
+window.getCsrfToken = function() {
+    const metaTag = document.querySelector('meta[name="csrf-token"]');
+    return metaTag ? metaTag.getAttribute('content') : null;
+};
+
+// Helper function for API requests with CSRF protection
+window.apiRequest = function(url, options = {}) {
+    const csrfToken = window.getCsrfToken();
+    if (!csrfToken) {
+        console.error('CSRF token not found');
+        return Promise.reject(new Error('CSRF token not found'));
+    }
+
+    const defaultOptions = {
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken
+        }
+    };
+
+    const mergedOptions = {
+        ...defaultOptions,
+        ...options,
+        headers: {
+            ...defaultOptions.headers,
+            ...options.headers
+        }
+    };
+
+    return fetch(url, mergedOptions);
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize all components
     initNavbar();

@@ -11,6 +11,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Csrf\CsrfToken;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 class ContactController extends AbstractController
 {
@@ -53,8 +55,17 @@ class ContactController extends AbstractController
     }
 
     #[Route('/contact-ajax', name: 'app_contact_ajax', methods: ['POST'])]
-    public function contactAjax(Request $request): JsonResponse
+    public function contactAjax(Request $request, CsrfTokenManagerInterface $csrfTokenManager): JsonResponse
     {
+        // CSRF Protection
+        $csrfToken = $request->request->get('_token') ?: $request->headers->get('X-CSRF-Token');
+        if (!$csrfToken || !$csrfTokenManager->isTokenValid(new CsrfToken('submit', $csrfToken))) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Token CSRF invalide'
+            ], 403);
+        }
+        
         return $this->handleContactAjax($request);
     }
     

@@ -274,6 +274,15 @@
         formData.append('guests', form.querySelector('select[name="reservation[guests]"]').value);
         formData.append('message', form.querySelector('textarea[name="reservation[message]"]').value.trim());
         
+        // Add CSRF token to form data
+        // First try to get token from form, then from meta tag
+        let csrfToken = form.querySelector('input[name="reservation[_token]"]')?.value;
+        if (!csrfToken) {
+            csrfToken = window.getCsrfToken();
+        }
+        if (csrfToken) {
+            formData.append('_token', csrfToken);
+        }
         
         // Submit via AJAX
         fetch('/reservation-ajax', {

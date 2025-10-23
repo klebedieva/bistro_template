@@ -306,6 +306,12 @@
         formData.append('message', form.querySelector('textarea[name="contact_message[message]"]').value.trim());
         formData.append('consent', form.querySelector('input[name="contact_message[consent]"]').checked ? '1' : '0');
         
+        // Add CSRF token to form data
+        const csrfToken = window.getCsrfToken();
+        if (csrfToken) {
+            formData.append('_token', csrfToken);
+        }
+        
         // Submit via AJAX
         fetch('/contact-ajax', {
             method: 'POST',

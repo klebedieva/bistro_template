@@ -16,9 +16,8 @@ function showOrderNotification(message, type = 'info') {
 // Simple Order API client using the new backend endpoints
 window.orderAPI = {
     async createOrder(payload) {
-        const res = await fetch('/api/order', {
+        const res = await window.apiRequest('/api/order', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
             body: JSON.stringify(payload || {})
         });

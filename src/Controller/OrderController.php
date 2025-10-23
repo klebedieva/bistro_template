@@ -12,6 +12,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Csrf\CsrfToken;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use OpenApi\Attributes as OA;
 
 class OrderController extends AbstractController
@@ -143,9 +145,18 @@ class OrderController extends AbstractController
         )
     )]
     #[OA\Tag(name: 'Order')]
-    public function createOrder(Request $request): JsonResponse
+    public function createOrder(Request $request, CsrfTokenManagerInterface $csrfTokenManager): JsonResponse
     {
         try {
+            // CSRF Protection
+            $csrfToken = $request->headers->get('X-CSRF-Token');
+            if (!$csrfToken || !$csrfTokenManager->isTokenValid(new CsrfToken('submit', $csrfToken))) {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Token CSRF invalide'
+                ], 403);
+            }
+            
             $data = json_decode($request->getContent(), true);
             
             // Créer la commande
