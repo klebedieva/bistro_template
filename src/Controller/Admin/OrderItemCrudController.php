@@ -59,12 +59,12 @@ class OrderItemCrudController extends AbstractCrudController
     // Removed dynamic menu item info endpoint; manual input restored
 
     /**
-     * Обновляет заказ после изменения статьи
+     * Updates order after changing item
      */
     public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
         // Manual mode: keep values as entered
-        // Пересчитываем суммы статьи
+        // Recalculate item totals
         if ($entityInstance->getUnitPrice() && $entityInstance->getQuantity()) {
             $total = (float) $entityInstance->getUnitPrice() * $entityInstance->getQuantity();
             $entityInstance->setTotal(number_format($total, 2, '.', ''));
@@ -72,27 +72,27 @@ class OrderItemCrudController extends AbstractCrudController
         
         parent::updateEntity($entityManager, $entityInstance);
         
-        // Пересчитываем общие суммы заказа
+        // Recalculate order totals
         if ($entityInstance->getOrderRef()) {
             $order = $entityInstance->getOrderRef();
             $order->recalculateTotals();
             
-            // Принудительно обновляем заказ в EntityManager
+            // Force update order in EntityManager
             $entityManager->persist($order);
             $entityManager->flush();
             
-            // Добавляем сообщение для отладки
-            $this->addFlash('success', 'Суммы заказа пересчитаны автоматически');
+            // Add debug message
+            $this->addFlash('success', 'Order totals recalculated automatically');
         }
     }
 
     /**
-     * Создает новую статью заказа
+     * Creates new order item
      */
     public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
         // Manual mode: keep values as entered
-        // Пересчитываем суммы статьи
+        // Recalculate item totals
         if ($entityInstance->getUnitPrice() && $entityInstance->getQuantity()) {
             $total = (float) $entityInstance->getUnitPrice() * $entityInstance->getQuantity();
             $entityInstance->setTotal(number_format($total, 2, '.', ''));
@@ -100,7 +100,7 @@ class OrderItemCrudController extends AbstractCrudController
         
         parent::persistEntity($entityManager, $entityInstance);
         
-        // Пересчитываем общие суммы заказа
+        // Recalculate order totals
         if ($entityInstance->getOrderRef()) {
             $order = $entityInstance->getOrderRef();
             $order->recalculateTotals();

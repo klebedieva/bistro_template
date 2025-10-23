@@ -3,6 +3,43 @@
 let currentStep = 1;
 let orderData = { items: [], delivery: {}, payment: {}, total: 0 };
 
+// XSS detection patterns
+const xssPatterns = [
+    /<[^>]*>/gi,                    // HTML tags
+    /javascript:/gi,                // JavaScript protocol
+    /on\w+\s*=/gi,                  // Event handlers
+    /vbscript:/gi,                  // VBScript protocol
+    /data:text\/html/gi,            // Data URI with HTML
+    /expression\s*\(/gi,            // CSS expressions
+    /<script/gi,                    // Script tags
+    /<iframe/gi,                    // Iframe tags
+    /<object/gi,                    // Object tags
+    /<embed/gi,                     // Embed tags
+    /<form/gi,                      // Form tags
+    /<link[^>]*href\s*=\s*["\']?javascript:/gi, // Link with JS
+    /<meta[^>]*http-equiv\s*=\s*["\']?refresh/gi // Meta refresh
+];
+
+// XSS detection function
+function containsXssAttempt(value) {
+    for (let pattern of xssPatterns) {
+        if (pattern.test(value)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Sanitize input by removing dangerous content
+function sanitizeInput(value) {
+    return value
+        .replace(/<[^>]*>/g, '')           // Remove HTML tags
+        .replace(/javascript:/gi, '')      // Remove javascript: protocol
+        .replace(/on\w+\s*=/gi, '')        // Remove event handlers
+        .replace(/[<>'"]/g, '')            // Remove dangerous characters
+        .trim();
+}
+
 // Helper function for safe notification display
 function showOrderNotification(message, type = 'info') {
     if (typeof window.showNotification === 'function') {
@@ -234,8 +271,8 @@ function updateOrderSummary() {
     });
     container.innerHTML = html;
 
-    // Цены в меню уже включают налоги (TTC)
-    // Рассчитываем сумму без налогов (HT) и налог отдельно
+    // Menu prices already include taxes (TTC)
+    // Calculate amount without taxes (HT) and tax separately
     const taxRate = 0.10; // 10% TVA - TODO: load from backend config
     const subtotalWithoutTax = subtotalWithTax / (1 + taxRate);
     const taxAmount = subtotalWithTax - subtotalWithoutTax;
@@ -293,6 +330,20 @@ async function validateDeliveryStep() {
     if (mode === 'delivery') {
         const address = document.getElementById('deliveryAddress')?.value;
         const zip = document.getElementById('deliveryZip')?.value;
+        const instructions = document.getElementById('deliveryInstructions')?.value;
+        
+        // XSS check for address
+        if (address && containsXssAttempt(address)) {
+            showOrderNotification('L\'adresse contient des éléments non autorisés', 'error');
+            return false;
+        }
+        
+        // XSS check for delivery instructions
+        if (instructions && containsXssAttempt(instructions)) {
+            showOrderNotification('Les instructions de livraison contiennent des éléments non autorisés', 'error');
+            return false;
+        }
+        
         if (!address || !zip) { showOrderNotification('Veuillez renseigner votre adresse de livraison', 'error'); return false; }
         
         // Validation du code postal pour la livraison
@@ -319,6 +370,24 @@ async function validateDeliveryStep() {
     const lastName = document.getElementById('clientLastName')?.value?.trim();
     const phone = document.getElementById('clientPhone')?.value?.trim();
     const email = document.getElementById('clientEmail')?.value?.trim();
+    
+    // XSS check for contact information
+    if (firstName && containsXssAttempt(firstName)) {
+        showOrderNotification('Le prénom contient des éléments non autorisés', 'error');
+        return false;
+    }
+    if (lastName && containsXssAttempt(lastName)) {
+        showOrderNotification('Le nom contient des éléments non autorisés', 'error');
+        return false;
+    }
+    if (phone && containsXssAttempt(phone)) {
+        showOrderNotification('Le numéro de téléphone contient des éléments non autorisés', 'error');
+        return false;
+    }
+    if (email && containsXssAttempt(email)) {
+        showOrderNotification('L\'email contient des éléments non autorisés', 'error');
+        return false;
+    }
     
     if (!firstName) { showOrderNotification('Veuillez renseigner votre prénom', 'error'); return false; }
     if (!lastName) { showOrderNotification('Veuillez renseigner votre nom', 'error'); return false; }
@@ -388,24 +457,24 @@ async function confirmOrder() {
     const accept = document.getElementById('acceptTerms')?.checked;
     if (!accept) { showOrderNotification('Veuillez accepter les conditions générales', 'error'); return; }
 
-    // Build payload expected by backend API
+    // Build payload expected by backend API with sanitized data
     const payload = {
         deliveryMode: orderData?.delivery?.mode || document.querySelector('input[name="deliveryMode"]:checked')?.value || 'delivery',
-        deliveryAddress: document.getElementById('deliveryAddress')?.value || null,
-        deliveryZip: document.getElementById('deliveryZip')?.value || null,
-        deliveryInstructions: document.getElementById('deliveryInstructions')?.value || null,
+        deliveryAddress: sanitizeInput(document.getElementById('deliveryAddress')?.value || ''),
+        deliveryZip: sanitizeInput(document.getElementById('deliveryZip')?.value || ''),
+        deliveryInstructions: sanitizeInput(document.getElementById('deliveryInstructions')?.value || ''),
         deliveryFee: typeof orderData.deliveryFee === 'number' ? orderData.deliveryFee : (document.querySelector('input[name="deliveryMode"]:checked')?.value === 'pickup' ? 0 : 5),
         paymentMode: orderData?.payment?.mode || document.querySelector('input[name="paymentMode"]:checked')?.value || 'card',
-        clientFirstName: document.getElementById('clientFirstName')?.value || null,
-        clientLastName: document.getElementById('clientLastName')?.value || null,
-        clientPhone: document.getElementById('clientPhone')?.value || null,
-        clientEmail: document.getElementById('clientEmail')?.value || null
+        clientFirstName: sanitizeInput(document.getElementById('clientFirstName')?.value || ''),
+        clientLastName: sanitizeInput(document.getElementById('clientLastName')?.value || ''),
+        clientPhone: sanitizeInput(document.getElementById('clientPhone')?.value || ''),
+        clientEmail: sanitizeInput(document.getElementById('clientEmail')?.value || '')
     };
 
     try {
         const result = await window.orderAPI.createOrder(payload);
         const created = result.order; // OrderResponse
-        // Backend уже очищает корзину, обновим UI
+        // Backend already clears cart, update UI
         try { if (window.updateCartSidebar) window.updateCartSidebar(); } catch (_) {}
         try { if (window.updateCartNavigation) window.updateCartNavigation(); } catch (_) {}
         showOrderConfirmation(created.no, created.id, created.total);
@@ -533,7 +602,7 @@ function removePhoneError() {
     }
 }
 
-// API для валидации почтового индекса и адресов
+// API for postal code and address validation
 window.zipCodeAPI = {
     async validateZipCode(zipCode) {
         const res = await fetch('/api/validate-zip-code', {
@@ -564,30 +633,30 @@ window.zipCodeAPI = {
     }
 };
 
-// Валидация почтового индекса
+// Postal code validation
 function validateFrenchZipCode(zipCode) {
     if (!zipCode) return false;
     
-    // Очистить почтовый индекс
+    // Clean postal code
     const cleanZipCode = zipCode.replace(/[^0-9]/g, '');
     
-    // Проверить формат французского почтового индекса (5 цифр)
+    // Check French postal code format (5 digits)
     return /^[0-9]{5}$/.test(cleanZipCode);
 }
 
-// Инициализация валидации почтового индекса
+// Initialize postal code validation
 function initZipCodeValidation() {
     const zipInput = document.getElementById('deliveryZip');
     if (!zipInput) return;
     
     let validationTimeout;
     
-    // Валидация в реальном времени
+    // Real-time validation
     zipInput.addEventListener('input', function() {
         clearTimeout(validationTimeout);
         const zipCode = this.value.trim();
         
-        // Убрать предыдущие классы валидации
+        // Remove previous validation classes
         this.classList.remove('is-valid', 'is-invalid');
         removeZipCodeError();
         
@@ -595,14 +664,14 @@ function initZipCodeValidation() {
             return;
         }
         
-        // Базовая валидация формата
+        // Basic format validation
         if (!validateFrenchZipCode(zipCode)) {
             this.classList.add('is-invalid');
             showZipCodeError('Format de code postal invalide');
             return;
         }
         
-        // Валидация через API с задержкой
+        // API validation with delay
         validationTimeout = setTimeout(async () => {
             try {
                 const result = await window.zipCodeAPI.validateZipCode(zipCode);
@@ -618,17 +687,17 @@ function initZipCodeValidation() {
                 this.classList.add('is-invalid');
                 showZipCodeError('Erreur lors de la vérification du code postal');
             }
-        }, 500); // Задержка 500ms после окончания ввода
+        }, 500); // 500ms delay after input ends
     });
     
-    // Очистка при фокусе
+    // Clear on focus
     zipInput.addEventListener('focus', function() {
         this.classList.remove('is-invalid');
         removeZipCodeError();
     });
 }
 
-// Показать ошибку валидации почтового индекса
+// Show postal code validation error
 function showZipCodeError(message) {
     removeZipCodeError();
     
@@ -642,7 +711,7 @@ function showZipCodeError(message) {
     zipInput.parentNode.appendChild(errorDiv);
 }
 
-// Показать успешную валидацию почтового индекса
+// Show successful postal code validation
 function showZipCodeSuccess(message) {
     removeZipCodeError();
     
@@ -656,7 +725,7 @@ function showZipCodeSuccess(message) {
     zipInput.parentNode.appendChild(successDiv);
 }
 
-// Удалить сообщения валидации почтового индекса
+// Remove postal code validation messages
 function removeZipCodeError() {
     const existingError = document.querySelector('.zip-validation-error');
     const existingSuccess = document.querySelector('.zip-validation-success');
@@ -665,15 +734,15 @@ function removeZipCodeError() {
     if (existingSuccess) existingSuccess.remove();
 }
 
-// Извлечение почтового индекса из адреса
+// Extract postal code from address
 function extractZipCodeFromAddress(address) {
     if (!address) return null;
     
-    // Поиск 5-значного числа в адресе
+    // Search for 5-digit number in address
     const zipMatch = address.match(/\b(\d{5})\b/);
     if (zipMatch) {
         const zipCode = zipMatch[1];
-        // Проверка, что это французский почтовый индекс
+        // Check that this is a French postal code
         if (/^[0-9]{5}$/.test(zipCode)) {
             return zipCode;
         }
@@ -702,18 +771,18 @@ function extractStreetWithoutZipCity(address) {
     return text.trim();
 }
 
-// Валидация полного адреса
+// Full address validation
 function validateAddress(address, zipCode) {
     if (!address) return false;
     
-    // Базовая проверка - адрес не должен быть пустым
+    // Basic check - address should not be empty
     const cleanAddress = address.trim();
     if (cleanAddress.length < 5) return false;
     
     return true;
 }
 
-// Инициализация валидации адреса
+// Initialize address validation
 function initAddressValidation() {
     const addressInput = document.getElementById('deliveryAddress');
     const zipInput = document.getElementById('deliveryZip');
@@ -722,16 +791,16 @@ function initAddressValidation() {
     
     let validationTimeout;
     
-    // Валидация в реальном времени
+    // Real-time validation
     addressInput.addEventListener('input', function() {
         clearTimeout(validationTimeout);
         const address = this.value.trim();
         
-        // Автоматическое извлечение и подстановка почтового индекса
+        // Automatic extraction and substitution of postal code
         const extractedZipCode = extractZipCodeFromAddress(address);
         if (extractedZipCode && zipInput) {
             zipInput.value = extractedZipCode;
-            // Запустить валидацию почтового индекса после подстановки
+            // Run postal code validation after substitution
             zipInput.dispatchEvent(new Event('input'));
         }
 
@@ -743,7 +812,7 @@ function initAddressValidation() {
         
         const zipCode = zipInput?.value?.trim() || extractedZipCode || null;
         
-        // Убрать предыдущие классы валидации
+        // Remove previous validation classes
         this.classList.remove('is-valid', 'is-invalid');
         removeAddressError();
         
@@ -751,14 +820,14 @@ function initAddressValidation() {
             return;
         }
         
-        // Базовая валидация адреса
+        // Basic address validation
         if (!validateAddress(address)) {
             this.classList.add('is-invalid');
             showAddressError('Adresse trop courte');
             return;
         }
         
-        // Валидация через API с задержкой (debounce)
+        // API validation with delay (debounce)
         validationTimeout = setTimeout(async () => {
             try {
                 const result = await window.zipCodeAPI.validateAddress(address, zipCode);
@@ -774,17 +843,17 @@ function initAddressValidation() {
                 this.classList.add('is-invalid');
                 showAddressError('Erreur lors de la vérification de l\'adresse');
             }
-        }, 800); // Задержка 800ms для адреса (больше чем для почтового индекса)
+        }, 800); // 800ms delay for address (longer than for postal code)
     });
     
-    // Очистка при фокусе
+    // Clear on focus
     addressInput.addEventListener('focus', function() {
         this.classList.remove('is-invalid');
         removeAddressError();
     });
 }
 
-// Показать ошибку валидации адреса
+// Show address validation error
 function showAddressError(message) {
     removeAddressError();
     
@@ -798,7 +867,7 @@ function showAddressError(message) {
     addressInput.parentNode.appendChild(errorDiv);
 }
 
-// Показать успешную валидацию адреса
+// Show successful address validation
 function showAddressSuccess(message) {
     removeAddressError();
     
@@ -812,7 +881,7 @@ function showAddressSuccess(message) {
     addressInput.parentNode.appendChild(successDiv);
 }
 
-// Удалить сообщения валидации адреса
+// Remove address validation messages
 function removeAddressError() {
     const existingError = document.querySelector('.address-validation-error');
     const existingSuccess = document.querySelector('.address-validation-success');

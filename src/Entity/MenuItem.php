@@ -249,9 +249,9 @@ class MenuItem
 
     public function setIngredients(?string $ingredients): static
     {
-        // Если это не JSON, конвертируем в JSON массив
+        // If it's not JSON, convert to JSON array
         if ($ingredients && !$this->isJson($ingredients)) {
-            // Разбиваем по строкам и создаем JSON массив
+            // Split by lines and create JSON array
             $lines = array_filter(array_map('trim', explode("\n", $ingredients)));
             if (!empty($lines)) {
                 $ingredients = json_encode($lines, JSON_UNESCAPED_UNICODE);
@@ -275,13 +275,13 @@ class MenuItem
             return [];
         }
         
-        // Попробуем декодировать как JSON
+        // Try to decode as JSON
         $decoded = json_decode($this->ingredients, true);
         if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
             return $decoded;
         }
         
-        // Если не JSON, разбиваем по строкам
+        // If not JSON, split by lines
         return array_filter(array_map('trim', explode("\n", $this->ingredients)));
     }
 

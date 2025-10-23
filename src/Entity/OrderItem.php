@@ -96,7 +96,7 @@ class OrderItem
 
     public function getTotal(): ?string
     {
-        // Если total не установлен, рассчитываем автоматически
+        // If total is not set, calculate automatically
         if ($this->total === null && $this->unitPrice !== null && $this->quantity !== null) {
             $this->recalculateTotal();
         }
@@ -142,7 +142,7 @@ class OrderItem
     }
 
     /**
-     * Пересчитывает общую стоимость на основе количества и цены за единицу
+     * Recalculates total cost based on quantity and unit price
      */
     public function recalculateTotal(): void
     {

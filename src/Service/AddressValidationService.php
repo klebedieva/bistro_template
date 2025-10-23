@@ -7,7 +7,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 class AddressValidationService
 {
     private const RESTAURANT_COORDINATES = [
-        'lat' => 43.2965, // Координаты Марселя (примерные)
+        'lat' => 43.2965, // Marseille coordinates (approximate)
         'lng' => 5.3698
     ];
 
@@ -17,14 +17,14 @@ class AddressValidationService
     ) {}
 
     /**
-     * Валидировать почтовый индекс для доставки
+     * Validate postal code for delivery
      */
     public function validateZipCodeForDelivery(string $zipCode): array
     {
-        // Очистить почтовый индекс
+        // Clean postal code
         $cleanZipCode = preg_replace('/[^0-9]/', '', $zipCode);
         
-        // Проверить базовый формат французского почтового индекса
+        // Check basic French postal code format
         if (!preg_match('/^[0-9]{5}$/', $cleanZipCode)) {
             return [
                 'valid' => false,
@@ -33,7 +33,7 @@ class AddressValidationService
             ];
         }
 
-        // Получить координаты почтового индекса
+        // Get postal code coordinates
         $coordinates = $this->getCoordinatesForZipCode($cleanZipCode);
         
         if (!$coordinates) {
@@ -44,7 +44,7 @@ class AddressValidationService
             ];
         }
 
-        // Рассчитать расстояние
+        // Calculate distance
         $distance = $this->calculateDistance(
             self::RESTAURANT_COORDINATES['lat'],
             self::RESTAURANT_COORDINATES['lng'],
@@ -64,12 +64,12 @@ class AddressValidationService
     }
 
     /**
-     * Получить координаты по почтовому индексу
+     * Get coordinates by postal code
      */
     private function getCoordinatesForZipCode(string $zipCode): ?array
     {
         try {
-            // Используем API Nominatim (OpenStreetMap) - бесплатный
+            // Use Nominatim API (OpenStreetMap) - free
             $response = $this->httpClient->request('GET', 'https://nominatim.openstreetmap.org/search', [
                 'query' => [
                     'postalcode' => $zipCode,
@@ -97,17 +97,17 @@ class AddressValidationService
             ];
 
         } catch (\Exception $e) {
-            // В случае ошибки API, используем кэш или возвращаем null
+            // In case of API error, use cache or return null
             return $this->getFallbackCoordinates($zipCode);
         }
     }
 
     /**
-     * Рассчитать расстояние между двумя точками (формула гаверсинуса)
+     * Calculate distance between two points (haversine formula)
      */
     private function calculateDistance(float $lat1, float $lng1, float $lat2, float $lng2): float
     {
-        $earthRadius = 6371; // Радиус Земли в километрах
+        $earthRadius = 6371; // Earth radius in kilometers
 
         $dLat = deg2rad($lat2 - $lat1);
         $dLng = deg2rad($lng2 - $lng1);
@@ -122,7 +122,7 @@ class AddressValidationService
     }
 
     /**
-     * Резервные координаты для популярных почтовых индексов Марселя
+     * Fallback coordinates for popular Marseille postal codes
      */
     private function getFallbackCoordinates(string $zipCode): ?array
     {
@@ -157,22 +157,22 @@ class AddressValidationService
     }
 
     /**
-     * Валидировать полный адрес для доставки
+     * Validate full address for delivery
      */
     public function validateAddressForDelivery(string $address, string $zipCode = null): array
     {
-        // Если передан почтовый индекс, использовать его для валидации
+        // If postal code is provided, use it for validation
         if ($zipCode) {
             return $this->validateZipCodeForDelivery($zipCode);
         }
 
-        // Иначе попытаться извлечь почтовый индекс из адреса
+        // Otherwise try to extract postal code from address
         $extractedZipCode = $this->extractZipCodeFromAddress($address);
         if ($extractedZipCode) {
             return $this->validateZipCodeForDelivery($extractedZipCode);
         }
 
-        // Если не удалось извлечь почтовый индекс, попробовать найти координаты по полному адресу
+        // If failed to extract postal code, try to find coordinates by full address
         $coordinates = $this->getCoordinatesForAddress($address);
         
         if (!$coordinates) {
@@ -183,7 +183,7 @@ class AddressValidationService
             ];
         }
 
-        // Рассчитать расстояние
+        // Calculate distance
         $distance = $this->calculateDistance(
             self::RESTAURANT_COORDINATES['lat'],
             self::RESTAURANT_COORDINATES['lng'],
@@ -203,11 +203,11 @@ class AddressValidationService
     }
 
     /**
-     * Извлечь почтовый индекс из адреса
+     * Extract postal code from address
      */
     private function extractZipCodeFromAddress(string $address): ?string
     {
-        // Поиск 5-значного числа в начале адреса или после запятой/пробела
+        // Search for 5-digit number at the beginning of address or after comma/space
         if (preg_match('/\b(\d{5})\b/', $address, $matches)) {
             $zipCode = $matches[1];
             if ($this->isValidFrenchZipCode($zipCode)) {
@@ -218,18 +218,18 @@ class AddressValidationService
     }
 
     /**
-     * Получить координаты по полному адресу
+     * Get coordinates by full address
      */
     private function getCoordinatesForAddress(string $address): ?array
     {
         try {
-            // Очистить адрес
+            // Clean address
             $cleanAddress = trim($address);
             if (empty($cleanAddress)) {
                 return null;
             }
 
-            // Используем Nominatim для поиска по адресу
+            // Use Nominatim for address search
             $response = $this->httpClient->request('GET', 'https://nominatim.openstreetmap.org/search', [
                 'query' => [
                     'q' => $cleanAddress . ', France',
@@ -257,7 +257,7 @@ class AddressValidationService
             ];
 
         } catch (\Exception $e) {
-            // В случае ошибки API, попробовать извлечь почтовый индекс и использовать fallback
+            // In case of API error, try to extract postal code and use fallback
             $zipCode = $this->extractZipCodeFromAddress($address);
             if ($zipCode) {
                 return $this->getFallbackCoordinates($zipCode);
@@ -267,7 +267,7 @@ class AddressValidationService
     }
 
     /**
-     * Проверить, является ли почтовый индекс французским
+     * Check if postal code is French
      */
     public function isValidFrenchZipCode(string $zipCode): bool
     {

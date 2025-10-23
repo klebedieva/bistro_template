@@ -97,7 +97,7 @@ class OrderService
         }
 
         // Calculer les montants
-        // Цены в корзине уже включают налоги (TTC)
+        // Cart prices already include taxes (TTC)
         $subtotalWithTax = $cart['total'];
         $taxRate = $this->restaurantSettings->getVatRate();
         $subtotalWithoutTax = $subtotalWithTax / (1 + $taxRate);

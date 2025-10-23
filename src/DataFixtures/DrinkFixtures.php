@@ -11,7 +11,7 @@ class DrinkFixtures extends Fixture implements FixtureGroupInterface
 {
     public static function getGroups(): array
     {
-        // Можем грузить вместе с меню
+        // Can load together with menu
         return ['menu'];
     }
 

@@ -77,7 +77,7 @@ class MenuItemCrudController extends AbstractCrudController
                 ->formatValue(function ($value, $entity) {
                     if (!$value) return '';
                     
-                    // Если это JSON, показываем как построчный список для удобства редактирования
+                    // If it's JSON, show as line-by-line list for easy editing
                     $decoded = json_decode($value, true);
                     if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
                         return implode("\n", $decoded);
@@ -123,7 +123,7 @@ class MenuItemCrudController extends AbstractCrudController
                     if (!$entity || !method_exists($entity, 'getTags')) { return ''; }
                     $names = [];
                     foreach ($entity->getTags() as $tag) {
-                        // показываем code или name, если есть
+                        // show code or name if available
                         if (method_exists($tag, 'getName') && $tag->getName()) {
                             $names[] = $tag->getName();
                         } else {

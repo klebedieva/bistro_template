@@ -271,14 +271,14 @@ td .btn {
     to { transform: rotate(360deg); }
 }
 
-/* Order item form improvements - более агрессивные стили */
+/* Order item form improvements - more aggressive styles */
 .field-collection input[type="number"] {
     width: 120px !important;
     min-width: 120px !important;
     max-width: 120px !important;
 }
 
-/* Для всех полей количества */
+/* For all quantity fields */
 input[name*="quantity"],
 input[id*="quantity"] {
     width: 120px !important;
@@ -286,7 +286,7 @@ input[id*="quantity"] {
     max-width: 120px !important;
 }
 
-/* Улучшение отступов */
+/* Improve margins */
 .field-collection .form-group {
     margin-bottom: 15px !important;
 }
@@ -297,7 +297,7 @@ input[id*="quantity"] {
     min-width: 120px !important;
 }
 
-/* Специально для коллекций заказов */
+/* Specifically for order collections */
 .collection-item .field-quantity input {
     width: 120px !important;
     margin-left: 10px !important;

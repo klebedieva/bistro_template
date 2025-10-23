@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\DTO\ApiResponseDTO;
 use App\DTO\OrderItemDTO;
 use App\DTO\OrderResponseDTO;
+use App\Service\InputSanitizer;
 use App\Service\OrderService;
 use App\Service\SymfonyEmailService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -158,6 +159,58 @@ class OrderController extends AbstractController
             }
             
             $data = json_decode($request->getContent(), true);
+            
+            // Sanitize input data to prevent XSS
+            if (isset($data['deliveryAddress'])) {
+                $data['deliveryAddress'] = InputSanitizer::sanitize($data['deliveryAddress']);
+            }
+            if (isset($data['deliveryZip'])) {
+                $data['deliveryZip'] = InputSanitizer::sanitize($data['deliveryZip']);
+            }
+            if (isset($data['deliveryInstructions'])) {
+                $data['deliveryInstructions'] = InputSanitizer::sanitize($data['deliveryInstructions']);
+            }
+            if (isset($data['clientFirstName'])) {
+                $data['clientFirstName'] = InputSanitizer::sanitize($data['clientFirstName']);
+            }
+            if (isset($data['clientLastName'])) {
+                $data['clientLastName'] = InputSanitizer::sanitize($data['clientLastName']);
+            }
+            if (isset($data['clientPhone'])) {
+                $data['clientPhone'] = InputSanitizer::sanitize($data['clientPhone']);
+            }
+            if (isset($data['clientEmail'])) {
+                $data['clientEmail'] = InputSanitizer::sanitize($data['clientEmail']);
+            }
+            
+            // Check for XSS attempts
+            $xssErrors = [];
+            if (isset($data['deliveryAddress']) && InputSanitizer::containsXssAttempt($data['deliveryAddress'])) {
+                $xssErrors[] = 'L\'adresse contient des éléments non autorisés';
+            }
+            if (isset($data['deliveryInstructions']) && InputSanitizer::containsXssAttempt($data['deliveryInstructions'])) {
+                $xssErrors[] = 'Les instructions de livraison contiennent des éléments non autorisés';
+            }
+            if (isset($data['clientFirstName']) && InputSanitizer::containsXssAttempt($data['clientFirstName'])) {
+                $xssErrors[] = 'Le prénom contient des éléments non autorisés';
+            }
+            if (isset($data['clientLastName']) && InputSanitizer::containsXssAttempt($data['clientLastName'])) {
+                $xssErrors[] = 'Le nom contient des éléments non autorisés';
+            }
+            if (isset($data['clientPhone']) && InputSanitizer::containsXssAttempt($data['clientPhone'])) {
+                $xssErrors[] = 'Le numéro de téléphone contient des éléments non autorisés';
+            }
+            if (isset($data['clientEmail']) && InputSanitizer::containsXssAttempt($data['clientEmail'])) {
+                $xssErrors[] = 'L\'email contient des éléments non autorisés';
+            }
+            
+            if (!empty($xssErrors)) {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Données invalides détectées',
+                    'errors' => $xssErrors
+                ], 400);
+            }
             
             // Créer la commande
             $order = $this->orderService->createOrder($data ?? []);

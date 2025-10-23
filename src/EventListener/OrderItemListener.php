@@ -17,7 +17,7 @@ class OrderItemListener
         $entity = $args->getObject();
         
         if ($entity instanceof OrderItem) {
-            // Пересчитываем total статьи при изменении quantity или unitPrice
+            // Recalculate item total when quantity or unitPrice changes
             if ($args->hasChangedField('quantity') || $args->hasChangedField('unitPrice')) {
                 $this->recalculateItemTotal($entity);
             }

@@ -19,9 +19,9 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
-                            <strong>Nom:</strong> {{ contactMessage.firstName }} {{ contactMessage.lastName }}<br>
-                            <strong>Email:</strong> {{ contactMessage.email }}<br>
-                            <strong>Téléphone:</strong> {{ contactMessage.phone ?? 'Non renseigné' }}
+                            <strong>Nom:</strong> {{ contactMessage.firstName|e }} {{ contactMessage.lastName|e }}<br>
+                            <strong>Email:</strong> {{ contactMessage.email|e }}<br>
+                            <strong>Téléphone:</strong> {{ (contactMessage.phone ?? 'Non renseigné')|e }}
                         </div>
                         <div class="col-md-6">
                             <strong>Sujet:</strong> {{ contactMessage.subject|trans }}<br>
@@ -38,7 +38,7 @@
                 </div>
                 <div class="card-body">
                     <div class="bg-light p-3 rounded">
-                        {{ contactMessage.message|nl2br }}
+                        {{ contactMessage.message|e|nl2br }}
                     </div>
                 </div>
             </div>

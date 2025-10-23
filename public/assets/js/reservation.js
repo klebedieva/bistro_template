@@ -2,6 +2,33 @@
 (function() {
     'use strict';
 
+    // XSS detection patterns
+    const xssPatterns = [
+        /<[^>]*>/gi,                    // HTML tags
+        /javascript:/gi,                // JavaScript protocol
+        /on\w+\s*=/gi,                  // Event handlers
+        /vbscript:/gi,                  // VBScript protocol
+        /data:text\/html/gi,            // Data URI with HTML
+        /expression\s*\(/gi,            // CSS expressions
+        /<script/gi,                    // Script tags
+        /<iframe/gi,                    // Iframe tags
+        /<object/gi,                    // Object tags
+        /<embed/gi,                     // Embed tags
+        /<form/gi,                      // Form tags
+        /<link[^>]*href\s*=\s*["\']?javascript:/gi, // Link with JS
+        /<meta[^>]*http-equiv\s*=\s*["\']?refresh/gi // Meta refresh
+    ];
+
+    // XSS detection function
+    function containsXssAttempt(value) {
+        for (let pattern of xssPatterns) {
+            if (pattern.test(value)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // Initialize when DOM is loaded
     document.addEventListener('DOMContentLoaded', function() {
         setupReservationForm();
@@ -144,6 +171,8 @@
         if (fieldName.includes('[firstName]')) {
             if (value === '') {
                 errorMessage = 'Le prénom est requis';
+            } else if (containsXssAttempt(value)) {
+                errorMessage = 'Le prénom contient des éléments non autorisés';
             } else if (value.length < 2) {
                 errorMessage = 'Le prénom doit contenir au moins 2 caractères';
             } else if (!/^[a-zA-ZÀ-ÿ\s\-]+$/.test(value)) {
@@ -154,6 +183,8 @@
         } else if (fieldName.includes('[lastName]')) {
             if (value === '') {
                 errorMessage = 'Le nom est requis';
+            } else if (containsXssAttempt(value)) {
+                errorMessage = 'Le nom contient des éléments non autorisés';
             } else if (value.length < 2) {
                 errorMessage = 'Le nom doit contenir au moins 2 caractères';
             } else if (!/^[a-zA-ZÀ-ÿ\s\-]+$/.test(value)) {
@@ -164,6 +195,8 @@
         } else if (fieldName.includes('[email]')) {
             if (value === '') {
                 errorMessage = 'L\'email est requis';
+            } else if (containsXssAttempt(value)) {
+                errorMessage = 'L\'email contient des éléments non autorisés';
             } else if (!/^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(value)) {
                 errorMessage = 'L\'email n\'est pas valide';
             } else {
@@ -172,6 +205,8 @@
         } else if (fieldName.includes('[phone]')) {
             if (value === '') {
                 errorMessage = 'Le numéro de téléphone est requis';
+            } else if (containsXssAttempt(value)) {
+                errorMessage = 'Le numéro de téléphone contient des éléments non autorisés';
             } else if (value.length < 10) {
                 errorMessage = 'Le numéro de téléphone doit contenir au moins 10 caractères';
             } else {
@@ -225,8 +260,12 @@
                 isValid = true;
             }
         } else if (fieldName.includes('[message]')) {
-            // Message is optional, so always valid
-            isValid = true;
+            // Message is optional, but check for XSS if not empty
+            if (value !== '' && containsXssAttempt(value)) {
+                errorMessage = 'Le message contient des éléments non autorisés (balises HTML, JavaScript, etc.)';
+            } else {
+                isValid = true;
+            }
         }
 
         // Update field appearance

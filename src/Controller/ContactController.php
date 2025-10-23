@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\ContactMessage;
 use App\Form\ContactMessageType;
+use App\Service\InputSanitizer;
 use App\Service\SymfonyEmailService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -29,6 +30,15 @@ class ContactController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Sanitize data before saving
+            $msg->setFirstName(InputSanitizer::sanitize($msg->getFirstName()));
+            $msg->setLastName(InputSanitizer::sanitize($msg->getLastName()));
+            $msg->setEmail(InputSanitizer::sanitize($msg->getEmail()));
+            if ($msg->getPhone()) {
+                $msg->setPhone(InputSanitizer::sanitize($msg->getPhone()));
+            }
+            $msg->setMessage(InputSanitizer::sanitize($msg->getMessage()));
+            
             $this->em->persist($msg);
             $this->em->flush();
 
@@ -76,17 +86,34 @@ class ContactController extends AbstractController
         }
         
         try {
-            // Get form data from request
-            $firstName = $request->request->get('firstName', '');
-            $lastName = $request->request->get('lastName', '');
-            $email = $request->request->get('email', '');
-            $phone = $request->request->get('phone', '');
+            // Get form data from request and sanitize
+            $firstName = InputSanitizer::sanitize($request->request->get('firstName', ''));
+            $lastName = InputSanitizer::sanitize($request->request->get('lastName', ''));
+            $email = InputSanitizer::sanitize($request->request->get('email', ''));
+            $phone = InputSanitizer::sanitize($request->request->get('phone', ''));
             $subject = $request->request->get('subject', '');
-            $message = $request->request->get('message', '');
+            $message = InputSanitizer::sanitize($request->request->get('message', ''));
             $consent = $request->request->get('consent', false);
             
             // Validate form data
             $errors = [];
+            
+            // XSS check
+            if (InputSanitizer::containsXssAttempt($firstName)) {
+                $errors[] = 'Le prénom contient des éléments non autorisés';
+            }
+            if (InputSanitizer::containsXssAttempt($lastName)) {
+                $errors[] = 'Le nom contient des éléments non autorisés';
+            }
+            if (InputSanitizer::containsXssAttempt($email)) {
+                $errors[] = 'L\'email contient des éléments non autorisés';
+            }
+            if (InputSanitizer::containsXssAttempt($phone)) {
+                $errors[] = 'Le numéro de téléphone contient des éléments non autorisés';
+            }
+            if (InputSanitizer::containsXssAttempt($message)) {
+                $errors[] = 'Le message contient des éléments non autorisés';
+            }
             
             if (empty($firstName) || strlen($firstName) < 2) {
                 $errors[] = 'Le prénom est requis et doit contenir au moins 2 caractères';

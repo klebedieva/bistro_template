@@ -12,13 +12,13 @@ class ReviewFixtures extends Fixture implements FixtureGroupInterface
 {
     public static function getGroups(): array
     {
-        // Séparons отзывы от меню — отдельная группа 'reviews'
+        // Separate reviews from menu — separate group 'reviews'
         return ['reviews'];
     }
 
     public function load(ObjectManager $manager): void
     {
-        // 1) 9 отзывов о ресторане (без привязки к блюду)
+        // 1) 9 restaurant reviews (without dish binding)
         $restaurantReviews = [
             ['Camille B.', 'camille@example.com', 5, "Ambiance chaleureuse et cuisine savoureuse. On s'est régalés !", '-14 days', true],
             ['Louis M.', 'louis@example.com', 4, "Très bons plats, service efficace. On reviendra.", '-12 days', true],
@@ -42,7 +42,7 @@ class ReviewFixtures extends Fixture implements FixtureGroupInterface
             $manager->persist($review);
         }
 
-        // 2) Отзывы по блюдам: 3-4 на каждое из ключевых блюд
+        // 2) Dish reviews: 3-4 for each key dish
         $byDishTexts = [
             'Asperges Printemps à la Ricotta' => [
                 [5, "Asperges parfaitement cuites, ricotta maison délicieuse !"],
@@ -151,7 +151,7 @@ class ReviewFixtures extends Fixture implements FixtureGroupInterface
             $key = $normalize($dishName);
             $item = $map[$key] ?? null;
             if (!$item) { continue; }
-            $offset = 3; // распределим даты
+            $offset = 3; // distribute dates
             foreach ($entries as [$rating, $text]) {
                 $r = (new Review())
                     ->setName($clientNames[$nameIdx++ % count($clientNames)])

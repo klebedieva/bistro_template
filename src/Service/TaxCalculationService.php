@@ -10,7 +10,7 @@ class TaxCalculationService
     }
 
     /**
-     * Рассчитывает налоги для суммы включающей налоги (TTC)
+     * Calculates taxes for amount including taxes (TTC)
      */
     public function calculateTaxFromTTC(float $amountWithTax): array
     {
@@ -27,7 +27,7 @@ class TaxCalculationService
     }
 
     /**
-     * Рассчитывает налоги для суммы без налогов (HT)
+     * Calculates taxes for amount without taxes (HT)
      */
     public function calculateTaxFromHT(float $amountWithoutTax): array
     {
@@ -44,7 +44,7 @@ class TaxCalculationService
     }
 
     /**
-     * Получает текущую ставку налога
+     * Gets current tax rate
      */
     public function getTaxRate(): float
     {

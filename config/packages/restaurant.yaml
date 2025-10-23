@@ -10,7 +10,7 @@ parameters:
             email: 'contact@letroisquarts.fr'
             address: 'Marseille, France'
         business_hours:
-            # График работы: 7 дней в неделю с 7:00 до 23:00
+            # Working hours: 7 days a week from 7:00 to 23:00
             daily:
                 start: '07:00'
                 end: '23:00'

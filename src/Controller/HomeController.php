@@ -8,6 +8,7 @@ use App\Form\ReviewType;
 use App\Form\ReservationType;
 use App\Repository\ReviewRepository;
 use App\Repository\GalleryImageRepository;
+use App\Service\InputSanitizer;
 use App\Service\SymfonyEmailService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -86,7 +87,7 @@ class HomeController extends AbstractController
                 error_log('Error sending reservation notification to admin: ' . $e->getMessage());
             }
 
-            $this->addFlash('success', 'Ваша заявка на резервирование принята!');
+            $this->addFlash('success', 'Your reservation request has been accepted!');
             return $this->redirectToRoute('app_reservation');
         }
         
@@ -123,18 +124,35 @@ class HomeController extends AbstractController
         }
         
         try {
-            // Get form data directly from request
-            $firstName = $request->request->get('firstName', '');
-            $lastName = $request->request->get('lastName', '');
-            $email = $request->request->get('email', '');
-            $phone = $request->request->get('phone', '');
+            // Get form data directly from request and sanitize
+            $firstName = InputSanitizer::sanitize($request->request->get('firstName', ''));
+            $lastName = InputSanitizer::sanitize($request->request->get('lastName', ''));
+            $email = InputSanitizer::sanitize($request->request->get('email', ''));
+            $phone = InputSanitizer::sanitize($request->request->get('phone', ''));
             $date = $request->request->get('date', '');
             $time = $request->request->get('time', '');
             $guests = $request->request->get('guests', '');
-            $message = $request->request->get('message', '');
+            $message = InputSanitizer::sanitize($request->request->get('message', ''));
             
             // Basic validation
             $errors = [];
+            
+            // XSS check
+            if (InputSanitizer::containsXssAttempt($firstName)) {
+                $errors[] = 'Le prénom contient des éléments non autorisés';
+            }
+            if (InputSanitizer::containsXssAttempt($lastName)) {
+                $errors[] = 'Le nom contient des éléments non autorisés';
+            }
+            if (InputSanitizer::containsXssAttempt($email)) {
+                $errors[] = 'L\'email contient des éléments non autorisés';
+            }
+            if (InputSanitizer::containsXssAttempt($phone)) {
+                $errors[] = 'Le numéro de téléphone contient des éléments non autorisés';
+            }
+            if (InputSanitizer::containsXssAttempt($message)) {
+                $errors[] = 'Le message contient des éléments non autorisés';
+            }
             
             if (empty($firstName) || strlen($firstName) < 2) {
                 $errors[] = 'Le prénom est requis';

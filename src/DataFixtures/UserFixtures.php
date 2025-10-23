@@ -17,7 +17,7 @@ class UserFixtures extends Fixture implements FixtureGroupInterface
 
     public static function getGroups(): array
     {
-        // Отдельная группа, чтобы не трогать других данных при загрузке
+        // Separate group to avoid touching other data when loading
         return ['users'];
     }
 

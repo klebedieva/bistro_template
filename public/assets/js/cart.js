@@ -90,7 +90,7 @@ function initCartSidebar() {
     if (clearCartBtn) {
         clearCartBtn.addEventListener('click', function() {
             if (typeof showConfirmDialog === 'function') {
-                // UI Bootstrap confirm comme в Restaurant
+                // UI Bootstrap confirm like in Restaurant
                 showConfirmDialog('Confirmation', 'Êtes-vous sûr de vouloir vider votre panier ?', function() {
                     localStorage.setItem('cart', JSON.stringify([]));
                     updateCartNavigation();

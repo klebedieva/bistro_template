@@ -241,7 +241,7 @@ class GalleryImageCrudController extends AbstractCrudController
         if ($entityInstance instanceof GalleryImage) {
             //
             
-            // Обработка загрузки файла
+            // Handle file upload
             $this->handleFileUpload($entityInstance);
             
             // Use 'create' validation group for new entities
@@ -251,7 +251,7 @@ class GalleryImageCrudController extends AbstractCrudController
                 throw new \InvalidArgumentException('Validation failed: ' . (string) $violations);
             }
             
-            // Убеждаемся, что изображение загружено
+            // Ensure image is uploaded
             if (empty($entityInstance->getImagePath())) {
                 throw new \InvalidArgumentException('Image is required for new gallery items');
             }
