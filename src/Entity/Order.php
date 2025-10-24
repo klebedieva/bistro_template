@@ -71,6 +71,13 @@ class Order
     #[ORM\Column(length: 20, nullable: true)]
     private ?string $clientPhone = null;
 
+    #[ORM\ManyToOne(targetEntity: Coupon::class, inversedBy: 'orders')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Coupon $coupon = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, options: ['default' => '0.00'])]
+    private ?string $discountAmount = '0.00';
+
     /**
      * @var Collection<int, OrderItem>
      */
@@ -318,6 +325,67 @@ class Order
         return $this;
     }
 
+    public function getCoupon(): ?Coupon
+    {
+        return $this->coupon;
+    }
+
+    public function setCoupon(?Coupon $coupon): static
+    {
+        $this->coupon = $coupon;
+
+        return $this;
+    }
+
+    public function getDiscountAmount(): ?string
+    {
+        return $this->discountAmount;
+    }
+
+    public function setDiscountAmount(string $discountAmount): static
+    {
+        $this->discountAmount = $discountAmount;
+
+        return $this;
+    }
+
+    /**
+     * Apply a coupon to the order
+     */
+    public function applyCoupon(Coupon $coupon): bool
+    {
+        $subtotalWithTax = 0;
+        
+        foreach ($this->items as $item) {
+            $subtotalWithTax += (float) $item->getTotal();
+        }
+
+        $deliveryFee = (float) ($this->deliveryFee ?? 0);
+        $orderAmount = $subtotalWithTax + $deliveryFee;
+
+        if (!$coupon->canBeAppliedToAmount($orderAmount)) {
+            return false;
+        }
+
+        $discount = $coupon->calculateDiscount($orderAmount);
+        
+        $this->coupon = $coupon;
+        $this->discountAmount = number_format($discount, 2, '.', '');
+        $this->recalculateTotals();
+
+        return true;
+    }
+
+    /**
+     * Remove the coupon from the order
+     */
+    public function removeCoupon(): void
+    {
+        $this->coupon = null;
+        $this->discountAmount = '0.00';
+        $this->recalculateTotals();
+    }
+
     /**
      * Recalculates order totals based on all items
      */
@@ -339,9 +407,18 @@ class Order
         $this->subtotal = number_format($subtotalWithoutTax, 2, '.', '');
         $this->taxAmount = number_format($taxAmount, 2, '.', '');
         
-        // Total amount (subtotal + taxes + delivery fees)
+        // Calculate discount if coupon is applied
+        $discount = 0;
+        if ($this->coupon !== null) {
+            $deliveryFee = (float) ($this->deliveryFee ?? 0);
+            $orderAmount = $subtotalWithTax + $deliveryFee;
+            $discount = $this->coupon->calculateDiscount($orderAmount);
+            $this->discountAmount = number_format($discount, 2, '.', '');
+        }
+        
+        // Total amount (subtotal + taxes + delivery fees - discount)
         $deliveryFee = (float) ($this->deliveryFee ?? 0);
-        $total = $subtotalWithTax + $deliveryFee;
+        $total = $subtotalWithTax + $deliveryFee - $discount;
         $this->total = number_format($total, 2, '.', '');
     }
 }
