@@ -11,6 +11,7 @@ use App\Entity\Table;
 use App\Entity\Order;
 use App\Entity\OrderItem;
 use App\Entity\GalleryImage;
+use App\Entity\Coupon;
 use App\Repository\ContactMessageRepository;
 use App\Repository\ReservationRepository;
 use App\Repository\ReviewRepository;
@@ -158,6 +159,7 @@ class DashboardController extends AbstractDashboardController
             yield EaMenuItem::subMenu('Commandes', 'fas fa-shopping-cart')->setSubItems([
                 EaMenuItem::linkToCrud('Commandes', 'fas fa-receipt', Order::class),
                 EaMenuItem::linkToCrud('Articles de commande', 'fas fa-list', OrderItem::class),
+                EaMenuItem::linkToCrud('Codes promo', 'fas fa-ticket', Coupon::class),
             ]);
         }
         
@@ -178,5 +180,6 @@ class DashboardController extends AbstractDashboardController
         yield Order::class => OrderCrudController::class;
         yield OrderItem::class => OrderItemCrudController::class;
         yield GalleryImage::class => GalleryImageCrudController::class;
+        yield Coupon::class => CouponCrudController::class;
     }
 }

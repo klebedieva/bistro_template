@@ -140,6 +140,40 @@ class OrderCrudController extends AbstractCrudController
                     'attr' => ['value' => '5.00']
                 ]),
 
+            AssociationField::new('coupon', 'Code promo utilisé')
+                ->hideOnIndex()
+                ->setRequired(false)
+                ->setHelp('Code promo appliqué à cette commande')
+                ->formatValue(function ($value, $entity) {
+                    if (!$entity->getCoupon()) {
+                        return '<span class="badge badge-secondary">Aucun code promo</span>';
+                    }
+                    $coupon = $entity->getCoupon();
+                    $discountType = $coupon->getDiscountType() === 'percentage' ? '%' : '€';
+                    $discountValue = $coupon->getDiscountValue();
+                    return sprintf(
+                        '<span class="badge badge-success">%s</span> <small>(%s%s de réduction)</small>',
+                        $coupon->getCode(),
+                        $discountValue,
+                        $discountType
+                    );
+                }),
+
+            MoneyField::new('discountAmount', 'Montant de la réduction')
+                ->setCurrency('EUR')
+                ->setStoredAsCents(false)
+                ->hideOnIndex()
+                ->hideOnForm()
+                ->setRequired(false)
+                ->setHelp('Montant de réduction appliqué grâce au code promo')
+                ->formatValue(function ($value, $entity) {
+                    $discount = (float) $entity->getDiscountAmount();
+                    if ($discount > 0) {
+                        return sprintf('<span class="text-success fw-bold">- %s €</span>', number_format($discount, 2, ',', ' '));
+                    }
+                    return '0,00 €';
+                }),
+
             ChoiceField::new('paymentMode', 'Mode de paiement')
                 ->setChoices([
                     'Carte bancaire' => PaymentMode::CARD,
@@ -362,6 +396,7 @@ class OrderCrudController extends AbstractCrudController
                     'Espèces' => PaymentMode::CASH,
                     'Tickets restaurant' => PaymentMode::TICKETS,
                 ]))
+            ->add('coupon', 'Code promo utilisé')
             ->add(DateTimeFilter::new('createdAt', 'Date de création'))
             ->add(NumericFilter::new('total', 'Total'));
     }
