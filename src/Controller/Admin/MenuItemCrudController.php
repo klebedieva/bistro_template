@@ -25,10 +25,17 @@ use EasyCorp\Bundle\EasyAdminBundle\Filter\NumericFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\BooleanFilter;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use App\Repository\AllergenRepository;
+use App\Service\FileUploadValidator;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 #[IsGranted('ROLE_MODERATOR')]
 class MenuItemCrudController extends AbstractCrudController
 {
+    public function __construct(
+        private FileUploadValidator $fileValidator
+    ) {
+    }
     public static function getEntityFqcn(): string
     {
         return MenuItem::class;
@@ -176,6 +183,48 @@ class MenuItemCrudController extends AbstractCrudController
             ->add(TextFilter::new('category', 'Catégorie'))
             ->add(NumericFilter::new('price', 'Prix'))
             ->add(BooleanFilter::new('active', 'Actif'));
+    }
+
+    /**
+     * Validate uploaded file before persisting new entity
+     */
+    public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        $this->validateUploadedFile($entityInstance);
+        parent::persistEntity($entityManager, $entityInstance);
+    }
+
+    /**
+     * Validate uploaded file before updating entity
+     */
+    public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        $this->validateUploadedFile($entityInstance);
+        parent::updateEntity($entityManager, $entityInstance);
+    }
+
+    /**
+     * Validate uploaded file if present
+     */
+    private function validateUploadedFile($entityInstance): void
+    {
+        if (!$entityInstance instanceof MenuItem) {
+            return;
+        }
+
+        $request = $this->container->get('request_stack')->getCurrentRequest();
+        if (!$request || !$request->files->has('MenuItem')) {
+            return;
+        }
+
+        $formData = $request->files->get('MenuItem');
+        if (isset($formData['image']) && $formData['image'] instanceof UploadedFile) {
+            try {
+                $this->fileValidator->validate($formData['image']);
+            } catch (FileException $e) {
+                throw new \InvalidArgumentException('Validation du fichier échouée : ' . $e->getMessage());
+            }
+        }
     }
 }
 

@@ -22,17 +22,23 @@ use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use App\Service\FileUploadValidator;
 
 #[IsGranted('ROLE_MODERATOR')]
 class GalleryImageCrudController extends AbstractCrudController
 {
     private EntityManagerInterface $entityManager;
     private ValidatorInterface $validator;
+    private FileUploadValidator $fileValidator;
 
-    public function __construct(EntityManagerInterface $entityManager, ValidatorInterface $validator)
-    {
+    public function __construct(
+        EntityManagerInterface $entityManager, 
+        ValidatorInterface $validator,
+        FileUploadValidator $fileValidator
+    ) {
         $this->entityManager = $entityManager;
         $this->validator = $validator;
+        $this->fileValidator = $fileValidator;
     }
 
     public static function getEntityFqcn(): string
@@ -113,8 +119,13 @@ class GalleryImageCrudController extends AbstractCrudController
                 ->setBasePath($imageBasePath)
                 ->setUploadDir($imageUploadPath)
                 ->setRequired($pageName === Crud::PAGE_NEW)
-                ->setHelp('Nom du fichier (ex: terrasse_1.jpg). Le fichier doit être dans public/assets/img/')
+                ->setHelp('Nom du fichier (ex: terrasse_1.jpg). Le fichier doit être dans public/assets/img/. Taille maximum : 2 MB')
                 ->setUploadedFileNamePattern('[randomhash].[extension]')
+                ->setFormTypeOptions([
+                    'attr' => [
+                        'accept' => 'image/jpeg,image/jpg,image/png,image/webp,image/gif,image/avif'
+                    ]
+                ])
                 ->setColumns(12),
             
             IntegerField::new('displayOrder', 'Ordre d\'affichage')
@@ -195,12 +206,16 @@ class GalleryImageCrudController extends AbstractCrudController
     }
 
     /**
-     * Update the updatedAt timestamp when editing
+     * Update entity with file validation and updatedAt timestamp
      */
     public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
         if ($entityInstance instanceof GalleryImage) {
+            // Set updatedAt timestamp
             $entityInstance->setUpdatedAt(new \DateTime());
+            
+            // Validate uploaded file if new file is being uploaded
+            $this->validateNewUploadIfPresent($entityInstance);
             
             // If current user is a moderator, lock all fields except isActive
             if (!$this->isGranted('ROLE_ADMIN')) {
@@ -228,6 +243,9 @@ class GalleryImageCrudController extends AbstractCrudController
             $originalOrder = $originalData['displayOrder'] ?? null;
             if ($originalOrder !== null) {
                 $this->handleDisplayOrderUpdate($entityManager, $entityInstance, (int) $originalOrder);
+            } else {
+                // Fallback: handle display order update without original order
+                $this->handleDisplayOrderUpdate($entityManager, $entityInstance);
             }
         }
         parent::updateEntity($entityManager, $entityInstance);
@@ -239,10 +257,17 @@ class GalleryImageCrudController extends AbstractCrudController
     public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
         if ($entityInstance instanceof GalleryImage) {
-            //
-            
-            // Handle file upload
-            $this->handleFileUpload($entityInstance);
+            // Handle file upload and validate FIRST - this shows proper error messages
+            // This validation happens before entity validation, so errors display correctly
+            try {
+                $this->handleFileUpload($entityInstance);
+            } catch (\Symfony\Component\HttpKernel\Exception\BadRequestHttpException $e) {
+                // Re-throw to show validation error in form
+                throw $e;
+            } catch (\Exception $e) {
+                // Convert to BadRequestHttpException for proper form error display
+                throw new \Symfony\Component\HttpKernel\Exception\BadRequestHttpException($e->getMessage(), $e);
+            }
             
             // Use 'create' validation group for new entities
             $violations = $this->validator->validate($entityInstance, null, ['create']);
@@ -263,6 +288,32 @@ class GalleryImageCrudController extends AbstractCrudController
     }
 
     /**
+     * Validate new upload if file is being uploaded (for updates)
+     */
+    private function validateNewUploadIfPresent(GalleryImage $galleryImage): void
+    {
+        $request = $this->container->get('request_stack')->getCurrentRequest();
+        
+        if ($request && $request->files->has('GalleryImage')) {
+            $formData = $request->files->get('GalleryImage');
+            
+            if (isset($formData['imagePath']) && $formData['imagePath']) {
+                $uploadedFile = $formData['imagePath'];
+                
+                if ($uploadedFile instanceof \Symfony\Component\HttpFoundation\File\UploadedFile) {
+                    try {
+                        $this->fileValidator->validate($uploadedFile);
+                    } catch (\Symfony\Component\HttpFoundation\File\Exception\FileException $e) {
+                        // Add flash message and throw exception to show validation error
+                        $this->addFlash('error', $e->getMessage());
+                        throw new \Symfony\Component\HttpKernel\Exception\BadRequestHttpException($e->getMessage());
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Handle file upload for gallery images
      */
     private function handleFileUpload(GalleryImage $galleryImage): void
@@ -276,6 +327,15 @@ class GalleryImageCrudController extends AbstractCrudController
                 $uploadedFile = $formData['imagePath'];
                 
                 if ($uploadedFile instanceof \Symfony\Component\HttpFoundation\File\UploadedFile) {
+                    // Validate file: MIME type, extension, and size
+                    try {
+                        $this->fileValidator->validate($uploadedFile);
+                    } catch (\Symfony\Component\HttpFoundation\File\Exception\FileException $e) {
+                        // Add flash message and redirect to show validation error
+                        $this->addFlash('error', $e->getMessage());
+                        throw new \Symfony\Component\HttpKernel\Exception\BadRequestHttpException($e->getMessage());
+                    }
+                    
                     $uploadDir = 'public/assets/img/';
                     $extension = $uploadedFile->guessExtension() ?: $uploadedFile->getClientOriginalExtension();
                     $fileName = uniqid() . '.' . $extension;
