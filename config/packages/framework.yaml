@@ -8,7 +8,6 @@ framework:
         cookie_secure: 'auto'
         cookie_samesite: 'lax'
         cookie_httponly: true
-        use_strict_mode: true
 
     #esi: true
     #fragments: true
