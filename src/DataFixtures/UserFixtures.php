@@ -23,22 +23,24 @@ class UserFixtures extends Fixture implements FixtureGroupInterface
 
     public function load(ObjectManager $manager): void
     {
-        // Admin
+        // Admin with secure password: Admin13005!@#Secure
+        // Requirements: 12+ chars, uppercase, lowercase, digit, special char
         $admin = new User();
         $admin->setEmail('admin@letroisquarts.com')
               ->setName('Admin')
               ->setRole(UserRole::ADMIN)
               ->setIsActive(true);
-        $admin->setPassword($this->passwordHasher->hashPassword($admin, 'admin123'));
+        $admin->setPassword($this->passwordHasher->hashPassword($admin, 'Admin13005!@#Secure'));
         $manager->persist($admin);
 
-        // Moderator
+        // Moderator with secure password: Moder13005!@#Secure
+        // Requirements: 12+ chars, uppercase, lowercase, digit, special char
         $moderator = new User();
         $moderator->setEmail('moderator@letroisquarts.com')
                   ->setName('Moderator')
                   ->setRole(UserRole::MODERATOR)
                   ->setIsActive(true);
-        $moderator->setPassword($this->passwordHasher->hashPassword($moderator, 'moder123'));
+        $moderator->setPassword($this->passwordHasher->hashPassword($moderator, 'Moder13005!@#Secure'));
         $manager->persist($moderator);
 
         $manager->flush();

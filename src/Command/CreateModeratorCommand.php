@@ -4,6 +4,7 @@ namespace App\Command;
 
 use App\Entity\User;
 use App\Enum\UserRole;
+use App\Service\PasswordValidator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -21,7 +22,8 @@ class CreateModeratorCommand extends Command
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private UserPasswordHasherInterface $passwordHasher
+        private UserPasswordHasherInterface $passwordHasher,
+        private PasswordValidator $passwordValidator
     ) {
         parent::__construct();
     }
@@ -45,6 +47,17 @@ class CreateModeratorCommand extends Command
 
         if (!$email || !$password || !$name) {
             $io->error('Tous les champs sont requis.');
+            return Command::FAILURE;
+        }
+
+        // Validate password strength
+        $passwordValidation = $this->passwordValidator->validatePassword($password);
+        if (!$passwordValidation['valid']) {
+            $io->error('Le mot de passe ne respecte pas les exigences de sécurité:');
+            foreach ($passwordValidation['errors'] as $error) {
+                $io->writeln("  - $error");
+            }
+            $io->note($this->passwordValidator->getRequirements());
             return Command::FAILURE;
         }
 
