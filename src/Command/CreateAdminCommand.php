@@ -61,14 +61,14 @@ class CreateAdminCommand extends Command
             return Command::FAILURE;
         }
 
-        // Vérifier si l'utilisateur existe déjà
+        // Check if user already exists
         $existingUser = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
         if ($existingUser) {
             $io->error('Un utilisateur avec cet email existe déjà.');
             return Command::FAILURE;
         }
 
-        // Créer l'utilisateur
+        // Create the user
         $user = new User();
         $user->setEmail($email);
         $user->setName($name);

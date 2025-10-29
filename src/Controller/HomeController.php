@@ -102,10 +102,6 @@ class HomeController extends AbstractController
         // CSRF Protection
         $csrfToken = $request->request->get('_token') ?: $request->headers->get('X-CSRF-Token');
         
-        // Debug information
-        error_log('CSRF Debug - Received token: ' . ($csrfToken ?: 'NULL'));
-        error_log('CSRF Debug - All request data: ' . json_encode($request->request->all()));
-        
         if (!$csrfToken || !$csrfTokenManager->isTokenValid(new CsrfToken('submit', $csrfToken))) {
             return new JsonResponse([
                 'success' => false,
