@@ -736,8 +736,8 @@ footer a.text-white:hover {
 
 @media (max-width: 768px) {
   .carousel-banner {
-    height: 70vh !important;
-    min-height: 70vh !important;
+    height: 65vh !important;
+    min-height: 65vh !important;
   }
   
   /* Larger buttons and text for screens less than 768px */
@@ -765,7 +765,7 @@ footer a.text-white:hover {
 
 @media (max-width: 576px) {
   .carousel-banner {
-    min-height: 50vh;
+    min-height: 45vh;
   }
 }
 
@@ -910,21 +910,21 @@ footer a.text-white:hover {
     
     /* Smaller hero title and subtitle for very small screens */
     .hero-title {
-        font-size: 2.2rem !important;
+        font-size: 3rem !important;
     }
     
     .hero-subtitle {
-        font-size: 0.95rem !important;
+        font-size: 1.2rem !important;
     }
     
     /* Additional styles for carousel banner on very small screens */
     .carousel-banner .hero-title {
-        font-size: 2.2rem !important;
+        font-size: 3rem !important;
         line-height: 1.2 !important;
     }
     
     .carousel-banner .hero-subtitle {
-        font-size: 0.95rem !important;
+        font-size: 1.2rem !important;
         line-height: 1.3 !important;
     }
 }
@@ -1067,7 +1067,19 @@ footer a[href^="mailto:"] {
   .reservation-header .row h1,
   .reservation-header .row .display-4 {
     text-align: center !important;
-    font-size: 2.5rem !important;
+    font-size: 3rem !important;
+  }
+
+  /* Ensure 3rem titles on other banner pages */
+  .menu-hero h1,
+  .gallery-header h1,
+  .contact-header h1,
+  .reviews-header h1,
+  .menu-hero .display-4,
+  .gallery-header .display-4,
+  .contact-header .display-4,
+  .reviews-header .display-4 {
+    font-size: 3rem !important;
   }
   
   .reservation-header .lead,
@@ -1076,6 +1088,19 @@ footer a[href^="mailto:"] {
   .reservation-header .row .lead {
     text-align: center !important;
     font-size: 1.2rem !important;
+  }
+
+  /* Ensure 1.2rem subheadings on other banner pages */
+  .menu-hero .lead,
+  .gallery-header .lead,
+  .contact-header .lead,
+  .reviews-header .lead {
+    font-size: 1.2rem !important;
+  }
+
+  /* Slightly reduce reservation banner height on very small screens */
+  .reservation-header {
+    min-height: 45vh !important;
   }
   
   .reservation-hero-divider {
@@ -2239,6 +2264,77 @@ footer a[href^="mailto:"] {
     .reservation-header {
         height: 70vh !important;
         min-height: 70vh !important;
+        max-height: 70vh !important;
+    }
+    /* Push title and subtitle slightly lower */
+    .reservation-header h1,
+    .reservation-header .display-4,
+    .reservation-header .lead {
+        margin-top: 0.75rem !important;
+    }
+    /* Reduce spacing before the stat cards (divider bottom margin) */
+    .reservation-hero-divider {
+        margin: 0.5rem auto 1rem auto !important;
+    }
+
+    /* Center reservation info block and texts on mobile */
+    #reservation .section-title,
+    #reservation .lead {
+        text-align: center !important;
+    }
+    /* Ensure section title block is centered */
+    #reservation .section-title {
+        margin-left: auto !important;
+        margin-right: auto !important;
+        display: block;
+    }
+    .reservation-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center !important;
+    }
+    .reservation-info .info-item {
+        justify-content: center !important;
+    }
+
+    /* Add top spacing above reservation form on mobile */
+    .reservation-form {
+        margin-top: 1.5rem !important;
+    }
+
+    /* Slightly smaller button text on mobile for reservation form */
+    .reservation-form .btn {
+        font-size: 0.95rem !important;
+        padding: 0.65rem 1rem !important;
+    }
+
+    /* Make large buttons smaller on all pages for mobile */
+    .btn.btn-lg {
+        font-size: 0.95rem !important;
+        padding: 0.65rem 1rem !important;
+    }
+}
+
+/* Tablet-only typography for reservation banner (keeps <576px at 3rem) */
+@media (min-width: 577px) and (max-width: 768px) {
+    .reservation-header h1,
+    .reservation-header .display-4,
+    .menu-hero h1,
+    .menu-hero .display-4,
+    .gallery-header h1,
+    .gallery-header .display-4,
+    .contact-header h1,
+    .contact-header .display-4,
+    .reviews-header h1,
+    .reviews-header .display-4 {
+        font-size: 3.5rem !important;
+    }
+    .reservation-header .lead,
+    .menu-hero .lead,
+    .gallery-header .lead,
+    .contact-header .lead,
+    .reviews-header .lead {
+        font-size: 1.2rem !important;
     }
 }
 
@@ -2341,6 +2437,24 @@ footer a[href^="mailto:"] {
     opacity: 0.95;
     color: white;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+@media (max-width: 768px) {
+    /* Smaller reservation stat cards and text on tablets/mobiles */
+    .reservation-stats .stat-item {
+        padding: 0.75rem 1rem !important;
+        border-radius: 10px;
+    }
+    .reservation-stats .stat-item h3 {
+        font-size: 1.6rem;
+    }
+    .reservation-stats .stat-item p {
+        font-size: 0.95rem;
+    }
+    /* Spacing between stacked cards */
+    .reservation-stats .col-md-4 {
+        margin-bottom: 0.75rem;
+    }
 }
 
 /* Reservation Section */

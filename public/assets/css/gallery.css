@@ -45,9 +45,12 @@
 
 /* Enable native sticky just under the navbar */
 .gallery-filters {
-    /* position: sticky; top: var(--nav-offset, 72px); z-index: 1020; */
+    position: sticky; 
+    top: var(--nav-offset, 72px); 
+    z-index: 1020; 
     /* Ensure background matches page fill (white) to avoid blue strip */
     background-color: #ffffff !important;
+    margin-top: 0 !important;
 }
 
 /* Smooth sticky behavior for gallery filters */
@@ -59,12 +62,13 @@
     transform: translateZ(0);
     background: rgba(255,255,255,0.98);
     backdrop-filter: saturate(120%) blur(6px);
+    margin-top: 0 !important; /* prevent gap under navbar when sticky */
 }
 
 /* Adjust vertical padding for filters */
 .gallery-filters {
-    padding-top: 0.9rem;  /* as before */
-    padding-bottom: 0.5rem; /* as before */
+    padding-top: 0;  /* remove gap under navbar on mobile */
+    padding-bottom: 0.5rem;
 }
 
 /* When sticky, use tighter padding only while fixed */
@@ -77,6 +81,7 @@
 .gallery-filters.is-fixed {
     padding-top: 0 !important;
     padding-bottom: 0 !important;
+    margin-top: 0 !important;
 }
 
 /* JS fallback class when sticky is not supported or overridden */
@@ -87,6 +92,7 @@
     width: 100%;
     top: var(--nav-offset, 72px) !important;
     z-index: 1030 !important; /* stay above gallery cards/images */
+    margin-top: 0 !important;
 }
 
 .filter-buttons {
@@ -461,7 +467,7 @@
         max-height: 70vh;
     }
     
-    .gallery-filters { padding-top: 0.9rem; padding-bottom: 0.5rem; margin-top: 0.75rem; }
+    .gallery-filters { padding-top: 0; padding-bottom: 0.5rem; margin-top: 0 !important; }
     
     .filter-buttons {
         gap: 0.4rem;
@@ -513,12 +519,12 @@
 
 @media (max-width: 576px) {
     .gallery-header {
-        height: 60vh;
-        min-height: 60vh;
-        max-height: 60vh;
+        height: 70vh;
+        min-height: 70vh;
+        max-height: 70vh;
     }
     
-    .gallery-filters { padding-top: 0.75rem; padding-bottom: 0.45rem; margin-top: 0.5rem; }
+    .gallery-filters { padding-top: 0; padding-bottom: 0.45rem; margin-top: 0 !important; }
     
     .filter-buttons {
         justify-content: center;
@@ -576,7 +582,7 @@
 }
 
 @media (max-width: 480px) {
-    .gallery-filters { padding-top: 0.6rem; padding-bottom: 0.4rem; margin-top: 0.4rem; }
+    .gallery-filters { padding-top: 0; padding-bottom: 0.4rem; margin-top: 0 !important; }
     
     .filter-buttons {
         justify-content: center;

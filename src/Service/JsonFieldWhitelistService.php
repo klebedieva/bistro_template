@@ -14,15 +14,37 @@ class JsonFieldWhitelistService
      */
     private const ENDPOINT_WHITELISTS = [
         // Order endpoints
-        '/api/order/create' => [
+        // Create order (current API route)
+        '/api/order' => [
+            'deliveryMode',
             'deliveryAddress',
             'deliveryZip',
             'deliveryInstructions',
+            'deliveryFee',
+            'paymentMode',
             'clientFirstName',
             'clientLastName',
             'clientPhone',
             'clientEmail',
             'items', // For order items
+            'couponId',
+            'discountAmount',
+        ],
+        // Backward-compat: older clients may still call /api/order/create
+        '/api/order/create' => [
+            'deliveryMode',
+            'deliveryAddress',
+            'deliveryZip',
+            'deliveryInstructions',
+            'deliveryFee',
+            'paymentMode',
+            'clientFirstName',
+            'clientLastName',
+            'clientPhone',
+            'clientEmail',
+            'items',
+            'couponId',
+            'discountAmount',
         ],
         
         // Cart endpoints

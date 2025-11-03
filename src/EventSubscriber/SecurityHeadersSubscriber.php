@@ -53,7 +53,13 @@ class SecurityHeadersSubscriber implements EventSubscriberInterface
             $fontSrc = "'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net";
             // Allow embedding Google Maps iframe on contact page; restrict to known hosts
             $frameSrc = "'self' https://www.google.com https://maps.google.com";
-            $csp = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.jsdelivr.net/npm; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; img-src $imgSrc; font-src $fontSrc; connect-src $connectSrc; frame-src $frameSrc; frame-ancestors 'none'";
+            // Expand script sources to allow data: URLs used by some loaders; add script-src-elem explicitly
+            $scriptSrc = "'self' 'unsafe-inline' data: https://cdn.jsdelivr.net https://cdn.jsdelivr.net/npm";
+            // On non-API pages, allow connecting to jsDelivr for source maps and assets
+            if (!$isApi && $connectSrc === "'self'") {
+                $connectSrc = "'self' https://cdn.jsdelivr.net";
+            }
+            $csp = "default-src 'self'; script-src $scriptSrc; script-src-elem $scriptSrc; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; img-src $imgSrc; font-src $fontSrc; connect-src $connectSrc; frame-src $frameSrc; frame-ancestors 'none'";
             $response->headers->set('Content-Security-Policy', $csp);
         }
 
