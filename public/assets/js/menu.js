@@ -364,6 +364,21 @@ function groupItemsByCategory(items) {
 }
 
 // Render a single category section with a grid of menu cards
+// Predefined maps for classes/icons to avoid switch overhead in tight loops
+const BADGE_CLASS_BY_LABEL = {
+    'Spécialité': 'specialty',
+    'Végétarien': 'vegetarian',
+    'Fait maison': 'homemade',
+    'Saison': 'seasonal',
+    'Sans Gluten': 'glutenfree'
+};
+
+const TAG_ICON_BY_CODE = {
+    vegetarian: '<span class="dietary-icon">🌱</span>',
+    vegan: '<span class="dietary-icon">🌿</span>',
+    glutenFree: '<span class="dietary-icon">🌾</span>'
+};
+
 function renderCategorySection(category, items, cartItems = []) {
     const categoryNames = {
         entrees: 'Entrées',
@@ -377,8 +392,15 @@ function renderCategorySection(category, items, cartItems = []) {
             <div class="row g-4">
     `;
 
+    // Build a fast lookup for quantities once per section
+    const qtyById = new Map();
+    for (const ci of cartItems) {
+        // Normalize to string id for consistent lookups
+        qtyById.set(String(ci.id), ci.quantity);
+    }
+
     items.forEach(item => {
-        html += renderMenuItem(item, cartItems);
+        html += renderMenuItem(item, qtyById);
     });
 
     html += `
@@ -390,47 +412,21 @@ function renderCategorySection(category, items, cartItems = []) {
 }
 
 // Render a single menu item card including quantity controls and add button
-function renderMenuItem(item, cartItems = []) {
-    // Convert both IDs to numbers for comparison
-    const itemId = parseInt(item.id);
-    const cartItem = cartItems.find(i => parseInt(i.id) === itemId);
-    const quantity = cartItem ? cartItem.quantity : 0;
-    const badges = item.badges.map(badge => {
-        let badgeClass = '';
-        switch (badge) {
-            case 'Spécialité':
-                badgeClass = 'specialty';
-                break;
-            case 'Végétarien':
-                badgeClass = 'vegetarian';
-                break;
-            case 'Fait maison':
-                badgeClass = 'homemade';
-                break;
-                case 'Saison':
-                    badgeClass = 'seasonal';
-                    break;
-                case 'Sans Gluten':
-                    badgeClass = 'glutenfree';
-                    break;
-            default:
-                badgeClass = '';
-        }
+function renderMenuItem(item, qtyById /* Map<string,id> -> quantity */) {
+    const idKey = String(item.id);
+    const quantity = qtyById && qtyById.has(idKey) ? qtyById.get(idKey) : 0;
+
+    const badges = (item.badges || []).map(badge => {
+        const badgeClass = BADGE_CLASS_BY_LABEL[badge] || '';
         return `<span class="menu-badge ${badgeClass}">${badge}</span>`;
     }).join('');
 
-    const dietaryIcons = item.tags.map(tag => {
-        switch (tag) {
-            case 'vegetarian':
-                return '<span class="dietary-icon">🌱</span>';
-            case 'vegan':
-                return '<span class="dietary-icon">🌿</span>';
-            case 'glutenFree':
-                return '<span class="dietary-icon">🌾</span>';
-            default:
-                return '';
-        }
-    }).join('');
+    const dietaryIcons = (item.tags || []).map(tag => TAG_ICON_BY_CODE[tag] || '').join('');
+
+    const priceDisplay = (Number(item.price) || 0).toLocaleString('fr-FR', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }) + '€';
 
 
 
@@ -451,18 +447,18 @@ function renderMenuItem(item, cartItems = []) {
                     <h3 class="menu-card-title">${item.name}</h3>
                     <p class="menu-card-description">${item.description}</p>
                     <div class="menu-card-footer d-flex align-items-center justify-content-between">
-                        <div class="menu-card-price">${item.price}€</div>
+                        <div class="menu-card-price">${priceDisplay}</div>
                         <div class="menu-card-actions d-flex align-items-center gap-2">
                             ${quantity > 0 ? `
-                                <div class="quantity-controls">
-                                    <button class="add-to-cart-btn btn btn-sm d-flex align-items-center justify-content-center p-0" onclick="removeFromCart('${item.id}')">
-                                        <i class="bi bi-dash"></i>
+                                <div class=\"quantity-controls\">
+                                    <button class=\"add-to-cart-btn btn btn-sm d-flex align-items-center justify-content-center p-0 js-remove\" data-action=\"remove\" data-id=\"${item.id}\">
+                                        <i class=\"bi bi-dash\"></i>
                                     </button>
-                                    <span class="quantity-display">${quantity}</span>
+                                    <span class=\"quantity-display\">${quantity}</span>
                                 </div>
                             ` : ''}
-                            <button class="add-to-cart-btn btn btn-sm d-flex align-items-center justify-content-center p-0" onclick="addToCart('${item.id}')">
-                                <i class="bi bi-plus"></i>
+                            <button class=\"add-to-cart-btn btn btn-sm d-flex align-items-center justify-content-center p-0 js-add\" data-action=\"add\" data-id=\"${item.id}\">
+                                <i class=\"bi bi-plus\"></i>
                             </button>
                         </div>
                     </div>
@@ -550,16 +546,31 @@ function renderDrinksSection() {
 
 // Add event listeners to elements inside freshly rendered cards
 function addMenuItemEventListeners() {
-    // Quick view buttons - now redirect to the dish detail page
+    // Event delegation for add/remove buttons within the menu grid
+    if (menuGrid) {
+        menuGrid.addEventListener('click', async function(e) {
+            const btn = e.target.closest('[data-action]');
+            if (!btn) return;
+            const action = btn.getAttribute('data-action');
+            const id = btn.getAttribute('data-id') || btn.closest('.menu-card')?.dataset.itemId;
+            if (!id) return;
+
+            try {
+                if (action === 'add') {
+                    await addToCart(id);
+                } else if (action === 'remove') {
+                    await removeFromCart(id);
+                }
+            } catch (err) {
+                console.error('Cart action failed:', err);
+            }
+        });
+    }
+
+    // Quick view buttons: allow default navigation, just stop propagation
     document.querySelectorAll('.quick-view-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
-            // Get the dish ID from the href attribute
-            const href = this.getAttribute('href');
-            if (href && href.startsWith('/dish/')) {
-                // Let default link behavior handle navigation
-                // No need to prevent default or show an alert
-            }
         });
     });
 }

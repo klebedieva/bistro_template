@@ -43,10 +43,22 @@
     .dish-ingredients h3 { font-size: 1.2rem; }
 }
 
-.dish-allergens { margin-bottom: 2rem; }
-.dish-allergens h4 { color: var(--dark-color); margin-bottom: 1rem; font-weight: 600; }
-/* Make allergen badges white (no blue background) to match previous design */
-.allergen-badges .badge { margin-right: 0.5rem; font-size: 0.8rem; padding: 0.4rem 0.8rem; background: #ffffff !important; color: var(--text-dark) !important; border: 1px solid var(--border-color); }
+.dish-allergens { margin-bottom: 2rem; background: #ffffff; border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; }
+.dish-allergens h4 { color: var(--dark-color); margin-bottom: 0.75rem; font-weight: 700; font-size: 1.1rem; }
+/* Allergen badges styled to match brand accents */
+.allergen-badges { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.allergen-badges .badge {
+    margin-right: 0;
+    font-size: 0.8rem;
+    padding: 0.45rem 0.8rem;
+    background: rgba(212, 165, 116, 0.12) !important; /* brand accent soft */
+    color: #d4a574 !important;
+    border: 1px solid #d4a574;
+    border-radius: 999px;
+    font-weight: 600;
+    letter-spacing: .2px;
+}
+.allergen-badges .badge:hover { background: rgba(212, 165, 116, 0.18) !important; border-color: #c89557; }
 
 .dish-actions { background: var(--light-color); padding: 2rem; border-radius: 15px; margin-bottom: 2rem; }
 .dish-actions .menu-card-actions { margin-left: -2rem; padding-left: 0; }

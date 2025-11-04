@@ -42,12 +42,12 @@ class SecurityHeadersSubscriber implements EventSubscriberInterface
             // For API pages, allow connections and images from same origin (HTTP and HTTPS for localhost)
             if ($isApi) {
                 $connectSrc = "'self' http://127.0.0.1:* https://127.0.0.1:* http://localhost:* https://localhost:*";
-                // Allow images from self, data URIs, localhost, and CDN (for NelmioApiDocBundle logo)
-                $imgSrc = "'self' data: http://127.0.0.1:* https://127.0.0.1:* http://localhost:* https://localhost:* https://cdn.jsdelivr.net";
+                // Allow images from self, data URIs, localhost, jsDelivr (logos) and external image CDNs used in content (e.g., Pexels)
+                $imgSrc = "'self' data: http://127.0.0.1:* https://127.0.0.1:* http://localhost:* https://localhost:* https://cdn.jsdelivr.net https://images.pexels.com";
             } else {
                 $connectSrc = "'self'";
-                // Allow images from self, data URIs, and CDN (for any CDN-hosted images)
-                $imgSrc = "'self' data: https://cdn.jsdelivr.net";
+                // Allow images from self, data URIs, jsDelivr, and external image CDNs used on pages (e.g., Pexels)
+                $imgSrc = "'self' data: https://cdn.jsdelivr.net https://images.pexels.com";
             }
             // Allow webfonts from jsDelivr (Bootstrap Icons) and Google Fonts, include data: for embedded fonts
             $fontSrc = "'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net";

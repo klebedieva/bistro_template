@@ -65,7 +65,6 @@ function initNavbar() {
     // Close the mobile menu when clicking a link
     const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
     const navbarCollapse = document.querySelector('.navbar-collapse');
-    const navbarToggler = document.querySelector('.navbar-toggler');
     
     // Close menu when clicking on nav links
     navLinks.forEach(link => {
