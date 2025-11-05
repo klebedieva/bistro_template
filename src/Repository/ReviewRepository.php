@@ -55,4 +55,25 @@ class ReviewRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Compute count and average rating of approved reviews for a given dish.
+     *
+     * @return array{cnt:int, avg:float}
+     */
+    public function getApprovedStatsForMenuItem(int $menuItemId): array
+    {
+        $row = $this->createQueryBuilder('r')
+            ->select('COUNT(r.id) AS cnt, COALESCE(AVG(r.rating), 0) AS avg')
+            ->andWhere('r.menuItem = :id')
+            ->andWhere('r.isApproved = 1')
+            ->setParameter('id', $menuItemId)
+            ->getQuery()
+            ->getSingleResult();
+
+        return [
+            'cnt' => (int)($row['cnt'] ?? 0),
+            'avg' => (float)($row['avg'] ?? 0.0),
+        ];
+    }
 }

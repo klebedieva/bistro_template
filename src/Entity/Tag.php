@@ -1,13 +1,11 @@
 <?php
 
 namespace App\Entity;
-
-use App\Repository\TagRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: TagRepository::class)]
+#[ORM\Entity]
 class Tag
 {
     #[ORM\Id]

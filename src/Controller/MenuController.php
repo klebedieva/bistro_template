@@ -119,12 +119,11 @@ final class MenuController extends AbstractController
             }
         }
 
-        // Related dishes (same category)
-        $related = [];
-        $sameCategory = $menuItemRepository->findBy(['category' => $item->getCategory()]);
-        foreach ($sameCategory as $other) {
-            if ($other->getId() === $item->getId()) { continue; }
-            $rImage = $other->getImage();
+        // Related dishes (same category) - optimized lightweight query
+        $related = $menuItemRepository->findRelatedForCard($item->getCategory(), (int) $item->getId(), 3);
+        // Normalize image path as previously
+        foreach ($related as &$rel) {
+            $rImage = $rel['image'] ?? null;
             if ($rImage) {
                 if (!str_starts_with($rImage, '/uploads/') && !str_starts_with($rImage, '/assets/') && !str_starts_with($rImage, 'http')) {
                     $rImage = '/uploads/menu/' . ltrim($rImage, '/');
@@ -133,14 +132,7 @@ final class MenuController extends AbstractController
                     $rImage = '/' . $rImage;
                 }
             }
-            $related[] = [
-                'id' => (string) $other->getId(),
-                'name' => $other->getName(),
-                'description' => $other->getDescription(),
-                'price' => (float) $other->getPrice(),
-                'image' => $rImage,
-            ];
-            if (count($related) >= 3) { break; }
+            $rel['image'] = $rImage;
         }
 
         // Get ingredients as array
@@ -161,16 +153,10 @@ final class MenuController extends AbstractController
             $prepTimeDisplay = (string) $item->getPrepTimeMinutes();
         }
 
-        // Compute rating summary from approved dish reviews
-        $approved = $reviewRepository->createQueryBuilder('r')
-            ->select('COUNT(r.id) as cnt, COALESCE(AVG(r.rating), 0) as avgRating')
-            ->andWhere('r.menuItem = :id')
-            ->andWhere('r.isApproved = 1')
-            ->setParameter('id', $item->getId())
-            ->getQuery()
-            ->getSingleResult();
-        $ratingCount = (int)($approved['cnt'] ?? 0);
-        $ratingAvg = (float)($approved['avgRating'] ?? 0.0);
+        // Compute rating summary from approved dish reviews - optimized helper
+        $approvedStats = $reviewRepository->getApprovedStatsForMenuItem((int) $item->getId());
+        $ratingCount = $approvedStats['cnt'];
+        $ratingAvg = $approvedStats['avg'];
 
         return $this->render('pages/dish_detail.html.twig', [
             'item' => $item,
