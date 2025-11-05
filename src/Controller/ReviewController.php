@@ -143,7 +143,7 @@ class ReviewController extends AbstractController
                 $messages[] = $violation->getMessage();
             }
             $response = new \App\DTO\ApiResponseDTO(success: false, message: 'Erreur de validation', errors: $messages);
-            return $this->json($response->toArray(), 400);
+            return $this->json($response->toArray(), 422);
         }
 
         // Create new review entity (not approved by default - requires moderation)

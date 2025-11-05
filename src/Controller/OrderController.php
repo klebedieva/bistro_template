@@ -6,6 +6,8 @@ use App\DTO\ApiResponseDTO;
 use App\DTO\OrderItemDTO;
 use App\DTO\OrderResponseDTO;
 use App\Service\InputSanitizer;
+use Psr\Log\LoggerInterface;
+use Symfony\Contracts\Cache\CacheInterface;
 use App\Service\OrderService;
 use App\Service\SymfonyEmailService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -28,7 +30,9 @@ class OrderController extends AbstractController
 {
     public function __construct(
         private OrderService $orderService,
-        private SymfonyEmailService $emailService
+        private SymfonyEmailService $emailService,
+        private LoggerInterface $logger,
+        private CacheInterface $cache
     ) {}
 
     #[Route('/order', name: 'app_order')]
@@ -125,6 +129,15 @@ class OrderController extends AbstractController
     public function createOrder(Request $request, CsrfTokenManagerInterface $csrfTokenManager): JsonResponse
     {
         try {
+            // Optional request size guard (protect against excessively large payloads)
+            $rawContent = $request->getContent();
+            if (strlen($rawContent) > 65536) { // 64KB hard limit for this endpoint
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Requête trop volumineuse'
+                ], 413);
+            }
+
             // CSRF Protection
             $csrfToken = $request->headers->get('X-CSRF-Token');
             if (!$csrfToken || !$csrfTokenManager->isTokenValid(new CsrfToken('submit', $csrfToken))) {
@@ -134,7 +147,18 @@ class OrderController extends AbstractController
                 ], 403);
             }
             
-            $data = json_decode($request->getContent(), true);
+            // Idempotency: ensure the same client action does not create duplicate orders
+            $idempotencyKey = (string)($request->headers->get('Idempotency-Key') ?? '');
+
+            if ($idempotencyKey !== '') {
+                $cached = $this->cache->getItem('idem_order_' . hash('sha256', $idempotencyKey));
+                if ($cached->isHit()) {
+                    $cachedPayload = $cached->get();
+                    return new JsonResponse($cachedPayload['body'] ?? [], $cachedPayload['status'] ?? 201);
+                }
+            }
+
+            $data = json_decode($rawContent, true);
             
             // Sanitize input data to prevent XSS
             if (isset($data['deliveryAddress'])) {
@@ -188,7 +212,7 @@ class OrderController extends AbstractController
                 ], 400);
             }
             
-            // Créer la commande
+            // Create the order using domain service
             $order = $this->orderService->createOrder($data ?? []);
 
             // Notify admin about new order (non-blocking)
@@ -196,10 +220,13 @@ class OrderController extends AbstractController
                 $this->emailService->sendOrderNotificationToAdmin($order);
             } catch (\Exception $e) {
                 // Log silently; do not break order creation
-                error_log('Error sending order admin notification: ' . $e->getMessage());
+                $this->logger->warning('Order admin notification failed', [
+                    'orderId' => $order->getId(),
+                    'error' => $e->getMessage()
+                ]);
             }
 
-            // Convertir les items en DTOs
+            // Convert items to response DTOs
             $orderItems = [];
             foreach ($order->getItems() as $item) {
                 $orderItems[] = new OrderItemDTO(
@@ -239,15 +266,27 @@ class OrderController extends AbstractController
                 order: $orderResponse
             );
 
-            return $this->json($response->toArray(), 201);
+            $responseArray = $response->toArray();
+
+            // Store idempotent response if key provided
+            if ($idempotencyKey !== '') {
+                $cached = $this->cache->getItem('idem_order_' . hash('sha256', $idempotencyKey));
+                $cached->set(['body' => $responseArray, 'status' => 201]);
+                // Short TTL (e.g., 10 minutes) is enough to deduplicate user retries
+                $cached->expiresAfter(600);
+                $this->cache->save($cached);
+            }
+
+            return $this->json($responseArray, 201);
 
         } catch (\InvalidArgumentException $e) {
             $response = new ApiResponseDTO(
                 success: false,
                 message: $e->getMessage()
             );
-            return $this->json($response->toArray(), 400);
+            return $this->json($response->toArray(), 422);
         } catch (\Exception $e) {
+            $this->logger->error('Order creation failed', ['exception' => $e]);
             $response = new ApiResponseDTO(
                 success: false,
                 message: 'Erreur lors de la création de la commande: ' . $e->getMessage()
@@ -290,7 +329,7 @@ class OrderController extends AbstractController
                 return $this->json($response->toArray(), 404);
             }
 
-            // Convertir les items en DTOs
+            // Convert items to response DTOs
             $orderItems = [];
             foreach ($order->getItems() as $item) {
                 $orderItems[] = new OrderItemDTO(

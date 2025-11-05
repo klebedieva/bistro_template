@@ -166,7 +166,7 @@ class CartController extends AbstractController
                     success: false,
                     message: 'itemId est requis'
                 );
-                return $this->json($response->toArray(), 400);
+                return $this->json($response->toArray(), 422);
             }
 
             // Extract and validate itemId and quantity
@@ -179,7 +179,7 @@ class CartController extends AbstractController
                     success: false,
                     message: 'La quantité doit être au moins 1'
                 );
-                return $this->json($response->toArray(), 400);
+                return $this->json($response->toArray(), 422);
             }
 
             // Add item to cart via service (handles existence check and quantity increment)
@@ -358,7 +358,7 @@ class CartController extends AbstractController
                     success: false,
                     message: 'quantity est requis'
                 );
-                return $this->json($response->toArray(), 400);
+                return $this->json($response->toArray(), 422);
             }
 
             $quantity = (int) $data['quantity'];

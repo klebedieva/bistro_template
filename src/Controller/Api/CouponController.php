@@ -112,13 +112,13 @@ class CouponController extends AbstractController
             // Validate required coupon code parameter
             if (!isset($data['code'])) {
                 $response = new \App\DTO\ApiResponseDTO(success: false, message: 'Code promo requis');
-                return $this->json($response->toArray(), 400);
+                return $this->json($response->toArray(), 422);
             }
 
             // Validate required order amount parameter
             if (!isset($data['orderAmount'])) {
                 $response = new \App\DTO\ApiResponseDTO(success: false, message: 'Montant de commande requis');
-                return $this->json($response->toArray(), 400);
+                return $this->json($response->toArray(), 422);
             }
 
             // Normalize coupon code (uppercase, trimmed)

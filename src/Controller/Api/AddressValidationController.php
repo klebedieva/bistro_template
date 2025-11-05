@@ -93,7 +93,7 @@ class AddressValidationController extends AbstractController
             // Validate required zip code parameter
             if (!$zipCode) {
                 $response = new \App\DTO\ApiResponseDTO(success: false, message: 'Code postal requis');
-                return $this->json($response->toArray(), 400);
+                return $this->json($response->toArray(), 422);
             }
 
             // Validate zip code using service (checks distance, coordinates, etc.)
@@ -193,7 +193,7 @@ class AddressValidationController extends AbstractController
             // Validate required address parameter
             if (!$address) {
                 $response = new \App\DTO\ApiResponseDTO(success: false, message: 'Adresse requise');
-                return $this->json($response->toArray(), 400);
+                return $this->json($response->toArray(), 422);
             }
 
             // Validate address using service (geocodes address and checks distance)
