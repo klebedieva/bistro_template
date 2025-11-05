@@ -821,11 +821,15 @@ function addMenuItemEventListeners() {
             const id = btn.getAttribute('data-id') || btn.closest('.menu-card')?.dataset.itemId;
             if (!id) return;
 
+            // Convert id to number to ensure correct type when sending to API
+            // getAttribute and dataset always return strings, but API expects integer
+            const itemId = parseInt(id, 10);
+
             try {
                 if (action === 'add') {
-                    await addToCart(id);
+                    await addToCart(itemId);
                 } else if (action === 'remove') {
-                    await removeFromCart(id);
+                    await removeFromCart(itemId);
                 }
             } catch (err) {
                 console.error('Cart action failed:', err);

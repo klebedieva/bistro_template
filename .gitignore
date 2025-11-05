@@ -9,6 +9,7 @@
 /vendor/
 /*.md
 !/README.md
+docs/architecture/**
 ###< symfony/framework-bundle ###
 
 ###> phpunit/phpunit ###

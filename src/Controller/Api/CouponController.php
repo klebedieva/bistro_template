@@ -5,6 +5,7 @@ namespace App\Controller\Api;
 use App\DTO\CouponValidateRequest;
 use App\Entity\Coupon;
 use App\Repository\CouponRepository;
+use App\Service\ValidationHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -32,7 +33,8 @@ class CouponController extends AbstractController
     public function __construct(
         private CouponRepository $couponRepository,
         private EntityManagerInterface $entityManager,
-        private ValidatorInterface $validator
+        private ValidatorInterface $validator,
+        private ValidationHelper $validationHelper
     ) {
     }
 
@@ -123,18 +125,23 @@ class CouponController extends AbstractController
                 return $this->json($response->toArray(), 400);
             }
 
-            // Map payload to DTO and validate via Symfony Validator
-            $dto = new CouponValidateRequest();
-            $dto->code = isset($data['code']) ? trim((string)$data['code']) : null;
-            $dto->orderAmount = isset($data['orderAmount']) ? (float)$data['orderAmount'] : null;
+            // Map JSON payload to DTO using helper service
+            // The ValidationHelper automatically handles type conversion (e.g., string '10.5' -> float 10.5)
+            // This eliminates repetitive manual mapping code like: isset($data['code']) ? trim((string)$data['code']) : null
+            $dto = $this->validationHelper->mapArrayToDto($data, CouponValidateRequest::class);
+            
+            // Post-processing: Trim whitespace from coupon code
+            // Symfony Serializer handles type conversion but doesn't trim strings automatically.
+            // We trim here to handle cases where users might include spaces when copying/pasting coupon codes.
+            // This ensures codes like " SAVE10 " are normalized to "SAVE10" before validation.
+            if ($dto->code !== null) {
+                $dto->code = trim($dto->code);
+            }
 
             // Validate DTO
             $violations = $this->validator->validate($dto);
             if (count($violations) > 0) {
-                $errors = [];
-                foreach ($violations as $violation) {
-                    $errors[] = $violation->getMessage();
-                }
+                $errors = $this->validationHelper->extractViolationMessages($violations);
                 $response = new \App\DTO\ApiResponseDTO(success: false, message: 'Erreur de validation', errors: $errors);
                 return $this->json($response->toArray(), 422);
             }

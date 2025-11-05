@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\DTO\ReservationCreateRequest;
 use App\Entity\Review;
 use App\Entity\Reservation;
 use App\Form\ReviewType;
@@ -10,7 +11,10 @@ use App\Repository\ReviewRepository;
 use App\Repository\GalleryImageRepository;
 use App\Service\InputSanitizer;
 use App\Service\SymfonyEmailService;
+use App\Service\TableAvailabilityService;
+use App\Service\ValidationHelper;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,8 +22,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
-use Psr\Log\LoggerInterface;
-use App\Service\TableAvailabilityService;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * Public site pages: home, menu, gallery, reservation, reviews.
@@ -33,7 +36,9 @@ class HomeController extends AbstractController
     public function __construct(
         private SymfonyEmailService $emailService,
         private TableAvailabilityService $availability,
-        private LoggerInterface $logger
+        private LoggerInterface $logger,
+        private ValidatorInterface $validator,
+        private ValidationHelper $validationHelper
     ) {}
 
     #[Route('/', name: 'app_home')]
@@ -137,98 +142,111 @@ class HomeController extends AbstractController
             $time = $request->request->get('time', '');
             $guests = $request->request->get('guests', '');
             $message = InputSanitizer::sanitize($request->request->get('message', ''));
-            
-            // Basic validation
-            $errors = [];
-            
-            // XSS check
-            if (InputSanitizer::containsXssAttempt($firstName)) {
-                $errors[] = 'Le prénom contient des éléments non autorisés';
+
+            // Map to DTO and validate via Symfony Validator
+            $dto = new ReservationCreateRequest();
+            $dto->firstName = $firstName;
+            $dto->lastName = $lastName;
+            $dto->email = $email;
+            $dto->phone = $phone;
+            $dto->date = $date;
+            $dto->time = $time;
+            $dto->guests = !empty($guests) ? (int)$guests : null;
+            $dto->message = $message ?: null;
+
+            // Validate DTO
+            $violations = $this->validator->validate($dto);
+            if (count($violations) > 0) {
+                $errors = $this->validationHelper->extractViolationMessages($violations);
+                
+                // Also check for XSS attempts (additional security layer)
+                $xssErrors = [];
+                if (InputSanitizer::containsXssAttempt($dto->firstName)) {
+                    $xssErrors[] = 'Le prénom contient des éléments non autorisés';
+                }
+                if (InputSanitizer::containsXssAttempt($dto->lastName)) {
+                    $xssErrors[] = 'Le nom contient des éléments non autorisés';
+                }
+                if (InputSanitizer::containsXssAttempt($dto->email)) {
+                    $xssErrors[] = 'L\'email contient des éléments non autorisés';
+                }
+                if (InputSanitizer::containsXssAttempt($dto->phone)) {
+                    $xssErrors[] = 'Le numéro de téléphone contient des éléments non autorisés';
+                }
+                if ($dto->message && InputSanitizer::containsXssAttempt($dto->message)) {
+                    $xssErrors[] = 'Le message contient des éléments non autorisés';
+                }
+                
+                $allErrors = array_merge($errors, $xssErrors);
+                $response = new \App\DTO\ApiResponseDTO(
+                    success: false,
+                    message: 'Erreur de validation. Veuillez vérifier vos données.',
+                    errors: $allErrors
+                );
+                return $this->json($response->toArray(), 422);
             }
-            if (InputSanitizer::containsXssAttempt($lastName)) {
-                $errors[] = 'Le nom contient des éléments non autorisés';
-            }
-            if (InputSanitizer::containsXssAttempt($email)) {
-                $errors[] = 'L\'email contient des éléments non autorisés';
-            }
-            if (InputSanitizer::containsXssAttempt($phone)) {
-                $errors[] = 'Le numéro de téléphone contient des éléments non autorisés';
-            }
-            if (InputSanitizer::containsXssAttempt($message)) {
-                $errors[] = 'Le message contient des éléments non autorisés';
-            }
-            
-            if (empty($firstName) || strlen($firstName) < 2) {
-                $errors[] = 'Le prénom est requis';
-            }
-            
-            if (empty($lastName) || strlen($lastName) < 2) {
-                $errors[] = 'Le nom est requis';
-            }
-            
-            if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $errors[] = 'L\'email est requis et doit être valide';
-            }
-            
-            if (empty($phone) || strlen($phone) < 10) {
-                $errors[] = 'Le numéro de téléphone est requis';
-            }
-            
-            if (empty($date)) {
-                $errors[] = 'La date est requise';
-            } else {
-                // Check if date is not in the past
-                $selectedDate = new \DateTime($date);
+
+            // Additional validation: check if date/time are not in the past
+            $validationErrors = [];
+            if (!empty($dto->date)) {
+                $selectedDate = new \DateTime($dto->date);
                 $today = new \DateTime();
                 $today->setTime(0, 0, 0);
                 
                 if ($selectedDate < $today) {
-                    $errors[] = 'La date ne peut pas être dans le passé';
+                    $validationErrors[] = 'La date ne peut pas être dans le passé';
                 }
-            }
-            
-            if (empty($time)) {
-                $errors[] = 'L\'heure est requise';
-            } else if (!empty($date)) {
-                // Check if time is not in the past for today
-                $selectedDate = new \DateTime($date);
-                $today = new \DateTime();
                 
-                if ($selectedDate->format('Y-m-d') === $today->format('Y-m-d')) {
-                    $selectedDateTime = new \DateTime($date . ' ' . $time);
-                    
-                    if ($selectedDateTime <= $today) {
-                        $errors[] = 'L\'heure ne peut pas être dans le passé';
+                // Check if time is not in the past for today
+                if (!empty($dto->time) && $selectedDate->format('Y-m-d') === $today->format('Y-m-d')) {
+                    $selectedDateTime = new \DateTime($dto->date . ' ' . $dto->time);
+                    if ($selectedDateTime <= new \DateTime()) {
+                        $validationErrors[] = 'L\'heure ne peut pas être dans le passé';
                     }
                 }
             }
-            
-            if (empty($guests) || $guests < 1) {
-                $errors[] = 'Le nombre de personnes est requis';
+
+            // Additional XSS check after validation (defense in depth)
+            $xssErrors = [];
+            if (InputSanitizer::containsXssAttempt($dto->firstName)) {
+                $xssErrors[] = 'Le prénom contient des éléments non autorisés';
+            }
+            if (InputSanitizer::containsXssAttempt($dto->lastName)) {
+                $xssErrors[] = 'Le nom contient des éléments non autorisés';
+            }
+            if (InputSanitizer::containsXssAttempt($dto->email)) {
+                $xssErrors[] = 'L\'email contient des éléments non autorisés';
+            }
+            if (InputSanitizer::containsXssAttempt($dto->phone)) {
+                $xssErrors[] = 'Le numéro de téléphone contient des éléments non autorisés';
+            }
+            if ($dto->message && InputSanitizer::containsXssAttempt($dto->message)) {
+                $xssErrors[] = 'Le message contient des éléments non autorisés';
             }
             
-            if (!empty($errors)) {
+            $allErrors = array_merge($validationErrors, $xssErrors);
+            if (!empty($allErrors)) {
                 $response = new \App\DTO\ApiResponseDTO(
                     success: false,
-                    message: 'Erreur de validation. Veuillez vérifier vos données.',
-                    errors: $errors
+                    message: !empty($validationErrors) ? 'Erreur de validation' : 'Données invalides détectées',
+                    errors: $allErrors
                 );
-                return $this->json($response->toArray(), 400);
+                return $this->json($response->toArray(), !empty($validationErrors) ? 422 : 400);
             }
             
             // Variant B: do not block on availability in the public endpoint.
             // Admin will check availability and confirm later.
 
-            // Create and save reservation
+            // Create and save reservation using validated DTO
             $reservation = new Reservation();
-            $reservation->setFirstName($firstName);
-            $reservation->setLastName($lastName);
-            $reservation->setEmail($email);
-            $reservation->setPhone($phone);
-            $reservation->setDate(new \DateTime($date));
-            $reservation->setTime($time);
-            $reservation->setGuests((int)$guests);
-            $reservation->setMessage($message ?: null);
+            $reservation->setFirstName($dto->firstName);
+            $reservation->setLastName($dto->lastName);
+            $reservation->setEmail($dto->email);
+            $reservation->setPhone($dto->phone);
+            $reservation->setDate(new \DateTime($dto->date));
+            $reservation->setTime($dto->time);
+            $reservation->setGuests($dto->guests);
+            $reservation->setMessage($dto->message);
             $reservation->setStatus('pending');
             $reservation->setIsConfirmed(false);
             

@@ -7,6 +7,7 @@ use App\DTO\OrderCreateRequest;
 use App\DTO\OrderItemDTO;
 use App\DTO\OrderResponseDTO;
 use App\Service\InputSanitizer;
+use App\Service\ValidationHelper;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\Cache\CacheInterface;
@@ -35,7 +36,8 @@ class OrderController extends AbstractController
         private SymfonyEmailService $emailService,
         private LoggerInterface $logger,
         private CacheInterface $cache,
-        private ValidatorInterface $validator
+        private ValidatorInterface $validator,
+        private ValidationHelper $validationHelper
     ) {}
 
     #[Route('/order', name: 'app_order')]
@@ -194,10 +196,7 @@ class OrderController extends AbstractController
             // Validate DTO
             $violations = $this->validator->validate($dto);
             if (count($violations) > 0) {
-                $errors = [];
-                foreach ($violations as $violation) {
-                    $errors[] = $violation->getMessage();
-                }
+                $errors = $this->validationHelper->extractViolationMessages($violations);
                 return new JsonResponse([
                     'success' => false,
                     'message' => 'Erreur de validation',

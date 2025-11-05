@@ -5,6 +5,7 @@ namespace App\Controller\Api;
 use App\DTO\AddressFullValidationRequest;
 use App\DTO\AddressValidationRequest;
 use App\Service\AddressValidationService;
+use App\Service\ValidationHelper;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,7 +28,8 @@ class AddressValidationController extends AbstractController
 {
     public function __construct(
         private AddressValidationService $addressValidationService,
-        private ValidatorInterface $validator
+        private ValidatorInterface $validator,
+        private ValidationHelper $validationHelper
     ) {}
 
     /**
@@ -115,17 +117,23 @@ class AddressValidationController extends AbstractController
                 return $this->json($response->toArray(), 400);
             }
 
-            // Map payload to DTO and validate via Symfony Validator
-            $dto = new AddressValidationRequest();
-            $dto->zipCode = isset($data['zipCode']) ? trim((string)$data['zipCode']) : null;
+            // Map JSON payload to DTO using helper service
+            // The ValidationHelper automatically handles type conversion based on DTO property types
+            // This eliminates repetitive manual mapping code like: isset($data['zipCode']) ? trim((string)$data['zipCode']) : null
+            $dto = $this->validationHelper->mapArrayToDto($data, AddressValidationRequest::class);
+            
+            // Post-processing: Trim whitespace from zip code
+            // Symfony Serializer handles type conversion but doesn't trim strings automatically.
+            // We trim here to ensure clean zip codes (removes leading/trailing spaces from user input).
+            // This is important for zip code validation as " 75001 " should be treated as "75001".
+            if ($dto->zipCode !== null) {
+                $dto->zipCode = trim($dto->zipCode);
+            }
 
             // Validate DTO
             $violations = $this->validator->validate($dto);
             if (count($violations) > 0) {
-                $errors = [];
-                foreach ($violations as $violation) {
-                    $errors[] = $violation->getMessage();
-                }
+                $errors = $this->validationHelper->extractViolationMessages($violations);
                 $response = new \App\DTO\ApiResponseDTO(success: false, message: 'Erreur de validation', errors: $errors);
                 return $this->json($response->toArray(), 422);
             }
@@ -248,18 +256,26 @@ class AddressValidationController extends AbstractController
                 return $this->json($response->toArray(), 400);
             }
 
-            // Map payload to DTO and validate via Symfony Validator
-            $dto = new AddressFullValidationRequest();
-            $dto->address = isset($data['address']) ? trim((string)$data['address']) : null;
-            $dto->zipCode = isset($data['zipCode']) ? trim((string)$data['zipCode']) : null;
+            // Map JSON payload to DTO using helper service
+            // The ValidationHelper automatically handles type conversion based on DTO property types
+            // This eliminates repetitive manual mapping code for both address and zipCode fields
+            $dto = $this->validationHelper->mapArrayToDto($data, AddressFullValidationRequest::class);
+            
+            // Post-processing: Trim whitespace from string fields
+            // Symfony Serializer handles type conversion but doesn't trim strings automatically.
+            // We trim here to ensure clean address data (removes leading/trailing spaces from user input).
+            // This is important for address validation as geocoding requires properly formatted addresses.
+            if ($dto->address !== null) {
+                $dto->address = trim($dto->address);
+            }
+            if ($dto->zipCode !== null) {
+                $dto->zipCode = trim($dto->zipCode);
+            }
 
             // Validate DTO
             $violations = $this->validator->validate($dto);
             if (count($violations) > 0) {
-                $errors = [];
-                foreach ($violations as $violation) {
-                    $errors[] = $violation->getMessage();
-                }
+                $errors = $this->validationHelper->extractViolationMessages($violations);
                 $response = new \App\DTO\ApiResponseDTO(success: false, message: 'Erreur de validation', errors: $errors);
                 return $this->json($response->toArray(), 422);
             }

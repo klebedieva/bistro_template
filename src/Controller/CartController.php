@@ -7,6 +7,7 @@ use App\DTO\CartAddRequest;
 use App\DTO\CartItemDTO;
 use App\DTO\CartResponseDTO;
 use App\Service\CartService;
+use App\Service\ValidationHelper;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -35,7 +36,8 @@ class CartController extends AbstractController
 {
     public function __construct(
         private CartService $cartService,
-        private ValidatorInterface $validator
+        private ValidatorInterface $validator,
+        private ValidationHelper $validationHelper
     ) {}
 
     /**
@@ -175,18 +177,22 @@ class CartController extends AbstractController
                 return $this->json($response->toArray(), 400);
             }
 
-            // Map payload to DTO and validate via Symfony Validator
-            $dto = new CartAddRequest();
-            $dto->itemId = isset($data['itemId']) ? (int)$data['itemId'] : null;
-            $dto->quantity = isset($data['quantity']) ? (int)$data['quantity'] : 1;
+            // Map JSON payload to DTO using helper service
+            // The ValidationHelper automatically handles type conversion (e.g., string '5' -> int 5)
+            // This eliminates repetitive manual mapping code like: isset($data['itemId']) ? (int)$data['itemId'] : null
+            $dto = $this->validationHelper->mapArrayToDto($data, CartAddRequest::class);
+            
+            // Post-processing: Set default quantity if not provided
+            // If the client doesn't send a quantity, we default to 1 (add one item to cart).
+            // This provides a better user experience - users can add items without specifying quantity.
+            if ($dto->quantity === null) {
+                $dto->quantity = 1;
+            }
 
             // Validate DTO
             $violations = $this->validator->validate($dto);
             if (count($violations) > 0) {
-                $errors = [];
-                foreach ($violations as $violation) {
-                    $errors[] = $violation->getMessage();
-                }
+                $errors = $this->validationHelper->extractViolationMessages($violations);
                 $response = new ApiResponseDTO(success: false, message: 'Erreur de validation', errors: $errors);
                 return $this->json($response->toArray(), 422);
             }
