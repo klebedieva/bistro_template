@@ -77,11 +77,11 @@ class DashboardController extends AbstractDashboardController
         $repliedMessages = $contactRepository->count(['isReplied' => true]);
         $pendingMessages = $contactRepository->count(['isReplied' => false]);
         
-        // Get reservations statistics
+        // Get reservations statistics using ReservationStatus enum for type safety
         $totalReservations = $reservationRepository->count([]);
-        $confirmedReservations = $reservationRepository->count(['status' => 'confirmed']);
-        $pendingReservations = $reservationRepository->count(['status' => 'pending']);
-        $cancelledReservations = $reservationRepository->count(['status' => 'cancelled']);
+        $confirmedReservations = $reservationRepository->count(['status' => \App\Enum\ReservationStatus::CONFIRMED->value]);
+        $pendingReservations = $reservationRepository->count(['status' => \App\Enum\ReservationStatus::PENDING->value]);
+        $cancelledReservations = $reservationRepository->count(['status' => \App\Enum\ReservationStatus::CANCELLED->value]);
         
         // Get order statistics (only visible to ROLE_ADMIN users)
         // These sensitive financial metrics are restricted to admin access

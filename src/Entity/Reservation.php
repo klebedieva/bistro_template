@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Enum\ReservationStatus;
 use App\Repository\ReservationRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -14,7 +15,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * status in the back office (confirmation, cancellation, no-show tracking).
  *
  * Invariants/notes:
- * - Status is a simple string workflow (pending|confirmed|cancelled|completed|no_show)
+ * - Status uses ReservationStatus enum for type safety (pending|confirmed|cancelled|completed|no_show)
  * - isConfirmed mirrors status=confirmed for UI convenience
  * - Date and time are stored separately (time as HH:MM string)
  */
@@ -67,8 +68,8 @@ class Reservation
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\Column(length: 20)]
-    private ?string $status = 'pending';
+    #[ORM\Column(type: 'string', enumType: ReservationStatus::class, options: ['default' => ReservationStatus::PENDING->value])]
+    private ?ReservationStatus $status = ReservationStatus::PENDING;
 
     #[ORM\Column(type: Types::BOOLEAN)]
     private ?bool $isConfirmed = false;
@@ -82,7 +83,7 @@ class Reservation
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
-        $this->status = 'pending';
+        $this->status = ReservationStatus::PENDING;
         $this->isConfirmed = false;
     }
 
@@ -114,8 +115,36 @@ class Reservation
 
     public function getCreatedAt(): ?\DateTimeImmutable { return $this->createdAt; }
 
-    public function getStatus(): ?string { return $this->status; }
-    public function setStatus(string $status): self { $this->status = $status; return $this; }
+    /**
+     * Get reservation status
+     *
+     * Returns the current status as ReservationStatus enum for type safety.
+     *
+     * @return ReservationStatus|null Current reservation status
+     */
+    public function getStatus(): ?ReservationStatus { return $this->status; }
+    
+    /**
+     * Set reservation status
+     *
+     * Updates the reservation status and automatically synchronizes the isConfirmed flag.
+     * Supports both enum and string for backward compatibility during migration.
+     *
+     * @param ReservationStatus|string $status New status (enum preferred, string supported for compatibility)
+     * @return self
+     */
+    public function setStatus(ReservationStatus|string $status): self
+    {
+        // Support both enum and string for backward compatibility during migration
+        // This allows existing code using strings to continue working
+        $this->status = $status instanceof ReservationStatus ? $status : ReservationStatus::from($status);
+        
+        // Automatically update isConfirmed flag when status changes to confirmed
+        // This ensures data consistency between status and isConfirmed fields
+        $this->isConfirmed = ($this->status === ReservationStatus::CONFIRMED);
+        
+        return $this;
+    }
 
     public function isConfirmed(): ?bool { return $this->isConfirmed; }
     public function setIsConfirmed(bool $isConfirmed): self { $this->isConfirmed = $isConfirmed; return $this; }

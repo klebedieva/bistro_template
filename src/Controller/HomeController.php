@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\DTO\ReservationCreateRequest;
 use App\Entity\Review;
 use App\Entity\Reservation;
+use App\Enum\ReservationStatus;
 use App\Form\ReviewType;
 use App\Form\ReservationType;
 use App\Repository\ReviewRepository;
@@ -229,7 +230,7 @@ class HomeController extends AbstractController
             $reservation->setTime($dto->time);
             $reservation->setGuests($dto->guests);
             $reservation->setMessage($dto->message);
-            $reservation->setStatus('pending');
+            $reservation->setStatus(ReservationStatus::PENDING);
             $reservation->setIsConfirmed(false);
             
             $entityManager->persist($reservation);

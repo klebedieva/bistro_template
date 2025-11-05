@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Reservation;
+use App\Enum\ReservationStatus;
 use App\Service\TableAvailabilityService;
 use App\Service\SymfonyEmailService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -62,12 +63,13 @@ class ReservationCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
+        // Map French labels to ReservationStatus enum values for EasyAdmin form
         $statusChoices = [
-            'En attente' => 'pending',
-            'Confirmée' => 'confirmed',
-            'Annulée' => 'cancelled',
-            'Réalisée' => 'completed',
-            'Non venu' => 'no_show',
+            'En attente' => ReservationStatus::PENDING->value,
+            'Confirmée' => ReservationStatus::CONFIRMED->value,
+            'Annulée' => ReservationStatus::CANCELLED->value,
+            'Réalisée' => ReservationStatus::COMPLETED->value,
+            'Non venu' => ReservationStatus::NO_SHOW->value,
         ];
 
         $timeChoices = [];
@@ -152,14 +154,14 @@ class ReservationCrudController extends AbstractCrudController
                 ->setRequired(true)
                 ->setChoices($statusChoices)
                 ->setHelp('Statut de la réservation')
-                ->setFormTypeOption('data', 'pending')
+                ->setFormTypeOption('data', ReservationStatus::PENDING->value)
                 ->setTemplatePath('admin/reservation/_status_badge.html.twig')
                 ->renderAsBadges([
-                    'pending' => 'warning',
-                    'confirmed' => 'success',
-                    'cancelled' => 'danger',
-                    'completed' => 'info',
-                    'no_show' => 'secondary',
+                    ReservationStatus::PENDING->value => 'warning',
+                    ReservationStatus::CONFIRMED->value => 'success',
+                    ReservationStatus::CANCELLED->value => 'danger',
+                    ReservationStatus::COMPLETED->value => 'info',
+                    ReservationStatus::NO_SHOW->value => 'secondary',
                 ]),
             
             DateTimeField::new('createdAt', 'Date de création')
@@ -210,7 +212,7 @@ class ReservationCrudController extends AbstractCrudController
             ->displayIf(function ($entity) {
                 return $entity instanceof Reservation && 
                        $entity->getId() !== null && 
-                       in_array($entity->getStatus(), ['pending']);
+                       $entity->getStatus() === ReservationStatus::PENDING;
             });
 
         $cancelAction = Action::new('cancel', 'Annuler')
@@ -220,7 +222,7 @@ class ReservationCrudController extends AbstractCrudController
             ->displayIf(function ($entity) {
                 return $entity instanceof Reservation && 
                        $entity->getId() !== null && 
-                       in_array($entity->getStatus(), ['pending', 'confirmed']);
+                       in_array($entity->getStatus(), [ReservationStatus::PENDING, ReservationStatus::CONFIRMED], true);
             });
 
 
@@ -273,11 +275,11 @@ class ReservationCrudController extends AbstractCrudController
             ->add(TextFilter::new('email', 'Email'))
             ->add(ChoiceFilter::new('status', 'Statut')
                 ->setChoices([
-                    'En attente' => 'pending',
-                    'Confirmée' => 'confirmed',
-                    'Annulée' => 'cancelled',
-                    'Réalisée' => 'completed',
-                    'Non venu' => 'no_show',
+                    'En attente' => ReservationStatus::PENDING->value,
+                    'Confirmée' => ReservationStatus::CONFIRMED->value,
+                    'Annulée' => ReservationStatus::CANCELLED->value,
+                    'Réalisée' => ReservationStatus::COMPLETED->value,
+                    'Non venu' => ReservationStatus::NO_SHOW->value,
                 ]))
             ->add(DateTimeFilter::new('date', 'Date de réservation'))
             ->add(DateTimeFilter::new('createdAt', 'Date de création'));
@@ -302,24 +304,19 @@ class ReservationCrudController extends AbstractCrudController
         }
 
         // Status cycle for click: pending -> confirmed -> completed -> no_show -> pending
-        $cycle = ['pending', 'confirmed', 'completed', 'no_show'];
-        $current = $reservation->getStatus() ?? 'pending';
+        // Use ReservationStatus enum for type safety
+        $cycle = [ReservationStatus::PENDING, ReservationStatus::CONFIRMED, ReservationStatus::COMPLETED, ReservationStatus::NO_SHOW];
+        $current = $reservation->getStatus() ?? ReservationStatus::PENDING;
         $currentIndex = array_search($current, $cycle, true);
         if ($currentIndex === false) {
-            // If status is outside cycle (cancelled) — start with 'pending'
-            $next = 'pending';
+            // If status is outside cycle (cancelled) — start with pending
+            $next = ReservationStatus::PENDING;
         } else {
             $next = $cycle[($currentIndex + 1) % count($cycle)];
         }
 
         $reservation->setStatus($next);
-        // Synchronize auxiliary fields
-        if ($next === 'confirmed') {
-            $reservation->setIsConfirmed(true);
-            $reservation->setConfirmedAt(new \DateTimeImmutable());
-        } else {
-            $reservation->setIsConfirmed(false);
-        }
+        // Note: isConfirmed is automatically updated by setStatus() method in Reservation entity
 
         $this->entityManager->flush();
 
@@ -359,9 +356,9 @@ class ReservationCrudController extends AbstractCrudController
         $confirmationMessage = $request->request->get('confirmationMessage', 'Votre réservation est confirmée.');
 
         try {
-            // Update reservation status
-            $reservation->setStatus('confirmed');
-            $reservation->setIsConfirmed(true);
+            // Update reservation status using enum for type safety
+            $reservation->setStatus(ReservationStatus::CONFIRMED);
+            // Note: isConfirmed is automatically updated by setStatus() method in Reservation entity
             $reservation->setConfirmedAt(new \DateTimeImmutable());
             $reservation->setConfirmationMessage($confirmationMessage);
 
@@ -425,8 +422,9 @@ class ReservationCrudController extends AbstractCrudController
             $confirmationMessage = $request->request->get('confirmationMessage', 'Votre réservation est confirmée.');
 
             try {
-                $reservation->setStatus('confirmed');
-                $reservation->setIsConfirmed(true);
+                // Update reservation status using enum for type safety
+                $reservation->setStatus(ReservationStatus::CONFIRMED);
+                // Note: isConfirmed is automatically updated by setStatus() method in Reservation entity
                 $reservation->setConfirmedAt(new \DateTimeImmutable());
                 $reservation->setConfirmationMessage($confirmationMessage);
                 $this->entityManager->flush();
@@ -476,9 +474,9 @@ class ReservationCrudController extends AbstractCrudController
         }
 
         try {
-            // Update reservation status
-            $reservation->setStatus('cancelled');
-            $reservation->setIsConfirmed(false);
+            // Update reservation status using enum for type safety
+            $reservation->setStatus(ReservationStatus::CANCELLED);
+            // Note: isConfirmed is automatically updated by setStatus() method in Reservation entity
             
             $this->entityManager->flush();
             
@@ -510,8 +508,8 @@ class ReservationCrudController extends AbstractCrudController
     {
         $reservation = new Reservation();
         
-        // Set default values for new reservation
-        $reservation->setStatus('pending');
+        // Set default values for new reservation using enum for type safety
+        $reservation->setStatus(ReservationStatus::PENDING);
         $reservation->setIsConfirmed(false);
         
         // Set default date to today
