@@ -72,7 +72,7 @@ class CartController extends AbstractController
         description: 'Returns the contents of the current session cart',
         tags: ['Cart']
     )]
-    #[OA\Response(response: 200, description: 'Successful response', content: new OA\JsonContent(ref: '#/components/schemas/ApiResponse'))]
+    #[OA\Response(response: 200, description: 'Successful response', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'cart', type: 'object', nullable: true), new OA\Property(property: 'count', type: 'integer', nullable: true)]))]
     public function getCart(): JsonResponse
     {
         try {
@@ -142,9 +142,9 @@ class CartController extends AbstractController
         ),
         tags: ['Cart']
     )]
-    #[OA\Response(response: 200, description: 'Item added successfully', content: new OA\JsonContent(ref: '#/components/schemas/ApiResponse'))]
-    #[OA\Response(response: 400, description: 'Invalid data', content: new OA\JsonContent(ref: '#/components/schemas/ApiResponse'))]
-    #[OA\Response(response: 404, description: 'Item not found', content: new OA\JsonContent(ref: '#/components/schemas/ApiResponse'))]
+    #[OA\Response(response: 200, description: 'Item added successfully', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string', nullable: true), new OA\Property(property: 'cart', type: 'object', nullable: true)]))]
+    #[OA\Response(response: 400, description: 'Invalid data', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string')]))]
+    #[OA\Response(response: 404, description: 'Item not found', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string')]))]
     public function addToCart(Request $request, CsrfTokenManagerInterface $csrfTokenManager): JsonResponse
     {
         // CSRF protection is enforced in production environment only
@@ -251,7 +251,7 @@ class CartController extends AbstractController
         description: 'Item ID',
         schema: new OA\Schema(type: 'integer', example: 1)
     )]
-    #[OA\Response(response: 200, description: 'Item removed successfully', content: new OA\JsonContent(ref: '#/components/schemas/ApiResponse'))]
+    #[OA\Response(response: 200, description: 'Item removed successfully', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string', nullable: true), new OA\Property(property: 'cart', type: 'object', nullable: true)]))]
     public function removeFromCart(int $id, Request $request, CsrfTokenManagerInterface $csrfTokenManager): JsonResponse
     {
         // CSRF Protection (disabled in dev environment via security.yaml)
@@ -339,7 +339,7 @@ class CartController extends AbstractController
         description: 'Item ID',
         schema: new OA\Schema(type: 'integer', example: 1)
     )]
-    #[OA\Response(response: 200, description: 'Quantity updated successfully', content: new OA\JsonContent(ref: '#/components/schemas/ApiResponse'))]
+    #[OA\Response(response: 200, description: 'Quantity updated successfully', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string', nullable: true), new OA\Property(property: 'cart', type: 'object', nullable: true)]))]
     public function updateQuantity(int $id, Request $request, CsrfTokenManagerInterface $csrfTokenManager): JsonResponse
     {
         // CSRF Protection (disabled in dev environment via security.yaml)
@@ -421,7 +421,7 @@ class CartController extends AbstractController
         description: 'Removes all items from the cart',
         tags: ['Cart']
     )]
-    #[OA\Response(response: 200, description: 'Cart cleared successfully', content: new OA\JsonContent(ref: '#/components/schemas/ApiResponse'))]
+    #[OA\Response(response: 200, description: 'Cart cleared successfully', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string', nullable: true), new OA\Property(property: 'cart', type: 'object', nullable: true)]))]
     public function clearCart(Request $request, CsrfTokenManagerInterface $csrfTokenManager): JsonResponse
     {
         // CSRF Protection (disabled in dev environment via security.yaml)
@@ -484,7 +484,7 @@ class CartController extends AbstractController
         description: 'Returns the total number of items in the cart (useful for badge updates)',
         tags: ['Cart']
     )]
-    #[OA\Response(response: 200, description: 'Successful response', content: new OA\JsonContent(ref: '#/components/schemas/ApiResponse'))]
+    #[OA\Response(response: 200, description: 'Successful response', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'count', type: 'integer')]))]
     public function getCartCount(): JsonResponse
     {
         try {

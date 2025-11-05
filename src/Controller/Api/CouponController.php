@@ -56,10 +56,51 @@ class CouponController extends AbstractController
             ]
         )),
         responses: [
-            new \OpenApi\Attributes\Response(response: 200, description: 'OK', content: new \OpenApi\Attributes\JsonContent(ref: '#/components/schemas/ApiResponse')),
-            new \OpenApi\Attributes\Response(response: 400, description: 'Bad request', content: new \OpenApi\Attributes\JsonContent(ref: '#/components/schemas/ApiResponse')),
-            new \OpenApi\Attributes\Response(response: 422, description: 'Validation error', content: new \OpenApi\Attributes\JsonContent(ref: '#/components/schemas/ApiResponse')),
-            new \OpenApi\Attributes\Response(response: 500, description: 'Server error', content: new \OpenApi\Attributes\JsonContent(ref: '#/components/schemas/ApiResponse'))
+            new \OpenApi\Attributes\Response(
+                response: 200,
+                description: 'OK',
+                content: new \OpenApi\Attributes\JsonContent(
+                    type: 'object',
+                    properties: [
+                        new \OpenApi\Attributes\Property(property: 'success', type: 'boolean', example: true),
+                        new \OpenApi\Attributes\Property(property: 'message', type: 'string', nullable: true),
+                        new \OpenApi\Attributes\Property(property: 'data', type: 'object')
+                    ]
+                )
+            ),
+            new \OpenApi\Attributes\Response(
+                response: 400,
+                description: 'Bad request',
+                content: new \OpenApi\Attributes\JsonContent(
+                    type: 'object',
+                    properties: [
+                        new \OpenApi\Attributes\Property(property: 'success', type: 'boolean', example: false),
+                        new \OpenApi\Attributes\Property(property: 'message', type: 'string', example: 'Requête invalide')
+                    ]
+                )
+            ),
+            new \OpenApi\Attributes\Response(
+                response: 422,
+                description: 'Validation error',
+                content: new \OpenApi\Attributes\JsonContent(
+                    type: 'object',
+                    properties: [
+                        new \OpenApi\Attributes\Property(property: 'success', type: 'boolean', example: false),
+                        new \OpenApi\Attributes\Property(property: 'errors', type: 'array', items: new \OpenApi\Attributes\Items(type: 'string'))
+                    ]
+                )
+            ),
+            new \OpenApi\Attributes\Response(
+                response: 500,
+                description: 'Server error',
+                content: new \OpenApi\Attributes\JsonContent(
+                    type: 'object',
+                    properties: [
+                        new \OpenApi\Attributes\Property(property: 'success', type: 'boolean', example: false),
+                        new \OpenApi\Attributes\Property(property: 'message', type: 'string', example: 'Erreur serveur')
+                    ]
+                )
+            )
         ]
     )]
     public function validate(Request $request): JsonResponse

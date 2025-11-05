@@ -118,9 +118,9 @@ class OrderController extends AbstractController
         ),
         tags: ['Order']
     )]
-    #[OA\Response(response: 201, description: 'Order created successfully', content: new OA\JsonContent(ref: '#/components/schemas/ApiResponse'))]
-    #[OA\Response(response: 400, description: 'Invalid data or empty cart', content: new OA\JsonContent(ref: '#/components/schemas/ApiResponse'))]
-    #[OA\Response(response: 500, description: 'Internal server error', content: new OA\JsonContent(ref: '#/components/schemas/ApiResponse'))]
+    #[OA\Response(response: 201, description: 'Order created successfully', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string', nullable: true), new OA\Property(property: 'order', type: 'object', nullable: true)]))]
+    #[OA\Response(response: 400, description: 'Invalid data or empty cart', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string')]))]
+    #[OA\Response(response: 500, description: 'Internal server error', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string')]))]
     #[OA\Tag(name: 'Order')]
     public function createOrder(Request $request, CsrfTokenManagerInterface $csrfTokenManager): JsonResponse
     {
@@ -273,9 +273,9 @@ class OrderController extends AbstractController
         description: 'Order ID',
         schema: new OA\Schema(type: 'integer', example: 1)
     )]
-    #[OA\Response(response: 200, description: 'Successful response', content: new OA\JsonContent(ref: '#/components/schemas/ApiResponse'))]
-    #[OA\Response(response: 404, description: 'Order not found', content: new OA\JsonContent(ref: '#/components/schemas/ApiResponse'))]
-    #[OA\Response(response: 500, description: 'Internal server error', content: new OA\JsonContent(ref: '#/components/schemas/ApiResponse'))]
+    #[OA\Response(response: 200, description: 'Successful response', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'order', type: 'object', nullable: true)]))]
+    #[OA\Response(response: 404, description: 'Order not found', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string')]))]
+    #[OA\Response(response: 500, description: 'Internal server error', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string')]))]
     #[OA\Tag(name: 'Order')]
     public function getOrder(int $id): JsonResponse
     {

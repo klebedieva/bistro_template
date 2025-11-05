@@ -56,8 +56,32 @@ class AddressValidationController extends AbstractController
         ),
         tags: ['Delivery']
     )]
-    #[OA\Response(response: 200, description: 'Validation result', content: new OA\JsonContent(ref: '#/components/schemas/ApiResponse'))]
-    #[OA\Response(response: 400, description: 'Invalid request', content: new OA\JsonContent(ref: '#/components/schemas/ApiResponse'))]
+    #[OA\Response(
+        response: 200,
+        description: 'Validation result',
+        content: new OA\JsonContent(
+            type: 'object',
+            properties: [
+                new OA\Property(property: 'success', type: 'boolean', example: true),
+                new OA\Property(property: 'message', type: 'string', nullable: true, example: 'Opération réussie'),
+                new OA\Property(property: 'data', type: 'object'),
+                new OA\Property(property: 'count', type: 'integer', nullable: true, example: 1),
+                new OA\Property(property: 'errors', type: 'array', items: new OA\Items(type: 'string'), nullable: true)
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 400,
+        description: 'Invalid request',
+        content: new OA\JsonContent(
+            type: 'object',
+            properties: [
+                new OA\Property(property: 'success', type: 'boolean', example: false),
+                new OA\Property(property: 'message', type: 'string', example: 'Requête invalide'),
+                new OA\Property(property: 'errors', type: 'array', items: new OA\Items(type: 'string'))
+            ]
+        )
+    )]
     #[OA\Tag(name: 'Delivery')]
     public function validateZipCode(Request $request): JsonResponse
     {
@@ -131,8 +155,32 @@ class AddressValidationController extends AbstractController
         ),
         tags: ['Delivery']
     )]
-    #[OA\Response(response: 200, description: 'Validation result', content: new OA\JsonContent(ref: '#/components/schemas/ApiResponse'))]
-    #[OA\Response(response: 400, description: 'Invalid request', content: new OA\JsonContent(ref: '#/components/schemas/ApiResponse'))]
+    #[OA\Response(
+        response: 200,
+        description: 'Validation result',
+        content: new OA\JsonContent(
+            type: 'object',
+            properties: [
+                new OA\Property(property: 'success', type: 'boolean', example: true),
+                new OA\Property(property: 'message', type: 'string', nullable: true, example: 'Opération réussie'),
+                new OA\Property(property: 'data', type: 'object'),
+                new OA\Property(property: 'count', type: 'integer', nullable: true, example: 1),
+                new OA\Property(property: 'errors', type: 'array', items: new OA\Items(type: 'string'), nullable: true)
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 400,
+        description: 'Invalid request',
+        content: new OA\JsonContent(
+            type: 'object',
+            properties: [
+                new OA\Property(property: 'success', type: 'boolean', example: false),
+                new OA\Property(property: 'message', type: 'string', example: 'Requête invalide'),
+                new OA\Property(property: 'errors', type: 'array', items: new OA\Items(type: 'string'))
+            ]
+        )
+    )]
     #[OA\Tag(name: 'Delivery')]
     public function validateAddress(Request $request): JsonResponse
     {

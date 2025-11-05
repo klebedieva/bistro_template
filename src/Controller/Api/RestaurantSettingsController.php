@@ -46,7 +46,7 @@ class RestaurantSettingsController extends AbstractController
         description: 'Get all restaurant configuration settings including delivery fees, tax rates, etc.',
         tags: ['Restaurant Settings']
     )]
-    #[OA\Response(response: 200, description: 'Restaurant settings retrieved successfully', content: new OA\JsonContent(ref: '#/components/schemas/ApiResponse'))]
+    #[OA\Response(response: 200, description: 'Restaurant settings retrieved successfully', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'data', type: 'object')]))]
     public function getSettings(): JsonResponse
     {
         // Build settings object from service (all settings are retrieved from RestaurantSettingsService)
