@@ -131,7 +131,8 @@ class OrderController extends AbstractController
         tags: ['Order']
     )]
     #[OA\Response(response: 201, description: 'Order created successfully', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string', nullable: true), new OA\Property(property: 'order', type: 'object', nullable: true)]))]
-    #[OA\Response(response: 400, description: 'Invalid data or empty cart', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string')]))]
+    #[OA\Response(response: 400, description: 'Invalid JSON or CSRF token', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string')]))]
+    #[OA\Response(response: 422, description: 'Validation error', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string'), new OA\Property(property: 'errors', type: 'array', items: new OA\Items(type: 'string'))]))]
     #[OA\Response(response: 500, description: 'Internal server error', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string')]))]
     #[OA\Tag(name: 'Order')]
     public function createOrder(Request $request, CsrfTokenManagerInterface $csrfTokenManager): JsonResponse

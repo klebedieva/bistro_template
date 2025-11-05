@@ -82,12 +82,23 @@ class AddressValidationController extends AbstractController
     )]
     #[OA\Response(
         response: 400,
-        description: 'Invalid request',
+        description: 'Invalid JSON',
         content: new OA\JsonContent(
             type: 'object',
             properties: [
                 new OA\Property(property: 'success', type: 'boolean', example: false),
-                new OA\Property(property: 'message', type: 'string', example: 'Requête invalide'),
+                new OA\Property(property: 'message', type: 'string', example: 'JSON invalide')
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 422,
+        description: 'Validation error',
+        content: new OA\JsonContent(
+            type: 'object',
+            properties: [
+                new OA\Property(property: 'success', type: 'boolean', example: false),
+                new OA\Property(property: 'message', type: 'string', example: 'Erreur de validation'),
                 new OA\Property(property: 'errors', type: 'array', items: new OA\Items(type: 'string'))
             ]
         )
@@ -204,12 +215,23 @@ class AddressValidationController extends AbstractController
     )]
     #[OA\Response(
         response: 400,
-        description: 'Invalid request',
+        description: 'Invalid JSON',
         content: new OA\JsonContent(
             type: 'object',
             properties: [
                 new OA\Property(property: 'success', type: 'boolean', example: false),
-                new OA\Property(property: 'message', type: 'string', example: 'Requête invalide'),
+                new OA\Property(property: 'message', type: 'string', example: 'JSON invalide')
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 422,
+        description: 'Validation error',
+        content: new OA\JsonContent(
+            type: 'object',
+            properties: [
+                new OA\Property(property: 'success', type: 'boolean', example: false),
+                new OA\Property(property: 'message', type: 'string', example: 'Erreur de validation'),
                 new OA\Property(property: 'errors', type: 'array', items: new OA\Items(type: 'string'))
             ]
         )

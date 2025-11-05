@@ -9,9 +9,11 @@ use Doctrine\ORM\Event\PostUpdateEventArgs;
 use Doctrine\ORM\Event\PrePersistEventArgs;
 use Doctrine\ORM\Event\PostPersistEventArgs;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 
 class OrderItemListener
 {
+    public function __construct(private LoggerInterface $logger) {}
     public function preUpdate(PreUpdateEventArgs $args): void
     {
         $entity = $args->getObject();
@@ -68,7 +70,9 @@ class OrderItemListener
             $em->persist($order);
             $em->flush();
             
-            error_log("Order #{$order->getId()} totals recalculated via listener");
+            $this->logger->info('Order totals recalculated via listener', [
+                'orderId' => $order->getId(),
+            ]);
         }
     }
 }
