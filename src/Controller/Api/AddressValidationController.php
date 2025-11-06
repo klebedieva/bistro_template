@@ -125,47 +125,42 @@ class AddressValidationController extends AbstractApiController
     #[OA\Tag(name: 'Delivery')]
     public function validateZipCode(Request $request): JsonResponse
     {
-        try {
-            // Get JSON data from request
-            // Uses base class method from AbstractApiController
-            // Returns array or JsonResponse (error if JSON invalid)
-            $jsonResult = $this->getJsonDataFromRequest($request);
-            if ($jsonResult instanceof JsonResponse) {
-                // JSON parsing failed, return error response
-                return $jsonResult;
-            }
-            $data = $jsonResult;
-
-            // Map JSON payload to DTO and validate
-            // Uses base class method from AbstractApiController
-            // Returns DTO or JsonResponse (error if validation fails)
-            $validationResult = $this->validateDto($data, AddressValidationRequest::class);
-            if ($validationResult instanceof JsonResponse) {
-                // Validation failed, return error response
-                return $validationResult;
-            }
-            $dto = $validationResult;
-
-            $zipCode = $dto->zipCode;
-
-            // Validate zip code using service (checks distance, coordinates, etc.)
-            $result = $this->addressValidationService->validateZipCodeForDelivery($zipCode);
-
-            // Return validation result with all relevant information
-            // Uses base class method from AbstractApiController
-            return $this->successResponse([
-                'valid' => $result['valid'],
-                'error' => $result['error'],
-                'distance' => $result['distance'],
-                'coordinates' => $result['coordinates'] ?? null,
-                'deliveryAvailable' => $result['valid']
-            ], null, 200);
-
-        } catch (\Exception $e) {
-            // Return error response if validation fails
-            // Uses base class method from AbstractApiController
-            return $this->errorResponse('Erreur lors de la validation du code postal', 500);
+        // Get JSON data from request
+        // Uses base class method from AbstractApiController
+        // Returns array or JsonResponse (error if JSON invalid)
+        $jsonResult = $this->getJsonDataFromRequest($request);
+        if ($jsonResult instanceof JsonResponse) {
+            // JSON parsing failed, return error response
+            return $jsonResult;
         }
+        $data = $jsonResult;
+
+        // Map JSON payload to DTO and validate
+        // Uses base class method from AbstractApiController
+        // Returns DTO or JsonResponse (error if validation fails)
+        $validationResult = $this->validateDto($data, AddressValidationRequest::class);
+        if ($validationResult instanceof JsonResponse) {
+            // Validation failed, return error response
+            return $validationResult;
+        }
+        $dto = $validationResult;
+
+        $zipCode = $dto->zipCode;
+
+        // Validate zip code using service (checks distance, coordinates, etc.)
+        $result = $this->addressValidationService->validateZipCodeForDelivery($zipCode);
+
+        // Return validation result with all relevant information
+        // Uses base class method from AbstractApiController
+        // Note: All exceptions are automatically handled by ApiExceptionSubscriber,
+        // which provides centralized error handling and consistent error response format
+        return $this->successResponse([
+            'valid' => $result['valid'],
+            'error' => $result['error'],
+            'distance' => $result['distance'],
+            'coordinates' => $result['coordinates'] ?? null,
+            'deliveryAvailable' => $result['valid']
+        ], null, 200);
     }
 
     /**
@@ -254,47 +249,42 @@ class AddressValidationController extends AbstractApiController
     #[OA\Tag(name: 'Delivery')]
     public function validateAddress(Request $request): JsonResponse
     {
-        try {
-            // Get JSON data from request
-            // Uses base class method from AbstractApiController
-            // Returns array or JsonResponse (error if JSON invalid)
-            $jsonResult = $this->getJsonDataFromRequest($request);
-            if ($jsonResult instanceof JsonResponse) {
-                // JSON parsing failed, return error response
-                return $jsonResult;
-            }
-            $data = $jsonResult;
-
-            // Map JSON payload to DTO and validate
-            // Uses base class method from AbstractApiController
-            // Returns DTO or JsonResponse (error if validation fails)
-            $validationResult = $this->validateDto($data, AddressFullValidationRequest::class);
-            if ($validationResult instanceof JsonResponse) {
-                // Validation failed, return error response
-                return $validationResult;
-            }
-            $dto = $validationResult;
-
-            $address = $dto->address;
-            $zipCode = $dto->zipCode;
-
-            // Validate address using service (geocodes address and checks distance)
-            $result = $this->addressValidationService->validateAddressForDelivery($address, $zipCode);
-
-            // Return validation result with all relevant information
-            // Uses base class method from AbstractApiController
-            return $this->successResponse([
-                'valid' => $result['valid'],
-                'error' => $result['error'],
-                'distance' => $result['distance'],
-                'coordinates' => $result['coordinates'] ?? null,
-                'deliveryAvailable' => $result['valid']
-            ], null, 200);
-
-        } catch (\Exception $e) {
-            // Return error response if validation fails
-            // Uses base class method from AbstractApiController
-            return $this->errorResponse('Erreur lors de la validation de l\'adresse', 500);
+        // Get JSON data from request
+        // Uses base class method from AbstractApiController
+        // Returns array or JsonResponse (error if JSON invalid)
+        $jsonResult = $this->getJsonDataFromRequest($request);
+        if ($jsonResult instanceof JsonResponse) {
+            // JSON parsing failed, return error response
+            return $jsonResult;
         }
+        $data = $jsonResult;
+
+        // Map JSON payload to DTO and validate
+        // Uses base class method from AbstractApiController
+        // Returns DTO or JsonResponse (error if validation fails)
+        $validationResult = $this->validateDto($data, AddressFullValidationRequest::class);
+        if ($validationResult instanceof JsonResponse) {
+            // Validation failed, return error response
+            return $validationResult;
+        }
+        $dto = $validationResult;
+
+        $address = $dto->address;
+        $zipCode = $dto->zipCode;
+
+        // Validate address using service (geocodes address and checks distance)
+        $result = $this->addressValidationService->validateAddressForDelivery($address, $zipCode);
+
+        // Return validation result with all relevant information
+        // Uses base class method from AbstractApiController
+        // Note: All exceptions are automatically handled by ApiExceptionSubscriber,
+        // which provides centralized error handling and consistent error response format
+        return $this->successResponse([
+            'valid' => $result['valid'],
+            'error' => $result['error'],
+            'distance' => $result['distance'],
+            'coordinates' => $result['coordinates'] ?? null,
+            'deliveryAvailable' => $result['valid']
+        ], null, 200);
     }
 }

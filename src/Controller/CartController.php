@@ -72,36 +72,44 @@ class CartController extends AbstractApiController
     #[OA\Response(response: 200, description: 'Successful response', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'cart', type: 'object', nullable: true), new OA\Property(property: 'count', type: 'integer', nullable: true)]))]
     public function getCart(): JsonResponse
     {
-        try {
-            // Retrieve cart data from session via CartService
-            $cart = $this->cartService->getCart();
-            
-            // Convert cart items array to DTOs for consistent API response format
-            $cartItems = array_map(function($item) {
-                return new CartItemDTO(
-                    id: $item['id'],
-                    name: $item['name'],
-                    price: $item['price'],
-                    quantity: $item['quantity'],
-                    image: $item['image'],
-                    category: $item['category']
-                );
-            }, $cart['items']);
-
-            // Build structured cart response DTO
-            $cartResponse = new CartResponseDTO(
-                items: $cartItems,
-                total: $cart['total'],
-                itemCount: $cart['itemCount']
-            );
-
-            // Uses base class method from AbstractApiController
-            return $this->successResponse(['cart' => $cartResponse], null, 200);
-        } catch (\Exception $e) {
-            // Return error response if cart retrieval fails
-            // Uses base class method from AbstractApiController
-            return $this->errorResponse('Erreur lors de la récupération du panier: ' . $e->getMessage(), 500);
+        // Retrieve cart data from session via CartService
+        // This method always returns array with keys: 'items', 'total', 'itemCount'
+        // Even if cart is empty, it returns: ['items' => [], 'total' => 0, 'itemCount' => 0]
+        $cart = $this->cartService->getCart();
+        
+        // Ensure cart has expected structure (defense in depth)
+        // This prevents errors if CartService returns unexpected format
+        if (!isset($cart['items']) || !is_array($cart['items'])) {
+            // If cart structure is invalid, return empty cart
+            // This should never happen, but provides graceful degradation
+            $cart = ['items' => [], 'total' => 0, 'itemCount' => 0];
         }
+        
+        // Convert cart items array to DTOs for consistent API response format
+        // array_map works fine with empty arrays, so no need to check if items is empty
+        $cartItems = array_map(function($item) {
+            return new CartItemDTO(
+                id: $item['id'],
+                name: $item['name'],
+                price: $item['price'],
+                quantity: $item['quantity'],
+                image: $item['image'],
+                category: $item['category']
+            );
+        }, $cart['items']);
+
+        // Build structured cart response DTO
+        $cartResponse = new CartResponseDTO(
+            items: $cartItems,
+            total: $cart['total'] ?? 0,
+            itemCount: $cart['itemCount'] ?? 0
+        );
+
+        // Uses base class method from AbstractApiController
+        // This method creates response with 'cart' property at top level (not inside 'data')
+        // This matches the expected structure in frontend JavaScript code
+        // Note: All exceptions are automatically handled by ApiExceptionSubscriber
+        return $this->cartResponse($cartResponse, null, 200);
     }
 
     /**
@@ -254,15 +262,18 @@ class CartController extends AbstractApiController
             );
 
             // Uses base class method from AbstractApiController
-            return $this->successResponse(['cart' => $cartResponse], 'Article ajouté au panier', 200);
+            // This method creates response with 'cart' property at top level (not inside 'data')
+            // This matches the expected structure in frontend JavaScript code
+            return $this->cartResponse($cartResponse, 'Article ajouté au panier', 200);
 
         } catch (\InvalidArgumentException $e) {
+            // Handle business logic errors (e.g., item not found)
+            // We catch this specifically to provide custom error message
+            // Other exceptions are handled by ApiExceptionSubscriber
             // Uses base class method from AbstractApiController
             return $this->errorResponse($e->getMessage(), 404);
-        } catch (\Exception $e) {
-            // Uses base class method from AbstractApiController
-            return $this->errorResponse('Erreur lors de l\'ajout au panier: ' . $e->getMessage(), 500);
         }
+        // Note: All other exceptions are automatically handled by ApiExceptionSubscriber
     }
 
     /**
@@ -325,14 +336,17 @@ class CartController extends AbstractApiController
             );
 
             // Uses base class method from AbstractApiController
-            return $this->successResponse(['cart' => $cartResponse], 'Article retiré du panier', 200);
+            // This method creates response with 'cart' property at top level (not inside 'data')
+            // This matches the expected structure in frontend JavaScript code
+            return $this->cartResponse($cartResponse, 'Article retiré du panier', 200);
         } catch (\InvalidArgumentException $e) {
+            // Handle business logic errors (e.g., item not found)
+            // We catch this specifically to provide custom error message
+            // Other exceptions are handled by ApiExceptionSubscriber
             // Uses base class method from AbstractApiController
             return $this->errorResponse($e->getMessage(), 404);
-        } catch (\Exception $e) {
-            // Uses base class method from AbstractApiController
-            return $this->errorResponse('Erreur lors de la suppression: ' . $e->getMessage(), 500);
         }
+        // Note: All other exceptions are automatically handled by ApiExceptionSubscriber
     }
 
     /**
@@ -428,14 +442,17 @@ class CartController extends AbstractApiController
             );
 
             // Uses base class method from AbstractApiController
-            return $this->successResponse(['cart' => $cartResponse], 'Quantité mise à jour', 200);
+            // This method creates response with 'cart' property at top level (not inside 'data')
+            // This matches the expected structure in frontend JavaScript code
+            return $this->cartResponse($cartResponse, 'Quantité mise à jour', 200);
         } catch (\InvalidArgumentException $e) {
+            // Handle business logic errors (e.g., item not found)
+            // We catch this specifically to provide custom error message
+            // Other exceptions are handled by ApiExceptionSubscriber
             // Uses base class method from AbstractApiController
             return $this->errorResponse($e->getMessage(), 404);
-        } catch (\Exception $e) {
-            // Uses base class method from AbstractApiController
-            return $this->errorResponse('Erreur lors de la mise à jour: ' . $e->getMessage(), 500);
         }
+        // Note: All other exceptions are automatically handled by ApiExceptionSubscriber
     }
 
     /**
@@ -468,33 +485,30 @@ class CartController extends AbstractApiController
             }
         }
 
-        try {
-            $cart = $this->cartService->clear();
+        $cart = $this->cartService->clear();
 
-            // Convert cart items to DTOs
-            $cartItems = array_map(function($item) {
-                return new CartItemDTO(
-                    id: $item['id'],
-                    name: $item['name'],
-                    price: $item['price'],
-                    quantity: $item['quantity'],
-                    image: $item['image'],
-                    category: $item['category']
-                );
-            }, $cart['items']);
-
-            $cartResponse = new CartResponseDTO(
-                items: $cartItems,
-                total: $cart['total'],
-                itemCount: $cart['itemCount']
+        // Convert cart items to DTOs
+        $cartItems = array_map(function($item) {
+            return new CartItemDTO(
+                id: $item['id'],
+                name: $item['name'],
+                price: $item['price'],
+                quantity: $item['quantity'],
+                image: $item['image'],
+                category: $item['category']
             );
+        }, $cart['items']);
 
-            // Uses base class method from AbstractApiController
-            return $this->successResponse(['cart' => $cartResponse], 'Panier vidé', 200);
-        } catch (\Exception $e) {
-            // Uses base class method from AbstractApiController
-            return $this->errorResponse('Erreur lors du vidage du panier: ' . $e->getMessage(), 500);
-        }
+        $cartResponse = new CartResponseDTO(
+            items: $cartItems,
+            total: $cart['total'],
+            itemCount: $cart['itemCount']
+        );
+
+        // Uses base class method from AbstractApiController
+        // This method creates response with 'cart' property at top level (not inside 'data')
+        // This matches the expected structure in frontend JavaScript code
+        return $this->cartResponse($cartResponse, 'Panier vidé', 200);
     }
 
     /**
@@ -515,15 +529,12 @@ class CartController extends AbstractApiController
     #[OA\Response(response: 200, description: 'Successful response', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'count', type: 'integer')]))]
     public function getCartCount(): JsonResponse
     {
-        try {
-            $count = $this->cartService->getItemCount();
+        $count = $this->cartService->getItemCount();
 
-            // Uses base class method from AbstractApiController
-            return $this->successResponse(['count' => $count], null, 200);
-        } catch (\Exception $e) {
-            // Uses base class method from AbstractApiController
-            return $this->errorResponse('Erreur: ' . $e->getMessage(), 500);
-        }
+        // Uses base class method from AbstractApiController
+        // Note: All exceptions are automatically handled by ApiExceptionSubscriber,
+        // which provides centralized error handling and consistent error response format
+        return $this->successResponse(['count' => $count], null, 200);
     }
 }
 

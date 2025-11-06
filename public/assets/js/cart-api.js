@@ -360,7 +360,13 @@ class CartAPI {
              * This avoids making a separate API call just for count
              */
             const cart = await this.getCart();
-            return cart.itemCount || 0;
+            // Safety check: ensure cart exists and has itemCount property
+            // This prevents errors if API returns unexpected structure
+            if (cart && typeof cart.itemCount === 'number') {
+                return cart.itemCount;
+            }
+            // Return 0 if cart is invalid (graceful degradation)
+            return 0;
         } catch (error) {
             console.error('Error getting count:', error);
             return 0;
@@ -717,6 +723,24 @@ async function updateCartSidebar() {
     try {
         // Fetch latest cart data
         const cart = await window.cartAPI.getCart();
+
+        // Safety check: ensure cart exists and has correct structure
+        // This prevents "Cannot read properties of undefined" errors
+        if (!cart || !cart.items || !Array.isArray(cart.items)) {
+            // Cart data is invalid or missing - show error message to user
+            cartItems.innerHTML = `
+                <div class="cart-empty">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <h4>Erreur de chargement</h4>
+                    <p>Impossible de charger le panier</p>
+                </div>
+            `;
+            cartTotal.textContent = '0€';
+            if (clearCartBtn) {
+                clearCartBtn.disabled = true;
+            }
+            return;
+        }
 
         /**
          * Update clear cart button state

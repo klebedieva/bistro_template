@@ -907,6 +907,11 @@ async function addToCart(itemId) {
              */
             await performCartUpdate(async () => {
                 const cart = await window.cartAPI.addItem(itemId, 1);
+                // Safety check: ensure cart exists and has items array
+                // This prevents "Cannot read properties of undefined" errors
+                if (!cart || !cart.items || !Array.isArray(cart.items)) {
+                    throw new Error('Invalid cart response structure');
+                }
                 const updated = cart.items.find(i => String(i.id) === key || parseInt(i.id) === parseInt(itemId));
                 if (updated) {
                     updateMenuCard(updated.id, updated.quantity);

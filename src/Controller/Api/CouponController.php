@@ -168,11 +168,14 @@ class CouponController extends AbstractApiController
             // Uses base class method from AbstractApiController
             return $this->successResponse($data, 'Code promo appliqué avec succès', 200);
 
-        } catch (\Exception $e) {
-            $status = $e instanceof \InvalidArgumentException ? 400 : 500;
+        } catch (\InvalidArgumentException $e) {
+            // Handle business logic errors (e.g., invalid coupon, expired coupon)
+            // We catch this specifically to provide custom error message
+            // Other exceptions are handled by ApiExceptionSubscriber
             // Uses base class method from AbstractApiController
-            return $this->errorResponse('Erreur lors de la validation du code promo: ' . $e->getMessage(), $status);
+            return $this->errorResponse($e->getMessage(), 400);
         }
+        // Note: All other exceptions are automatically handled by ApiExceptionSubscriber
     }
 
     /**
@@ -195,11 +198,14 @@ class CouponController extends AbstractApiController
             // Uses base class method from AbstractApiController
             return $this->successResponse(null, 'Code promo appliqué', 200);
 
-        } catch (\Exception $e) {
-            $status = $e instanceof \InvalidArgumentException ? 400 : 500;
+        } catch (\InvalidArgumentException $e) {
+            // Handle business logic errors (e.g., coupon not found, already used)
+            // We catch this specifically to provide custom error message
+            // Other exceptions are handled by ApiExceptionSubscriber
             // Uses base class method from AbstractApiController
-            return $this->errorResponse('Erreur lors de l\'application du code promo: ' . $e->getMessage(), $status);
+            return $this->errorResponse($e->getMessage(), 400);
         }
+        // Note: All other exceptions are automatically handled by ApiExceptionSubscriber
     }
 
     /**
@@ -218,16 +224,13 @@ class CouponController extends AbstractApiController
     #[Route('/list', name: 'list', methods: ['GET'])]
     public function list(): JsonResponse
     {
-        try {
-            $data = $this->couponService->listActiveCoupons();
+        // Get active coupons from the service
+        $data = $this->couponService->listActiveCoupons();
 
-            // Uses base class method from AbstractApiController
-            return $this->successResponse($data, null, 200);
-
-        } catch (\Exception $e) {
-            // Uses base class method from AbstractApiController
-            return $this->errorResponse('Erreur lors de la récupération des codes promo: ' . $e->getMessage(), 500);
-        }
+        // Uses base class method from AbstractApiController
+        // Note: All exceptions are automatically handled by ApiExceptionSubscriber,
+        // which provides centralized error handling and consistent error response format
+        return $this->successResponse($data, null, 200);
     }
 }
 

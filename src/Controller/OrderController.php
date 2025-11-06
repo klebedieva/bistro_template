@@ -241,32 +241,34 @@ class OrderController extends AbstractApiController
             // Handle validation/business logic errors (expected from OrderService)
             // OrderService throws InvalidArgumentException for business rule violations
             // (e.g., empty cart, invalid address, invalid coupon)
+            // 
+            // WHY WE CATCH THIS HERE:
+            // We catch InvalidArgumentException specifically because we want to use the exact
+            // error message from the service (it's user-friendly and specific).
+            // 
+            // WHAT HAPPENS TO OTHER EXCEPTIONS:
+            // All other exceptions (TypeError, ValueError, Exception, etc.) are NOT caught here.
+            // They automatically go to ApiExceptionSubscriber, which:
+            // 1. Logs full error details for developers
+            // 2. Returns safe generic message to client
+            // 3. Ensures consistent error format across all API endpoints
+            //
+            // This is called "hybrid approach": specific handling here, general handling in subscriber
             // Uses base class method from AbstractApiController
             return $this->errorResponse($e->getMessage(), 422);
-        } catch (\TypeError | \ValueError $e) {
-            // Handle type errors (should not happen after DTO validation, but defense in depth)
-            // These errors indicate type mismatches that should have been caught by DTO validation
-            // Log as warning since this indicates a potential bug in validation logic
-            $this->logger->warning('Type error in order creation', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            // Uses base class method from AbstractApiController
-            return $this->errorResponse('Erreur de validation des données', 422);
-        } catch (\Exception $e) {
-            // Log unexpected errors for debugging and monitoring
-            // This catches any unexpected exceptions that might occur during order processing
-            // We log full error details for developers, but only return generic message to user
-            $this->logger->error('Unexpected error in order creation', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
-            // Return generic error message to user (don't expose internal errors for security)
-            // Exposing internal error details could help attackers understand system internals
-            // Uses base class method from AbstractApiController
-            return $this->errorResponse('Erreur lors de la création de la commande', 500);
         }
+        // 
+        // IMPORTANT FOR BEGINNERS:
+        // Notice there's NO catch (\Exception) block here. This is intentional!
+        // 
+        // If any other exception occurs (database error, network error, etc.),
+        // it will be automatically caught by ApiExceptionSubscriber.
+        // 
+        // You don't need to write try-catch for every possible error - the subscriber
+        // handles it automatically. This makes code cleaner and ensures consistent
+        // error handling across all API endpoints.
+        //
+        // See: src/EventSubscriber/ApiExceptionSubscriber.php for details
     }
 
     /**
@@ -283,10 +285,13 @@ class OrderController extends AbstractApiController
         $rawContent = $request->getContent();
         
         // Get max payload size from parameters (with fallback if parameter not found)
+        // Note: This catch is for graceful fallback, not error handling
+        // Main exceptions are handled by ApiExceptionSubscriber
         try {
             $maxPayloadBytes = $this->getParameter('order.max_payload_bytes');
         } catch (\Exception $e) {
             // Fallback to default if parameter not found (should not happen in production)
+            // This is a graceful degradation, not an error condition
             $maxPayloadBytes = 65536; // 64KB default
             $this->logger->warning('Parameter order.max_payload_bytes not found, using default', [
                 'default' => $maxPayloadBytes
@@ -347,11 +352,16 @@ class OrderController extends AbstractApiController
      */
     private function notifyAdminAboutNewOrder(\App\Entity\Order $order): void
     {
+        // This is a non-blocking operation (email sending)
+        // We catch exceptions here because email failure should not break order creation
+        // This is different from main business logic exceptions, which are handled by ApiExceptionSubscriber
         try {
             $this->emailService->sendOrderNotificationToAdmin($order);
         } catch (\Exception $e) {
             // Log silently; do not break order creation
             // Email notification is a nice-to-have feature, not critical for order creation
+            // Note: This catch is intentional - we want to handle email failures gracefully
+            // without affecting the main order creation flow
             $this->logger->warning('Order admin notification failed', [
                 'orderId' => $order->getId(),
                 'error' => $e->getMessage()
@@ -437,10 +447,13 @@ class OrderController extends AbstractApiController
         $cached->set(['body' => $responseArray, 'status' => 201]);
         
         // TTL is configurable via order.idempotency_ttl parameter
+        // Note: This catch is for graceful fallback, not error handling
+        // Main exceptions are handled by ApiExceptionSubscriber
         try {
             $idempotencyTtl = $this->getParameter('order.idempotency_ttl');
         } catch (\Exception $e) {
             // Fallback to default if parameter not found (should not happen in production)
+            // This is a graceful degradation, not an error condition
             $idempotencyTtl = 600; // 10 minutes default
             $this->logger->warning('Parameter order.idempotency_ttl not found, using default', [
                 'default' => $idempotencyTtl
@@ -522,23 +535,13 @@ class OrderController extends AbstractApiController
         } catch (\InvalidArgumentException $e) {
             // Handle validation errors (e.g., invalid order ID format)
             // InvalidArgumentException is thrown when order ID is invalid or order not found
+            // We catch this specifically to provide custom error message from service
+            // Other exceptions are handled by ApiExceptionSubscriber
             // Uses base class method from AbstractApiController
             return $this->errorResponse($e->getMessage(), 422);
-        } catch (\Exception $e) {
-            // Log unexpected errors for debugging and monitoring
-            // This catches any unexpected exceptions that might occur during order retrieval
-            // We log full error details including order ID for developers
-            $this->logger->error('Unexpected error retrieving order', [
-                'orderId' => $id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
-            // Return generic error message to user (don't expose internal errors for security)
-            // Exposing internal error details could help attackers understand system internals
-            // Uses base class method from AbstractApiController
-            return $this->errorResponse('Erreur lors de la récupération de la commande', 500);
         }
+        // Note: All other exceptions are automatically handled by ApiExceptionSubscriber,
+        // which provides centralized error handling and consistent error response format
     }
 }
 

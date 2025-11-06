@@ -97,6 +97,9 @@ class ContactController extends AbstractApiController
             $this->contactService->createContactMessageFromEntity($msg);
 
             // Send email notification to admin (non-blocking - failures are logged but don't break the flow)
+            // This is a non-blocking operation (email sending)
+            // We catch exceptions here because email failure should not break message storage
+            // This is different from main business logic exceptions, which are handled by ApiExceptionSubscriber
             try {
                 $this->emailService->sendNotificationToAdmin(
                     $msg->getEmail(),
@@ -106,6 +109,8 @@ class ContactController extends AbstractApiController
                 );
             } catch (\Exception $e) {
                 // Log error but don't prevent saving - email failure shouldn't block message storage
+                // Note: This catch is intentional - we want to handle email failures gracefully
+                // without affecting the main message storage flow
                 $this->logger->error('Error sending contact notification: {error}', ['error' => $e->getMessage()]);
             }
 
@@ -215,6 +220,9 @@ class ContactController extends AbstractApiController
             $contactMessage = $this->contactService->createContactMessage($dto);
 
             // Send notification to admin
+            // This is a non-blocking operation (email sending)
+            // We catch exceptions here because email failure should not break message storage
+            // This is different from main business logic exceptions, which are handled by ApiExceptionSubscriber
             try {
                 $this->emailService->sendNotificationToAdmin(
                     $contactMessage->getEmail(),
@@ -223,6 +231,8 @@ class ContactController extends AbstractApiController
                     $contactMessage->getMessage()
                 );
             } catch (\Exception $e) {
+                // Note: This catch is intentional - we want to handle email failures gracefully
+                // without affecting the main message storage flow
                 $this->logger->error('Error sending contact notification: {error}', ['error' => $e->getMessage()]);
             }
             
@@ -233,21 +243,12 @@ class ContactController extends AbstractApiController
             // Handle validation/business logic errors
             // This should not happen after DTO validation, but serves as defense in depth
             // InvalidArgumentException is thrown by business logic when data is invalid
+            // We catch this specifically to provide custom error message
+            // Other exceptions are handled by ApiExceptionSubscriber
             // Uses base class method from AbstractApiController
             return $this->errorResponse('Erreur de validation: ' . $e->getMessage(), 422);
-        } catch (\Exception $e) {
-            // Log unexpected errors for debugging and monitoring
-            // This catches any unexpected exceptions that might occur during processing
-            // We log full error details for developers, but only return generic message to user
-            $this->logger->error('Unexpected error in contact form submission', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
-            // Return generic error message to user (don't expose internal errors for security)
-            // Exposing internal error details could help attackers understand system internals
-            // Uses base class method from AbstractApiController
-            return $this->errorResponse('Une erreur est survenue lors de l\'envoi de votre message.', 500);
         }
+        // Note: All other exceptions are automatically handled by ApiExceptionSubscriber,
+        // which provides centralized error handling and consistent error response format
     }
 }

@@ -294,5 +294,32 @@ abstract class AbstractApiController extends AbstractController
         
         return $this->json($response->toArray(), $status);
     }
+
+    /**
+     * Create success response with cart data
+     *
+     * This is a convenience method for cart-related endpoints.
+     * It creates a response with 'cart' property at the top level,
+     * which matches the expected structure in frontend JavaScript code.
+     *
+     * Why this method exists:
+     * - Frontend expects: { success: true, cart: {...} }
+     * - Not: { success: true, data: { cart: {...} } }
+     * - This method ensures correct structure automatically
+     *
+     * @param \App\DTO\CartResponseDTO $cartResponse Cart data to include in response
+     * @param string|null $message Optional success message
+     * @param int $status HTTP status code (default: 200)
+     * @return JsonResponse JSON response with cart data
+     */
+    protected function cartResponse(\App\DTO\CartResponseDTO $cartResponse, ?string $message = null, int $status = 200): JsonResponse
+    {
+        $response = new ApiResponseDTO(
+            success: true,
+            message: $message,
+            cart: $cartResponse
+        );
+        return $this->json($response->toArray(), $status);
+    }
 }
 

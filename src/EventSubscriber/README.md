@@ -81,6 +81,56 @@ Think of them like automatic assistants that do things for you:
 
 **Example:** After successful login, `User.lastLoginAt` is automatically updated to current time
 
+---
+
+### 7. ApiExceptionSubscriber
+**What it does:** Automatically catches and handles all unhandled exceptions in API endpoints
+
+**When it runs:** When an exception is thrown in any API controller and not caught by the controller
+
+**Why it's useful:** 
+- Prevents duplicate error handling code in every controller
+- Ensures all API errors have consistent format
+- Logs errors for developers while showing safe messages to users
+- Protects against exposing internal system details
+
+**How it works (simple explanation):**
+1. You write code in a controller without try-catch for general errors
+2. If something goes wrong (exception is thrown), Symfony automatically calls this subscriber
+3. The subscriber converts the exception to a JSON error response
+4. Client gets a clean error message, developers see full details in logs
+
+**Example:**
+```php
+// In controller - NO try-catch needed for general errors!
+public function createOrder(Request $request): JsonResponse
+{
+    // If this throws an exception, ApiExceptionSubscriber handles it automatically
+    $order = $this->orderService->createOrder($dto);
+    return $this->successResponse($order);
+}
+
+// But you CAN still catch specific exceptions if needed:
+try {
+    $order = $this->orderService->createOrder($dto);
+} catch (\InvalidArgumentException $e) {
+    // This is caught here (custom handling)
+    return $this->errorResponse($e->getMessage(), 422);
+}
+// All other exceptions go to ApiExceptionSubscriber automatically
+```
+
+**What happens when an exception occurs:**
+1. Exception is thrown in controller or service
+2. If controller doesn't catch it, Symfony triggers `KernelEvents::EXCEPTION` event
+3. `ApiExceptionSubscriber` receives the event
+4. It checks if request is to `/api/*` endpoint
+5. It determines error type and HTTP status code
+6. It logs full error details (for developers)
+7. It returns JSON error response (for client)
+8. Client sees: `{"success": false, "message": "Erreur interne du serveur"}`
+9. Developers see full error in logs: file, line, stack trace, etc.
+
 ## How to Debug Event Subscribers
 
 ### Check if a subscriber is running:
