@@ -266,7 +266,7 @@ class HomeController extends AbstractController
                 success: true,
                 message: 'Votre réservation a été enregistrée. Nous vous contacterons pour confirmation.'
             );
-            return $this->json($response->toArray());
+            return $this->json($response->toArray(), 201);
             
         } catch (\InvalidArgumentException $e) {
             // Handle validation/business logic errors

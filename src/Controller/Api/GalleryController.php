@@ -141,7 +141,7 @@ class GalleryController extends AbstractController
                 'items' => $data,
                 'total' => count($data)
             ]);
-            return $this->json($response->toArray());
+            return $this->json($response->toArray(), 200);
 
         } catch (\Exception $e) {
             $response = new \App\DTO\ApiResponseDTO(success: false, message: 'Erreur lors de la récupération des images de la galerie');
@@ -222,7 +222,7 @@ class GalleryController extends AbstractController
             ];
 
             $response = new \App\DTO\ApiResponseDTO(success: true, data: $data);
-            return $this->json($response->toArray());
+            return $this->json($response->toArray(), 200);
 
         } catch (\Exception $e) {
             $response = new \App\DTO\ApiResponseDTO(success: false, message: 'Erreur lors de la récupération de l\'image de la galerie');

@@ -69,6 +69,6 @@ class RestaurantSettingsController extends AbstractController
 
         // Return settings in standard API response format
         $response = new \App\DTO\ApiResponseDTO(success: true, data: ['settings' => $settings]);
-        return $this->json($response->toArray());
+        return $this->json($response->toArray(), 200);
     }
 }

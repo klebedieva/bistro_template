@@ -232,7 +232,7 @@ class ContactController extends AbstractController
             }
             
             $response = new \App\DTO\ApiResponseDTO(success: true, message: 'Merci! Votre message a été envoyé avec succès. Nous vous répondrons dans les plus brefs délais.');
-            return $this->json($response->toArray());
+            return $this->json($response->toArray(), 201);
             
         } catch (\InvalidArgumentException $e) {
             // Handle validation/business logic errors

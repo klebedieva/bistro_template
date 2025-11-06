@@ -391,7 +391,7 @@ class OrderController extends AbstractController
                 order: $orderResponse
             );
 
-            return $this->json($response->toArray());
+            return $this->json($response->toArray(), 200);
 
         } catch (\InvalidArgumentException $e) {
             // Handle validation errors (e.g., invalid order ID format)

@@ -55,7 +55,7 @@ class DishReviewController extends AbstractController
             success: true,
             data: ['reviews' => $data]
         );
-        return $this->json($response->toArray());
+        return $this->json($response->toArray(), 200);
     }
 
     /**
@@ -71,43 +71,42 @@ class DishReviewController extends AbstractController
      * @return JsonResponse Success/error response
      */
     #[Route('', name: 'dish_reviews_add', methods: ['POST'])]
-    public function add(MenuItem $item, Request $request, \App\Service\ReviewService $reviewService): JsonResponse
+    public function add(MenuItem $item, Request $request, \App\Service\ReviewService $reviewService, \App\Service\ValidationHelper $validationHelper, \Symfony\Component\Validator\Validator\ValidatorInterface $validator): JsonResponse
     {
-        // Accept both JSON and form-encoded payloads for flexibility
+        // Build a normalized array supporting both JSON and form-encoded payloads
         $data = json_decode($request->getContent(), true);
-        if (is_array($data)) {
-            $name = trim((string) ($data['name'] ?? ''));
-            $email = trim((string) ($data['email'] ?? ''));
-            $rating = (int) ($data['rating'] ?? 0);
-            $comment = trim((string) ($data['comment'] ?? ''));
-        } else {
-            $name = trim((string) $request->request->get('name', ''));
-            $email = trim((string) $request->request->get('email', ''));
-            $rating = (int) $request->request->get('rating', 0);
-            $comment = trim((string) $request->request->get('comment', ''));
+        if (!is_array($data)) {
+            $data = [
+                'name' => $request->request->get('name'),
+                'email' => $request->request->get('email'),
+                'rating' => $request->request->get('rating'),
+                'comment' => $request->request->get('comment'),
+            ];
         }
 
-        // Validate required fields (basic validation)
-        if ($name === '' || $rating < 1 || $rating > 5 || mb_strlen($comment) < 10) {
-            $response = new \App\DTO\ApiResponseDTO(success: false, message: 'Données invalides');
-            return $this->json($response->toArray(), 400);
+        // Map to DTO and validate
+        $dto = $validationHelper->mapArrayToDto($data, \App\DTO\ReviewCreateRequest::class);
+        $violations = $validator->validate($dto);
+        if (count($violations) > 0) {
+            $errors = $validationHelper->extractViolationMessages($violations);
+            $response = new \App\DTO\ApiResponseDTO(success: false, message: 'Erreur de validation', errors: $errors);
+            return $this->json($response->toArray(), 422);
         }
 
-        // Create new review entity associated with this dish
-        // All new reviews require moderation (isApproved=false) for consistency
+        // Create new review entity associated with this dish via service
         $review = (new Review())
-            ->setName($name)
-            ->setEmail($email !== '' ? $email : null)
-            ->setRating($rating)
-            ->setComment($comment)
-            ->setIsApproved(false) // Keep moderation consistent with global reviews
-            ->setMenuItem($item); // Associate review with the specific dish
+            ->setName($dto->name)
+            ->setEmail($dto->email !== '' ? $dto->email : null)
+            ->setRating((int) $dto->rating)
+            ->setComment($dto->comment)
+            ->setIsApproved(false)
+            ->setMenuItem($item);
 
         // Delegate persistence to service to keep controller thin
         $reviewService->createReviewFromEntity($review);
 
         $response = new \App\DTO\ApiResponseDTO(success: true, message: 'Avis soumis. En attente de validation.');
-        return $this->json($response->toArray());
+        return $this->json($response->toArray(), 201);
     }
 }
 

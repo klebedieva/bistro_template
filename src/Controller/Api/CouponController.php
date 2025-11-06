@@ -155,7 +155,7 @@ class CouponController extends AbstractController
                 message: 'Code promo appliqué avec succès',
                 data: $data
             );
-            return $this->json($response->toArray());
+            return $this->json($response->toArray(), 200);
 
         } catch (\Exception $e) {
             $status = $e instanceof \InvalidArgumentException ? 400 : 500;
@@ -182,7 +182,7 @@ class CouponController extends AbstractController
             $this->couponService->applyCoupon($couponId);
 
             $response = new \App\DTO\ApiResponseDTO(success: true, message: 'Code promo appliqué');
-            return $this->json($response->toArray());
+            return $this->json($response->toArray(), 200);
 
         } catch (\Exception $e) {
             $status = $e instanceof \InvalidArgumentException ? 400 : 500;
@@ -211,7 +211,7 @@ class CouponController extends AbstractController
             $data = $this->couponService->listActiveCoupons();
 
             $response = new \App\DTO\ApiResponseDTO(success: true, data: $data);
-            return $this->json($response->toArray());
+            return $this->json($response->toArray(), 200);
 
         } catch (\Exception $e) {
             $response = new \App\DTO\ApiResponseDTO(success: false, message: 'Erreur lors de la récupération des codes promo: ' . $e->getMessage());

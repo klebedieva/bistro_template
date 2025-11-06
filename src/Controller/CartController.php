@@ -109,7 +109,7 @@ class CartController extends AbstractController
                 cart: $cartResponse
             );
             
-            return $this->json($response->toArray());
+            return $this->json($response->toArray(), 200);
         } catch (\Exception $e) {
             // Return error response if cart retrieval fails
             $response = new ApiResponseDTO(
@@ -275,7 +275,7 @@ class CartController extends AbstractController
                 cart: $cartResponse
             );
 
-            return $this->json($response->toArray());
+            return $this->json($response->toArray(), 200);
 
         } catch (\InvalidArgumentException $e) {
             $response = new ApiResponseDTO(
@@ -357,7 +357,7 @@ class CartController extends AbstractController
                 cart: $cartResponse
             );
 
-            return $this->json($response->toArray());
+            return $this->json($response->toArray(), 200);
         } catch (\InvalidArgumentException $e) {
             $response = new ApiResponseDTO(
                 success: false,
@@ -424,16 +424,21 @@ class CartController extends AbstractController
 
         try {
             $data = json_decode($request->getContent(), true);
-            
-            if (!isset($data['quantity'])) {
-                $response = new ApiResponseDTO(
-                    success: false,
-                    message: 'quantity est requis'
-                );
+            if (!is_array($data)) {
+                $response = new ApiResponseDTO(success: false, message: 'JSON invalide');
+                return $this->json($response->toArray(), 400);
+            }
+
+            // Map JSON payload to DTO and validate
+            $dto = $this->validationHelper->mapArrayToDto($data, \App\DTO\CartUpdateQuantityRequest::class);
+            $violations = $this->validator->validate($dto);
+            if (count($violations) > 0) {
+                $errors = $this->validationHelper->extractViolationMessages($violations);
+                $response = new ApiResponseDTO(success: false, message: 'Erreur de validation', errors: $errors);
                 return $this->json($response->toArray(), 422);
             }
 
-            $quantity = (int) $data['quantity'];
+            $quantity = (int) $dto->quantity;
             $cart = $this->cartService->updateQuantity($id, $quantity);
 
             // Convert cart items to DTOs
@@ -460,7 +465,7 @@ class CartController extends AbstractController
                 cart: $cartResponse
             );
 
-            return $this->json($response->toArray());
+            return $this->json($response->toArray(), 200);
         } catch (\InvalidArgumentException $e) {
             $response = new ApiResponseDTO(
                 success: false,
@@ -532,7 +537,7 @@ class CartController extends AbstractController
                 cart: $cartResponse
             );
 
-            return $this->json($response->toArray());
+            return $this->json($response->toArray(), 200);
         } catch (\Exception $e) {
             $response = new ApiResponseDTO(
                 success: false,
@@ -568,7 +573,7 @@ class CartController extends AbstractController
                 count: $count
             );
 
-            return $this->json($response->toArray());
+            return $this->json($response->toArray(), 200);
         } catch (\Exception $e) {
             $response = new ApiResponseDTO(
                 success: false,

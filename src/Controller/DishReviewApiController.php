@@ -98,7 +98,7 @@ class DishReviewApiController extends AbstractController
         }, $reviews);
 
         $response = new \App\DTO\ApiResponseDTO(success: true, data: ['reviews' => $data]);
-        return $this->json($response->toArray());
+        return $this->json($response->toArray(), 200);
     }
 
     /**
@@ -218,7 +218,7 @@ class DishReviewApiController extends AbstractController
         $review = $this->reviewService->createReview($dto, $menuItem);
 
         $response = new \App\DTO\ApiResponseDTO(success: true, message: 'Avis soumis. En attente de validation.');
-        return $this->json($response->toArray());
+        return $this->json($response->toArray(), 201);
     }
 }
 

@@ -150,7 +150,7 @@ class AddressValidationController extends AbstractController
                     'deliveryAvailable' => $result['valid']
                 ]
             );
-            return $this->json($response->toArray());
+            return $this->json($response->toArray(), 200);
 
         } catch (\Exception $e) {
             // Return error response if validation fails
@@ -286,7 +286,7 @@ class AddressValidationController extends AbstractController
                     'deliveryAvailable' => $result['valid']
                 ]
             );
-            return $this->json($response->toArray());
+            return $this->json($response->toArray(), 200);
 
         } catch (\Exception $e) {
             // Return error response if validation fails

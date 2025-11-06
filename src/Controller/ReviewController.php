@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -110,7 +111,7 @@ class ReviewController extends AbstractController
             ]
         );
 
-        return $this->json($response->toArray());
+        return $this->json($response->toArray(), 200);
     }
 
     /**
@@ -142,8 +143,8 @@ class ReviewController extends AbstractController
         tags: ['Reviews']
     )]
     #[OA\Response(
-        response: 200,
-        description: 'Review accepted for moderation',
+        response: 201,
+        description: 'Review created and accepted for moderation',
         content: new OA\JsonContent(
             type: 'object',
             properties: [
@@ -220,7 +221,7 @@ class ReviewController extends AbstractController
         $review = $this->reviewService->createReview($dto, null);
 
         $response = new \App\DTO\ApiResponseDTO(success: true, message: 'Avis soumis. En attente de validation.');
-        return $this->json($response->toArray());
+        return $this->json($response->toArray(), 201);
     }
 }
 
