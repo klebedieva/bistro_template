@@ -103,24 +103,31 @@ async function loadCartItems(orderData) {
     /**
      * Render cart items HTML
      * Each item shows: name, quantity, price, and controls
+     * Includes aria-attributes for accessibility
      */
     let html = '';
-    items.forEach(it => {
+    items.forEach((it, index) => {
         const itemTotal = Number(it.price) * Number(it.quantity);
         html += `
-            <div class="cart-item">
+            <div class="cart-item" role="listitem" aria-label="Article: ${sanitizeInput(it.name)}, quantité: ${it.quantity}, prix: ${itemTotal.toFixed(2)}€">
                 <div class="cart-item-info">
                     <h5>${sanitizeInput(it.name)}</h5>
                     <p>Quantité: ${it.quantity} × ${Number(it.price).toFixed(2)}€</p>
                 </div>
                 <div class="cart-item-controls">
-                    <div class="quantity-controls">
-                        <button type="button" class="btn btn-sm btn-outline-secondary quantity-btn" data-id="${it.id}" data-action="decrease" title="Diminuer"><i class="bi bi-dash"></i></button>
-                        <span class="quantity-display">${it.quantity}</span>
-                        <button type="button" class="btn btn-sm btn-outline-secondary quantity-btn" data-id="${it.id}" data-action="increase" title="Augmenter"><i class="bi bi-plus"></i></button>
+                    <div class="quantity-controls" role="group" aria-label="Contrôles de quantité pour ${sanitizeInput(it.name)}">
+                        <button type="button" class="btn btn-sm btn-outline-secondary quantity-btn" data-id="${it.id}" data-action="decrease" aria-label="Diminuer la quantité de ${sanitizeInput(it.name)}" title="Diminuer">
+                            <i class="bi bi-dash" aria-hidden="true"></i>
+                        </button>
+                        <span class="quantity-display" aria-label="Quantité actuelle: ${it.quantity}">${it.quantity}</span>
+                        <button type="button" class="btn btn-sm btn-outline-secondary quantity-btn" data-id="${it.id}" data-action="increase" aria-label="Augmenter la quantité de ${sanitizeInput(it.name)}" title="Augmenter">
+                            <i class="bi bi-plus" aria-hidden="true"></i>
+                        </button>
                     </div>
-                    <div class="cart-item-price">${itemTotal.toFixed(2)}€</div>
-                    <button type="button" class="btn btn-sm btn-outline-danger remove-from-cart" data-id="${it.id}" title="Supprimer"><i class="bi bi-x"></i></button>
+                    <div class="cart-item-price" aria-label="Prix total pour cet article: ${itemTotal.toFixed(2)}€">${itemTotal.toFixed(2)}€</div>
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-from-cart" data-id="${it.id}" aria-label="Supprimer ${sanitizeInput(it.name)} du panier" title="Supprimer">
+                        <i class="bi bi-x" aria-hidden="true"></i>
+                    </button>
                 </div>
             </div>`;
     });

@@ -97,6 +97,29 @@ async function initOrderPage() {
     }
     
     /**
+     * Initialize aria attributes for accessibility
+     * Set initial state for step indicators and content
+     */
+    const steps = document.querySelectorAll('.step');
+    const stepContents = document.querySelectorAll('.order-step-content');
+    steps.forEach((el, i) => {
+        if (i === 0) {
+            // First step is active by default
+            el.setAttribute('aria-current', 'step');
+        } else {
+            el.removeAttribute('aria-current');
+        }
+    });
+    stepContents.forEach((el, i) => {
+        if (i === 0) {
+            // First step content is visible by default
+            el.setAttribute('aria-hidden', 'false');
+        } else {
+            el.setAttribute('aria-hidden', 'true');
+        }
+    });
+    
+    /**
      * Load cart items and render order summary
      * This displays current cart contents in checkout
      */

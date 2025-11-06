@@ -1,24 +1,25 @@
-<nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+<nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav" role="navigation" aria-label="Navigation principale">
     <div class="container">
-        <a class="navbar-brand" href="{{ path('app_home') }}">
+        <a class="navbar-brand" href="{{ path('app_home') }}" aria-label="Retour à l'accueil - Le Trois Quarts">
             <img src="{{ asset('logo-footer1.png') }}" alt="Le Trois Quarts" class="header-logo" id="headerLogo">
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
         data-bs-target="#navbarNav" 
-        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Basculer le menu de navigation">
+            <span class="navbar-toggler-icon" aria-hidden="true"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link" href="{{ path('app_home') }}">Accueil</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ path('app_menu') }}">Menu</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ path('app_gallery') }}">Galerie</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ path('app_contact') }}">Contact</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ path('app_reservation') }}">Réserver</a></li>
-                <li class="nav-item">
-                    <a class="nav-link cart-nav-link" href="#" id="cartNavLink">
-                        <i class="bi bi-basket"></i>
-                        <span class="cart-nav-count" id="cartNavCount">0</span>
+            <ul class="navbar-nav ms-auto" role="menubar">
+                <li class="nav-item" role="none"><a class="nav-link" href="{{ path('app_home') }}" role="menuitem" aria-current="{{ app.request.get('_route') == 'app_home' ? 'page' : 'false' }}">Accueil</a></li>
+                <li class="nav-item" role="none"><a class="nav-link" href="{{ path('app_menu') }}" role="menuitem" aria-current="{{ app.request.get('_route') == 'app_menu' ? 'page' : 'false' }}">Menu</a></li>
+                <li class="nav-item" role="none"><a class="nav-link" href="{{ path('app_gallery') }}" role="menuitem" aria-current="{{ app.request.get('_route') == 'app_gallery' ? 'page' : 'false' }}">Galerie</a></li>
+                <li class="nav-item" role="none"><a class="nav-link" href="{{ path('app_contact') }}" role="menuitem" aria-current="{{ app.request.get('_route') == 'app_contact' ? 'page' : 'false' }}">Contact</a></li>
+                <li class="nav-item" role="none"><a class="nav-link" href="{{ path('app_reservation') }}" role="menuitem" aria-current="{{ app.request.get('_route') == 'app_reservation' ? 'page' : 'false' }}">Réserver</a></li>
+                <li class="nav-item" role="none">
+                    <a class="nav-link cart-nav-link" href="#" id="cartNavLink" role="menuitem" aria-label="Voir le panier" aria-describedby="cartNavCount">
+                        <i class="bi bi-basket" aria-hidden="true"></i>
+                        <span class="cart-nav-count" id="cartNavCount" aria-live="polite" aria-atomic="true">0</span>
+                        <span class="visually-hidden">article(s) dans le panier</span>
                     </a>
                 </li>
             </ul>

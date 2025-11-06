@@ -70,25 +70,39 @@ function showStep(step) {
      * Hide all step content
      * Remove active class from all steps
      */
-    document.querySelectorAll('.order-step-content').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.order-step-content').forEach(c => {
+        c.classList.remove('active');
+        c.setAttribute('aria-hidden', 'true');
+    });
     
     /**
      * Show target step content
      * Add active class to target step
      */
     const target = document.getElementById(`step${step}`);
-    if (target) target.classList.add('active');
+    if (target) {
+        target.classList.add('active');
+        target.setAttribute('aria-hidden', 'false');
+    }
     
     /**
      * Update step indicators
      * Mark steps as active up to current step
+     * Update aria-current for accessibility
      */
     const steps = document.querySelectorAll('.step');
     steps.forEach((el, i) => {
         if (i + 1 <= step) {
             el.classList.add('active');
+            // Mark current step with aria-current
+            if (i + 1 === step) {
+                el.setAttribute('aria-current', 'step');
+            } else {
+                el.removeAttribute('aria-current');
+            }
         } else {
             el.classList.remove('active');
+            el.removeAttribute('aria-current');
         }
     });
     

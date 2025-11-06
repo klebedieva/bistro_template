@@ -406,6 +406,8 @@ window.toggleCart = function() {
         
         if (cartSidebar.classList.contains('open')) {
             // Sidebar is now open
+            // Update aria attributes for accessibility
+            cartSidebar.setAttribute('aria-hidden', 'false');
             // Lock body scroll to prevent background scrolling
             document.body.style.overflow = 'hidden';
             // Set flag to track cart state
@@ -414,6 +416,8 @@ window.toggleCart = function() {
             updateCartSidebar();
         } else {
             // Sidebar is now closed
+            // Update aria attributes for accessibility
+            cartSidebar.setAttribute('aria-hidden', 'true');
             // Restore body scroll
             document.body.style.overflow = 'auto';
             // Clear cart active flag
@@ -789,19 +793,20 @@ async function updateCartSidebar() {
             const itemTotal = item.price * item.quantity;
 
             // Build HTML for single cart item
+            // Includes aria-attributes for accessibility
             itemsHTML += `
-                <div class="cart-item">
+                <div class="cart-item" role="listitem" aria-label="Article: ${item.name}, quantité: ${item.quantity}, prix: ${itemTotal.toFixed(2)}€">
                     <div class="cart-item-header">
                         <h5 class="cart-item-title">${item.name}</h5>
-                        <span class="cart-item-price">${item.price}€</span>
+                        <span class="cart-item-price" aria-label="Prix unitaire: ${item.price}€">${item.price}€</span>
                     </div>
                     <div class="cart-item-controls">
-                        <div class="cart-item-quantity">
-                            <button class="cart-qty-btn" data-action="decrease" data-id="${item.id}">-</button>
-                            <span class="cart-item-total">${item.quantity}</span>
-                            <button class="cart-qty-btn" data-action="increase" data-id="${item.id}">+</button>
+                        <div class="cart-item-quantity" role="group" aria-label="Contrôles de quantité pour ${item.name}">
+                            <button class="cart-qty-btn" data-action="decrease" data-id="${item.id}" aria-label="Diminuer la quantité de ${item.name}">-</button>
+                            <span class="cart-item-total" aria-label="Quantité actuelle: ${item.quantity}">${item.quantity}</span>
+                            <button class="cart-qty-btn" data-action="increase" data-id="${item.id}" aria-label="Augmenter la quantité de ${item.name}">+</button>
                         </div>
-                        <span class="cart-item-total">${itemTotal.toFixed(2)}€</span>
+                        <span class="cart-item-total" aria-label="Prix total pour cet article: ${itemTotal.toFixed(2)}€">${itemTotal.toFixed(2)}€</span>
                     </div>
                 </div>
             `;

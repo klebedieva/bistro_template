@@ -16,120 +16,127 @@
         </div>
         <div class="row">
             <div class="col-lg-8 mb-4">
-                <div class="order-steps">
-                    <div class="step active" data-step="1">
-                        <div class="step-number">1</div>
-                        <div class="step-title">Mon panier</div>
-                    </div>
-                    <div class="step" data-step="2">
-                        <div class="step-number">2</div>
-                        <div class="step-title">Livraison/Retrait</div>
-                    </div>
-                    <div class="step" data-step="3">
-                        <div class="step-number">3</div>
-                        <div class="step-title">Paiement</div>
-                    </div>
-                    <div class="step" data-step="4">
-                        <div class="step-number">4</div>
-                        <div class="step-title">Confirmation</div>
-                    </div>
-                </div>
+                <nav class="order-steps" role="navigation" aria-label="Étapes de commande">
+                    <ol class="order-steps-list" role="list">
+                        <li class="step active" data-step="1" role="listitem">
+                            <div class="step-number" aria-hidden="true">1</div>
+                            <div class="step-title">Mon panier</div>
+                            <span class="visually-hidden">Étape actuelle: Mon panier</span>
+                        </li>
+                        <li class="step" data-step="2" role="listitem">
+                            <div class="step-number" aria-hidden="true">2</div>
+                            <div class="step-title">Livraison/Retrait</div>
+                        </li>
+                        <li class="step" data-step="3" role="listitem">
+                            <div class="step-number" aria-hidden="true">3</div>
+                            <div class="step-title">Paiement</div>
+                        </li>
+                        <li class="step" data-step="4" role="listitem">
+                            <div class="step-number" aria-hidden="true">4</div>
+                            <div class="step-title">Confirmation</div>
+                        </li>
+                    </ol>
+                </nav>
 
-                <div class="order-step-content active" id="step1">
+                <div class="order-step-content active" id="step1" role="region" aria-labelledby="step1-title">
                     <div class="cart-section">
-                        <h3>Récapitulatif de votre commande</h3>
-                        <div class="cart-items" id="orderCartItems"></div>
+                        <h3 id="step1-title">Récapitulatif de votre commande</h3>
+                        <div class="cart-items" id="orderCartItems" role="list" aria-label="Articles dans le panier"></div>
                         <div class="cart-actions">
-                            <a href="{{ path('app_menu') }}" class="btn btn-outline-primary">
-                                <i class="bi bi-arrow-left me-2"></i>Continuer mes achats
+                            <a href="{{ path('app_menu') }}" class="btn btn-outline-primary" aria-label="Retourner au menu pour continuer les achats">
+                                <i class="bi bi-arrow-left me-2" aria-hidden="true"></i>Continuer mes achats
                             </a>
-                            <button class="btn btn-primary" onclick="nextStep(2)">
-                                Continuer <i class="bi bi-arrow-right ms-2"></i>
+                            <button class="btn btn-primary" onclick="nextStep(2)" aria-label="Continuer vers l'étape de livraison">
+                                Continuer <i class="bi bi-arrow-right ms-2" aria-hidden="true"></i>
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <div class="order-step-content" id="step2">
+                <div class="order-step-content" id="step2" role="region" aria-labelledby="step2-title">
                     <div class="delivery-section">
-                        <h3>Mode de récupération</h3>
-                        <div class="delivery-options">
+                        <h3 id="step2-title">Mode de récupération</h3>
+                        <fieldset class="delivery-options" role="radiogroup" aria-labelledby="step2-title">
+                            <legend class="visually-hidden">Choisir le mode de récupération de la commande</legend>
                             <div class="delivery-option">
-                                <input type="radio" id="delivery" name="deliveryMode" value="delivery" checked>
+                                <input type="radio" id="delivery" name="deliveryMode" value="delivery" checked aria-describedby="delivery-description">
                                 <label for="delivery" class="delivery-card">
-                                    <div class="delivery-icon"><i class="bi bi-truck"></i></div>
+                                    <div class="delivery-icon" aria-hidden="true"><i class="bi bi-truck"></i></div>
                                     <div class="delivery-info">
                                         <h5>Livraison à domicile</h5>
-                                        <p>Livraison dans un rayon de 5km</p>
-                                        <strong>5€</strong>
+                                        <p id="delivery-description">Livraison dans un rayon de 5km</p>
+                                        <strong aria-label="Frais de livraison: 5 euros">5€</strong>
                                     </div>
                                 </label>
                             </div>
                             <div class="delivery-option">
-                                <input type="radio" id="pickup" name="deliveryMode" value="pickup">
+                                <input type="radio" id="pickup" name="deliveryMode" value="pickup" aria-describedby="pickup-description">
                                 <label for="pickup" class="delivery-card">
-                                    <div class="delivery-icon"><i class="bi bi-shop"></i></div>
+                                    <div class="delivery-icon" aria-hidden="true"><i class="bi bi-shop"></i></div>
                                     <div class="delivery-info">
                                         <h5>Retrait sur place</h5>
-                                        <p>À récupérer au restaurant</p>
-                                        <strong>Gratuit</strong>
+                                        <p id="pickup-description">À récupérer au restaurant</p>
+                                        <strong aria-label="Gratuit">Gratuit</strong>
                                     </div>
                                 </label>
                             </div>
-                        </div>
+                        </fieldset>
 
-                        <div class="delivery-details" id="deliveryDetails">
-                            <h4>Adresse de livraison</h4>
+                        <div class="delivery-details" id="deliveryDetails" role="region" aria-labelledby="delivery-address-title">
+                            <h4 id="delivery-address-title">Adresse de livraison</h4>
                             <div class="address-selection">
                                 <div class="row">
                                     <div class="col-md-8 mb-3">
-                                        <input type="text" class="form-control" id="deliveryAddress" placeholder="Adresse complète" required>
-                                        <div class="form-text">Exemple: 123 Rue de la République</div>
+                                        <label for="deliveryAddress" class="visually-hidden">Adresse complète</label>
+                                        <input type="text" class="form-control" id="deliveryAddress" placeholder="Adresse complète" required aria-describedby="deliveryAddress-help">
+                                        <div class="form-text" id="deliveryAddress-help">Exemple: 123 Rue de la République</div>
                                     </div>
                                     <div class="col-md-4 mb-3">
-                                        <input type="text" class="form-control" id="deliveryZip" placeholder="Code postal" required>
-                                        <div class="form-text">Exemple: 13001</div>
+                                        <label for="deliveryZip" class="visually-hidden">Code postal</label>
+                                        <input type="text" class="form-control" id="deliveryZip" placeholder="Code postal" required aria-describedby="deliveryZip-help">
+                                        <div class="form-text" id="deliveryZip-help">Exemple: 13001</div>
                                     </div>
                                 </div>
-                                <textarea class="form-control mb-3" id="deliveryInstructions" rows="3" placeholder="Instructions de livraison (optionnel)"></textarea>
+                                <label for="deliveryInstructions" class="visually-hidden">Instructions de livraison</label>
+                                <textarea class="form-control mb-3" id="deliveryInstructions" rows="3" placeholder="Instructions de livraison (optionnel)" aria-label="Instructions de livraison optionnelles"></textarea>
                             </div>
                         </div>
 
-                        <div class="client-info">
-                            <h4>Informations de contact</h4>
+                        <div class="client-info" role="region" aria-labelledby="client-info-title">
+                            <h4 id="client-info-title">Informations de contact</h4>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="clientFirstName" class="form-label">Prénom *</label>
-                                    <input type="text" class="form-control" id="clientFirstName" placeholder="Votre prénom" required>
+                                    <label for="clientFirstName" class="form-label">Prénom <span aria-label="requis">*</span></label>
+                                    <input type="text" class="form-control" id="clientFirstName" placeholder="Votre prénom" required aria-required="true">
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label for="clientLastName" class="form-label">Nom *</label>
-                                    <input type="text" class="form-control" id="clientLastName" placeholder="Votre nom" required>
+                                    <label for="clientLastName" class="form-label">Nom <span aria-label="requis">*</span></label>
+                                    <input type="text" class="form-control" id="clientLastName" placeholder="Votre nom" required aria-required="true">
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="clientPhone" class="form-label">Téléphone *</label>
-                                    <input type="tel" class="form-control" id="clientPhone" placeholder="Votre numéro de téléphone" required>
-                                    <div class="form-text">Format accepté: 06 12 34 56 78, +33 6 12 34 56 78</div>
+                                    <label for="clientPhone" class="form-label">Téléphone <span aria-label="requis">*</span></label>
+                                    <input type="tel" class="form-control" id="clientPhone" placeholder="Votre numéro de téléphone" required aria-required="true" aria-describedby="clientPhone-help">
+                                    <div class="form-text" id="clientPhone-help">Format accepté: 06 12 34 56 78, +33 6 12 34 56 78</div>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label for="clientEmail" class="form-label">Email *</label>
-                                    <input type="email" class="form-control" id="clientEmail" placeholder="votre@email.com" required>
+                                    <label for="clientEmail" class="form-label">Email <span aria-label="requis">*</span></label>
+                                    <input type="email" class="form-control" id="clientEmail" placeholder="votre@email.com" required aria-required="true">
                                 </div>
                             </div>
                         </div>
 
-                        <div class="delivery-time">
-                            <h4>Heure de livraison/retrait</h4>
+                        <div class="delivery-time" role="region" aria-labelledby="delivery-time-title">
+                            <h4 id="delivery-time-title">Heure de livraison/retrait</h4>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="deliveryDate" class="form-label">Date</label>
-                                    <input type="date" class="form-control" id="deliveryDate" required>
+                                    <input type="date" class="form-control" id="deliveryDate" required aria-required="true">
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="deliveryTime" class="form-label">Heure</label>
-                                    <select class="form-select" id="deliveryTime" required>
+                                    <select class="form-select" id="deliveryTime" required aria-required="true">
                                         <option value="">Choisir un créneau</option>
                                     </select>
                                 </div>
@@ -137,107 +144,123 @@
                         </div>
 
                         <div class="step-actions">
-                            <button class="btn btn-outline-secondary" onclick="prevStep(1)"><i class="bi bi-arrow-left me-2"></i>Retour</button>
-                            <button class="btn btn-primary" onclick="nextStep(3)">Continuer <i class="bi bi-arrow-right ms-2"></i></button>
+                            <button class="btn btn-outline-secondary" onclick="prevStep(1)" aria-label="Retourner à l'étape précédente">
+                                <i class="bi bi-arrow-left me-2" aria-hidden="true"></i>Retour
+                            </button>
+                            <button class="btn btn-primary" onclick="nextStep(3)" aria-label="Continuer vers l'étape de paiement">
+                                Continuer <i class="bi bi-arrow-right ms-2" aria-hidden="true"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <div class="order-step-content" id="step3">
+                <div class="order-step-content" id="step3" role="region" aria-labelledby="step3-title">
                     <div class="payment-section">
-                        <h3>Mode de paiement</h3>
-                        <div class="payment-options">
+                        <h3 id="step3-title">Mode de paiement</h3>
+                        <fieldset class="payment-options" role="radiogroup" aria-labelledby="step3-title">
+                            <legend class="visually-hidden">Choisir le mode de paiement</legend>
                             <div class="payment-option">
-                                <input type="radio" id="card" name="paymentMode" value="card" checked>
+                                <input type="radio" id="card" name="paymentMode" value="card" checked aria-describedby="card-description">
                                 <label for="card" class="payment-card">
-                                    <div class="payment-icon"><i class="bi bi-credit-card"></i></div>
+                                    <div class="payment-icon" aria-hidden="true"><i class="bi bi-credit-card"></i></div>
                                     <div class="payment-info">
                                         <h5>Carte bancaire</h5>
-                                        <p>Paiement à la livraison/retrait</p>
+                                        <p id="card-description">Paiement à la livraison/retrait</p>
                                     </div>
                                 </label>
                             </div>
                             <div class="payment-option">
-                                <input type="radio" id="cash" name="paymentMode" value="cash">
+                                <input type="radio" id="cash" name="paymentMode" value="cash" aria-describedby="cash-description">
                                 <label for="cash" class="payment-card">
-                                    <div class="payment-icon"><i class="bi bi-cash"></i></div>
+                                    <div class="payment-icon" aria-hidden="true"><i class="bi bi-cash"></i></div>
                                     <div class="payment-info">
                                         <h5>Espèces</h5>
-                                        <p>Paiement à la livraison/retrait</p>
+                                        <p id="cash-description">Paiement à la livraison/retrait</p>
                                     </div>
                                 </label>
                             </div>
                             <div class="payment-option">
-                                <input type="radio" id="tickets" name="paymentMode" value="tickets">
+                                <input type="radio" id="tickets" name="paymentMode" value="tickets" aria-describedby="tickets-description">
                                 <label for="tickets" class="payment-card">
-                                    <div class="payment-icon"><i class="bi bi-ticket"></i></div>
+                                    <div class="payment-icon" aria-hidden="true"><i class="bi bi-ticket"></i></div>
                                     <div class="payment-info">
                                         <h5>Tickets restaurant</h5>
-                                        <p>Paiement par tickets</p>
+                                        <p id="tickets-description">Paiement par tickets</p>
                                     </div>
                                 </label>
                             </div>
-                        </div>
+                        </fieldset>
                         <div class="step-actions">
-                            <button class="btn btn-outline-secondary" onclick="prevStep(2)"><i class="bi bi-arrow-left me-2"></i>Retour</button>
-                            <button class="btn btn-primary" onclick="nextStep(4)">Continuer <i class="bi bi-arrow-right ms-2"></i></button>
+                            <button class="btn btn-outline-secondary" onclick="prevStep(2)" aria-label="Retourner à l'étape précédente">
+                                <i class="bi bi-arrow-left me-2" aria-hidden="true"></i>Retour
+                            </button>
+                            <button class="btn btn-primary" onclick="nextStep(4)" aria-label="Continuer vers l'étape de confirmation">
+                                Continuer <i class="bi bi-arrow-right ms-2" aria-hidden="true"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <div class="order-step-content" id="step4">
+                <div class="order-step-content" id="step4" role="region" aria-labelledby="step4-title">
                     <div class="confirmation-section">
-                        <h3>Confirmation de commande</h3>
-                        <div class="order-summary-final">
-                            <h4>Récapitulatif</h4>
+                        <h3 id="step4-title">Confirmation de commande</h3>
+                        <div class="order-summary-final" role="region" aria-labelledby="summary-final-title">
+                            <h4 id="summary-final-title">Récapitulatif</h4>
                             <div class="summary-section">
                                 <h5>Articles commandés</h5>
-                                <div id="finalOrderItems"></div>
+                                <div id="finalOrderItems" role="list" aria-label="Liste des articles commandés"></div>
                             </div>
                             <div class="summary-section">
                                 <h5>Informations client</h5>
-                                <p id="finalClientInfo"></p>
+                                <p id="finalClientInfo" role="text"></p>
                             </div>
                             <div class="summary-section">
                                 <h5>Livraison</h5>
-                                <p id="finalDeliveryInfo"></p>
+                                <p id="finalDeliveryInfo" role="text"></p>
                             </div>
                             <div class="summary-section">
                                 <h5>Paiement</h5>
-                                <p id="finalPaymentInfo"></p>
+                                <p id="finalPaymentInfo" role="text"></p>
                             </div>
                         </div>
                         <div class="terms-acceptance">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="acceptTerms" required>
-                                <label class="form-check-label" for="acceptTerms">J'accepte les <a href="{{ path('app_cgv') }}" target="_blank" class="text-primary">conditions générales de vente</a></label>
+                                <input class="form-check-input" type="checkbox" id="acceptTerms" required aria-required="true" aria-describedby="acceptTerms-description">
+                                <label class="form-check-label" for="acceptTerms" id="acceptTerms-description">
+                                    J'accepte les <a href="{{ path('app_cgv') }}" target="_blank" class="text-primary" aria-label="Ouvrir les conditions générales de vente dans un nouvel onglet">conditions générales de vente</a>
+                                </label>
                             </div>
                         </div>
                         <div class="step-actions">
-                            <button class="btn btn-outline-secondary" onclick="prevStep(3)"><i class="bi bi-arrow-left me-2"></i>Retour</button>
-                            <button class="btn btn-success btn-lg" onclick="confirmOrder()"><i class="bi bi-check-circle me-2"></i>Confirmer la commande</button>
+                            <button class="btn btn-outline-secondary" onclick="prevStep(3)" aria-label="Retourner à l'étape précédente">
+                                <i class="bi bi-arrow-left me-2" aria-hidden="true"></i>Retour
+                            </button>
+                            <button class="btn btn-success btn-lg" onclick="confirmOrder()" aria-label="Confirmer et finaliser la commande">
+                                <i class="bi bi-check-circle me-2" aria-hidden="true"></i>Confirmer la commande
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="col-lg-4">
-                <div class="order-summary-sidebar">
-                    <h4>Récapitulatif</h4>
-                    <div class="summary-items" id="summaryItems"></div>
-                    <div class="summary-totals">
-                        <div class="summary-line"><span>Sous-total (HT)</span><span id="subtotal">0€</span></div>
-                        <div class="summary-line"><span>Livraison</span><span id="deliveryFee">5€</span></div>
-                        <div class="summary-line"><span>TVA (10%)</span><span id="taxAmount">0€</span></div>
-                        <div class="summary-line total"><span>Total TTC</span><span id="totalAmount">0€</span></div>
+                <aside class="order-summary-sidebar" role="complementary" aria-labelledby="summary-sidebar-title">
+                    <h4 id="summary-sidebar-title">Récapitulatif</h4>
+                    <div class="summary-items" id="summaryItems" role="list" aria-label="Résumé des articles"></div>
+                    <div class="summary-totals" role="group" aria-label="Détails financiers">
+                        <div class="summary-line"><span>Sous-total (HT)</span><span id="subtotal" aria-live="polite">0€</span></div>
+                        <div class="summary-line"><span>Livraison</span><span id="deliveryFee" aria-live="polite">5€</span></div>
+                        <div class="summary-line"><span>TVA (10%)</span><span id="taxAmount" aria-live="polite">0€</span></div>
+                        <div class="summary-line total"><span>Total TTC</span><span id="totalAmount" aria-live="polite" aria-label="Total à payer">0€</span></div>
                     </div>
-                    <div class="promo-code">
+                    <div class="promo-code" role="region" aria-labelledby="promo-code-title">
+                        <label for="promoCode" class="visually-hidden" id="promo-code-title">Code promo</label>
                         <div class="input-group">
-                            <input type="text" class="form-control" id="promoCode" placeholder="Code promo">
-                            <button class="btn btn-outline-secondary" type="button">Appliquer</button>
+                            <input type="text" class="form-control" id="promoCode" placeholder="Code promo" aria-label="Entrer un code promo">
+                            <button class="btn btn-outline-secondary" type="button" aria-label="Appliquer le code promo">Appliquer</button>
                         </div>
                     </div>
-                </div>
+                </aside>
             </div>
         </div>
     </div>

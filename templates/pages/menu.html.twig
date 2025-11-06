@@ -22,25 +22,37 @@
     </section>
 
     {# Filtres du menu (structure identique Restaurant) #}
-    <section class="menu-filters-section py-3">
+    <section class="menu-filters-section py-3" role="search" aria-label="Filtres du menu">
         <div class="container">
             <div class="menu-filters">
-                <div class="filter-categories">
-                    <button class="filter-category active" data-category="all"><span class="emoji">🍽️</span><span>Tout</span></button>
-                    <button class="filter-category" data-category="entrees"><span class="emoji">🥗</span><span>Entrées</span></button>
-                    <button class="filter-category" data-category="plats"><span class="emoji">🍖</span><span>Plats</span></button>
-                    <button class="filter-category" data-category="desserts"><span class="emoji">🍰</span><span>Desserts</span></button>
-                    <button class="filter-category" data-category="boissons"><span class="emoji">🍷</span><span>Boissons</span></button>
+                <div class="filter-categories" role="group" aria-label="Filtrer par catégorie">
+                    <button class="filter-category active" data-category="all" aria-pressed="true" aria-label="Afficher tous les plats">
+                        <span class="emoji" aria-hidden="true">🍽️</span><span>Tout</span>
+                    </button>
+                    <button class="filter-category" data-category="entrees" aria-pressed="false" aria-label="Afficher uniquement les entrées">
+                        <span class="emoji" aria-hidden="true">🥗</span><span>Entrées</span>
+                    </button>
+                    <button class="filter-category" data-category="plats" aria-pressed="false" aria-label="Afficher uniquement les plats">
+                        <span class="emoji" aria-hidden="true">🍖</span><span>Plats</span>
+                    </button>
+                    <button class="filter-category" data-category="desserts" aria-pressed="false" aria-label="Afficher uniquement les desserts">
+                        <span class="emoji" aria-hidden="true">🍰</span><span>Desserts</span>
+                    </button>
+                    <button class="filter-category" data-category="boissons" aria-pressed="false" aria-label="Afficher uniquement les boissons">
+                        <span class="emoji" aria-hidden="true">🍷</span><span>Boissons</span>
+                    </button>
                 </div>
 
                 <div class="search-filter-row">
                     <div class="search-price-row">
                         <div class="menu-search">
-                            <i class="bi bi-search search-icon"></i>
-                            <input type="text" class="form-control" id="menuSearch" placeholder="Rechercher un plat...">
+                            <label for="menuSearch" class="visually-hidden">Rechercher un plat</label>
+                            <i class="bi bi-search search-icon" aria-hidden="true"></i>
+                            <input type="text" class="form-control" id="menuSearch" placeholder="Rechercher un plat..." aria-label="Rechercher un plat dans le menu">
                         </div>
                         <div class="price-filter">
-                            <select class="form-select" id="priceFilter">
+                            <label for="priceFilter" class="visually-hidden">Filtrer par prix</label>
+                            <select class="form-select" id="priceFilter" aria-label="Filtrer les plats par prix">
                                 <option value="">Tous les prix</option>
                                 <option value="under-15">Moins de 15€</option>
                                 <option value="15-25">15€ - 25€</option>
@@ -49,18 +61,18 @@
                         </div>
                     </div>
 
-                    <div class="dietary-filters">
+                    <div class="dietary-filters" role="group" aria-label="Filtres diététiques">
                         <div class="dietary-filter-item">
-                            <input type="checkbox" id="vegetarian" class="dietary-filter">
-                            <label for="vegetarian">🌱 Végétarien</label>
+                            <input type="checkbox" id="vegetarian" class="dietary-filter" aria-label="Afficher uniquement les plats végétariens">
+                            <label for="vegetarian"><span aria-hidden="true">🌱</span> Végétarien</label>
                         </div>
                         <div class="dietary-filter-item">
-                            <input type="checkbox" id="vegan" class="dietary-filter">
-                            <label for="vegan">🌿 Végan</label>
+                            <input type="checkbox" id="vegan" class="dietary-filter" aria-label="Afficher uniquement les plats végans">
+                            <label for="vegan"><span aria-hidden="true">🌿</span> Végan</label>
                         </div>
                         <div class="dietary-filter-item">
-                            <input type="checkbox" id="glutenFree" class="dietary-filter">
-                            <label for="glutenFree">🌾 Sans gluten</label>
+                            <input type="checkbox" id="glutenFree" class="dietary-filter" aria-label="Afficher uniquement les plats sans gluten">
+                            <label for="glutenFree"><span aria-hidden="true">🌾</span> Sans gluten</label>
                         </div>
                     </div>
                 </div>
@@ -69,11 +81,11 @@
     </section>
 
     {# Contenu du menu #}
-    <section class="menu-content py-5">
+    <section class="menu-content py-5" role="main" aria-label="Liste des plats du menu">
         <div class="container">
-            <div id="menuGrid"><!-- rempli par JS --></div>
-            <div id="noResults" class="no-results d-none">
-                <i class="bi bi-search"></i>
+            <div id="menuGrid" role="list" aria-label="Plats disponibles"><!-- rempli par JS --></div>
+            <div id="noResults" class="no-results d-none" role="status" aria-live="polite" aria-atomic="true">
+                <i class="bi bi-search" aria-hidden="true"></i>
                 <h3>Aucun résultat trouvé</h3>
                 <p>Essayez de modifier vos critères de recherche</p>
             </div>

@@ -192,9 +192,14 @@ function setupMenuEventListeners() {
             /**
              * Remove active class from all category buttons
              * Then add active class to clicked button
+             * Also update aria-pressed for accessibility
              */
-            document.querySelectorAll('.filter-category').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.filter-category').forEach(b => {
+                b.classList.remove('active');
+                b.setAttribute('aria-pressed', 'false');
+            });
             this.classList.add('active');
+            this.setAttribute('aria-pressed', 'true');
             
             /**
              * Update current category filter
@@ -671,38 +676,38 @@ function renderMenuItem(item, qtyById /* Map<string,id> -> quantity */) {
 
     return `
         <div class="col-lg-4 col-md-6">
-            <div class="menu-card shadow-sm hover-shadow h-100" data-item-id="${item.id}">
+            <article class="menu-card shadow-sm hover-shadow h-100" data-item-id="${item.id}" role="article" aria-labelledby="menu-item-${item.id}-title">
                 <div class="menu-card-image">
-                    <img src="${item.image}" alt="${item.name}">
+                    <img src="${item.image}" alt="${item.name}" loading="lazy">
                     <div class="menu-card-overlay">
-                        <a href="/dish/${item.id}" class="quick-view-btn">
-                            <i class="bi bi-eye me-2"></i>Voir détails
+                        <a href="/dish/${item.id}" class="quick-view-btn" aria-label="Voir les détails de ${item.name}">
+                            <i class="bi bi-eye me-2" aria-hidden="true"></i>Voir détails
                         </a>
                     </div>
-                    ${badges ? `<div class="menu-card-badges">${badges}</div>` : ''}
-                    ${dietaryIcons ? `<div class="dietary-icons">${dietaryIcons}</div>` : ''}
+                    ${badges ? `<div class="menu-card-badges" aria-hidden="true">${badges}</div>` : ''}
+                    ${dietaryIcons ? `<div class="dietary-icons" aria-label="Options diététiques disponibles" aria-hidden="true">${dietaryIcons}</div>` : ''}
                 </div>
                 <div class="menu-card-content">
-                    <h3 class="menu-card-title">${item.name}</h3>
+                    <h3 class="menu-card-title" id="menu-item-${item.id}-title">${item.name}</h3>
                     <p class="menu-card-description">${item.description}</p>
                     <div class="menu-card-footer d-flex align-items-center justify-content-between">
-                        <div class="menu-card-price">${priceDisplay}</div>
-                        <div class="menu-card-actions d-flex align-items-center gap-2">
+                        <div class="menu-card-price" aria-label="Prix: ${priceDisplay}">${priceDisplay}</div>
+                        <div class="menu-card-actions d-flex align-items-center gap-2" role="group" aria-label="Actions pour ${item.name}">
                             ${quantity > 0 ? `
-                                <div class=\"quantity-controls\">
-                                    <button class=\"add-to-cart-btn btn btn-sm d-flex align-items-center justify-content-center p-0 js-remove\" data-action=\"remove\" data-id=\"${item.id}\">
-                                        <i class=\"bi bi-dash\"></i>
+                                <div class=\"quantity-controls\" role="group" aria-label="Contrôles de quantité">
+                                    <button class=\"add-to-cart-btn btn btn-sm d-flex align-items-center justify-content-center p-0 js-remove\" data-action=\"remove\" data-id=\"${item.id}\" aria-label="Diminuer la quantité de ${item.name}">
+                                        <i class=\"bi bi-dash\" aria-hidden="true"></i>
                                     </button>
-                                    <span class=\"quantity-display\">${quantity}</span>
+                                    <span class=\"quantity-display\" aria-label="Quantité actuelle: ${quantity}">${quantity}</span>
                                 </div>
                             ` : ''}
-                            <button class=\"add-to-cart-btn btn btn-sm d-flex align-items-center justify-content-center p-0 js-add\" data-action=\"add\" data-id=\"${item.id}\">
-                                <i class=\"bi bi-plus\"></i>
+                            <button class=\"add-to-cart-btn btn btn-sm d-flex align-items-center justify-content-center p-0 js-add\" data-action=\"add\" data-id=\"${item.id}\" aria-label="Ajouter ${item.name} au panier">
+                                <i class=\"bi bi-plus\" aria-hidden="true"></i>
                             </button>
                         </div>
                     </div>
                 </div>
-            </div>
+            </article>
         </div>
     `;
 }

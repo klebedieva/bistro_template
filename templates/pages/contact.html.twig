@@ -12,9 +12,9 @@
 {% block body %}
     <!-- Success Message -->
     {% for message in app.flashes('success') %}
-        <div class="alert alert-success alert-dismissible fade show alert-fixed-center" id="successMessage">
-            <i class="bi bi-check-circle me-2"></i>{{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="alert alert-success alert-dismissible fade show alert-fixed-center" id="successMessage" role="alert" aria-live="polite">
+            <i class="bi bi-check-circle me-2" aria-hidden="true"></i>{{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer le message de succès"></button>
         </div>
     {% endfor %}
 
@@ -38,30 +38,32 @@
                 <div class="col-lg-8 mx-auto">
                     <div class="row">
                         <div class="col-md-4 mb-4">
-                            <div class="contact-info text-center p-4 rounded-2 hover-bg-light">
-                                <div class="contact-icon">
+                            <div class="contact-info text-center p-4 rounded-2 hover-bg-light" role="region" aria-labelledby="contact-address-title">
+                                <div class="contact-icon" aria-hidden="true">
                                     <i class="bi bi-geo-alt"></i>
                                 </div>
-                                <h5>Adresse</h5>
-                                <p>139 Boulevard Chave<br>13005 Marseille</p>
+                                <h5 id="contact-address-title">Adresse</h5>
+                                <address>
+                                    <p>139 Boulevard Chave<br>13005 Marseille</p>
+                                </address>
                             </div>
                         </div>
                         <div class="col-md-4 mb-4">
-                            <div class="contact-info text-center p-4 rounded-2 hover-bg-light">
-                                <div class="contact-icon">
+                            <div class="contact-info text-center p-4 rounded-2 hover-bg-light" role="region" aria-labelledby="contact-phone-title">
+                                <div class="contact-icon" aria-hidden="true">
                                     <i class="bi bi-telephone"></i>
                                 </div>
-                                <h5>Téléphone</h5>
-                                <p><a href="tel:0491929616">04 91 92 96 16</a></p>
+                                <h5 id="contact-phone-title">Téléphone</h5>
+                                <p><a href="tel:0491929616" aria-label="Appeler le restaurant au 04 91 92 96 16">04 91 92 96 16</a></p>
                             </div>
                         </div>
                         <div class="col-md-4 mb-4">
-                            <div class="contact-info text-center p-4 rounded-2 hover-bg-light">
-                                <div class="contact-icon">
+                            <div class="contact-info text-center p-4 rounded-2 hover-bg-light" role="region" aria-labelledby="contact-email-title">
+                                <div class="contact-icon" aria-hidden="true">
                                     <i class="bi bi-envelope"></i>
                                 </div>
-                                <h5>Email</h5>
-                                <p><a href="mailto:letroisquarts@gmail.com">letroisquarts@gmail.com</a></p>
+                                <h5 id="contact-email-title">Email</h5>
+                                <p><a href="mailto:letroisquarts@gmail.com" aria-label="Envoyer un email à letroisquarts@gmail.com">letroisquarts@gmail.com</a></p>
                             </div>
                         </div>
                     </div>
@@ -76,10 +78,10 @@
             <div class="row">
                 <div class="col-lg-8 mx-auto">
                     <div class="contact-form-card">
-                        <h3 class="text-center mb-4">Envoyez-nous un message</h3>
+                        <h3 class="text-center mb-4" id="contact-form-title">Envoyez-nous un message</h3>
                         
                         
-                        {{ form_start(contactForm, {'attr': {'class': 'contact-form', 'novalidate': 'novalidate'}}) }}
+                        {{ form_start(contactForm, {'attr': {'class': 'contact-form', 'novalidate': 'novalidate', 'aria-labelledby': 'contact-form-title'}}) }}
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     {{ form_label(contactForm.firstName, null, {'label_attr': {'class': 'form-label'}}) }}
@@ -127,8 +129,8 @@
                                 {{ form_errors(contactForm.consent) }}
                             </div>
                             <div class="text-center">
-                                <button type="submit" class="btn btn-primary btn-lg">
-                                    <i class="bi bi-send me-2"></i>Envoyer le message
+                                <button type="submit" class="btn btn-primary btn-lg" aria-label="Envoyer le message de contact">
+                                    <i class="bi bi-send me-2" aria-hidden="true"></i>Envoyer le message
                                 </button>
                             </div>
                         {{ form_end(contactForm) }}
@@ -152,7 +154,9 @@
                             class="rounded shadow map-border"
                             allowfullscreen="" 
                             loading="lazy" 
-                            referrerpolicy="no-referrer-when-downgrade">
+                            referrerpolicy="no-referrer-when-downgrade"
+                            title="Carte Google Maps montrant l'emplacement du restaurant Le Trois Quarts au 139 Boulevard Chave, 13005 Marseille"
+                            aria-label="Carte interactive montrant l'emplacement du restaurant">
                         </iframe>
                     </div>
                 </div>
