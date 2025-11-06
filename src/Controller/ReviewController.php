@@ -141,9 +141,53 @@ class ReviewController extends AbstractController
         ),
         tags: ['Reviews']
     )]
-    #[OA\Response(response: 200, description: 'Review accepted for moderation', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string')]))]
-    #[OA\Response(response: 400, description: 'Invalid JSON', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string')]))]
-    #[OA\Response(response: 422, description: 'Validation error', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string'), new OA\Property(property: 'errors', type: 'array', items: new OA\Items(type: 'string'))]))]
+    #[OA\Response(
+        response: 200,
+        description: 'Review accepted for moderation',
+        content: new OA\JsonContent(
+            type: 'object',
+            properties: [
+                new OA\Property(property: 'success', type: 'boolean'),
+                new OA\Property(property: 'message', type: 'string')
+            ],
+            example: [
+                'success' => true,
+                'message' => 'Avis soumis. En attente de validation.'
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 400,
+        description: 'Invalid JSON',
+        content: new OA\JsonContent(
+            type: 'object',
+            properties: [
+                new OA\Property(property: 'success', type: 'boolean'),
+                new OA\Property(property: 'message', type: 'string')
+            ],
+            example: [
+                'success' => false,
+                'message' => 'JSON invalide'
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 422,
+        description: 'Validation error',
+        content: new OA\JsonContent(
+            type: 'object',
+            properties: [
+                new OA\Property(property: 'success', type: 'boolean'),
+                new OA\Property(property: 'message', type: 'string'),
+                new OA\Property(property: 'errors', type: 'array', items: new OA\Items(type: 'string'))
+            ],
+            example: [
+                'success' => false,
+                'message' => 'Erreur de validation',
+                'errors' => ['Le nom est requis', 'La note doit être entre 1 et 5']
+            ]
+        )
+    )]
     public function create(Request $request, EntityManagerInterface $em): JsonResponse
     {
         // Parse JSON request body

@@ -131,10 +131,50 @@ class DishReviewApiController extends AbstractController
             'comment' => 'The dish was delicious and perfectly cooked.'
         ]
     ))]
-    #[OA\Response(response: 200, description: 'Accepted', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string')]))]
-    #[OA\Response(response: 400, description: 'Invalid JSON', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string')]))]
-    #[OA\Response(response: 422, description: 'Validation error', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string'), new OA\Property(property: 'errors', type: 'array', items: new OA\Items(type: 'string'))]))]
-    #[OA\Response(response: 404, description: 'Dish not found', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string')]))]
+    #[OA\Response(
+        response: 200,
+        description: 'Accepted',
+        content: new OA\JsonContent(
+            type: 'object',
+            properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string')],
+            example: ['success' => true, 'message' => 'Avis soumis. En attente de validation.']
+        )
+    )]
+    #[OA\Response(
+        response: 400,
+        description: 'Invalid JSON',
+        content: new OA\JsonContent(
+            type: 'object',
+            properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string')],
+            example: ['success' => false, 'message' => 'JSON invalide']
+        )
+    )]
+    #[OA\Response(
+        response: 422,
+        description: 'Validation error',
+        content: new OA\JsonContent(
+            type: 'object',
+            properties: [
+                new OA\Property(property: 'success', type: 'boolean'),
+                new OA\Property(property: 'message', type: 'string'),
+                new OA\Property(property: 'errors', type: 'array', items: new OA\Items(type: 'string'))
+            ],
+            example: [
+                'success' => false,
+                'message' => 'Erreur de validation',
+                'errors' => ['Le nom est requis', 'La note doit être entre 1 et 5']
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 404,
+        description: 'Dish not found',
+        content: new OA\JsonContent(
+            type: 'object',
+            properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string')],
+            example: ['success' => false, 'message' => 'Plat introuvable']
+        )
+    )]
     /**
      * Use MenuItemRepository instead of EntityManager to reduce coupling and make
      * the action easier to unit test (repository can be mocked directly).

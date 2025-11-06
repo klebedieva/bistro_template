@@ -46,3 +46,8 @@ services:
             - { name: doctrine.event_listener, event: postUpdate }
             - { name: doctrine.event_listener, event: prePersist }
             - { name: doctrine.event_listener, event: postPersist }
+
+    # Monolog processor to add request context (request_id, route, method, uri, client_ip)
+    App\Monolog\RequestContextProcessor:
+        tags:
+            - { name: monolog.processor }
