@@ -140,60 +140,27 @@ class OrderController extends AbstractController
     public function createOrder(Request $request, CsrfTokenManagerInterface $csrfTokenManager): JsonResponse
     {
         try {
-            // Optional request size guard (protect against excessively large payloads)
-            $rawContent = $request->getContent();
-            
-            // Get max payload size from parameters (with fallback if parameter not found)
-            try {
-                $maxPayloadBytes = $this->getParameter('order.max_payload_bytes');
-            } catch (\Exception $e) {
-                // Fallback to default if parameter not found (should not happen in production)
-                $maxPayloadBytes = 65536; // 64KB default
-                $this->logger->warning('Parameter order.max_payload_bytes not found, using default', [
-                    'default' => $maxPayloadBytes
-                ]);
-            }
-            
-            if (strlen($rawContent) > $maxPayloadBytes) {
-                return new JsonResponse([
-                    'success' => false,
-                    'message' => 'Requête trop volumineuse'
-                ], 413);
+            // Step 1: Validate request size (protect against excessively large payloads)
+            $payloadSizeError = $this->validatePayloadSize($request);
+            if ($payloadSizeError !== null) {
+                return $payloadSizeError;
             }
 
-            // CSRF Protection
-            $csrfToken = $request->headers->get('X-CSRF-Token');
-            if (!$csrfToken || !$csrfTokenManager->isTokenValid(new CsrfToken('submit', $csrfToken))) {
-                return new JsonResponse([
-                    'success' => false,
-                    'message' => 'Token CSRF invalide'
-                ], 403);
+            // Step 2: Validate CSRF token (protect against CSRF attacks)
+            $csrfError = $this->validateCsrfToken($request, $csrfTokenManager);
+            if ($csrfError !== null) {
+                return $csrfError;
             }
-            
-            // Idempotency: ensure the same client action does not create duplicate orders
+
+            // Step 3: Check idempotency (return cached response if request was already processed)
             $idempotencyKey = (string)($request->headers->get('Idempotency-Key') ?? '');
-
-            if ($idempotencyKey !== '') {
-                $cached = $this->cache->getItem('idem_order_' . hash('sha256', $idempotencyKey));
-                if ($cached->isHit()) {
-                    $cachedPayload = $cached->get();
-                    return new JsonResponse($cachedPayload['body'] ?? [], $cachedPayload['status'] ?? 201);
-                }
+            $idempotencyResponse = $this->checkIdempotency($idempotencyKey);
+            if ($idempotencyResponse !== null) {
+                return $idempotencyResponse;
             }
 
-            // Get JSON data from request
-            // Priority 1: Use filtered data from JsonFieldWhitelistSubscriber if available
-            // This ensures only authorized fields reach the controller (mass assignment protection)
-            // The subscriber filters out unauthorized fields before the request reaches here
-            // Priority 2: Fallback to parsing raw content if subscriber didn't process it
-            // (This should rarely happen for API endpoints, but provides backward compatibility)
-            $data = $request->attributes->get('filtered_json_data');
-            if ($data === null) {
-                // Fallback: parse raw content if filtered data not available
-                // This can happen if request bypassed the subscriber or for non-API endpoints
-                $data = json_decode($rawContent, true);
-            }
-            
+            // Step 4: Get and validate JSON data
+            $data = $this->getJsonDataFromRequest($request);
             if (!is_array($data)) {
                 return new JsonResponse([
                     'success' => false,
@@ -201,113 +168,28 @@ class OrderController extends AbstractController
                 ], 400);
             }
 
-            // Map payload to DTO using ValidationHelper and validate via Symfony Validator
-            // Note: Data is already filtered by JsonFieldWhitelistSubscriber, so only authorized fields are present
-            // This provides defense in depth: subscriber filters at request level, DTO validates at domain level
-            $dto = $this->validationHelper->mapArrayToDto($data, OrderCreateRequest::class);
-
-            // Validate DTO
-            $violations = $this->validator->validate($dto);
-            if (count($violations) > 0) {
-                $errors = $this->validationHelper->extractViolationMessages($violations);
-                return new JsonResponse([
-                    'success' => false,
-                    'message' => 'Erreur de validation',
-                    'errors' => $errors
-                ], 422);
+            // Step 5: Map to DTO and validate (DTO validation + XSS check)
+            // This method returns the validated DTO if validation passes, or an error response if it fails
+            $validationResult = $this->validateOrderData($data);
+            if ($validationResult instanceof JsonResponse) {
+                // Validation failed, return error response
+                return $validationResult;
             }
-
-            // Check for XSS attempts after sanitization (defense in depth)
-            // Even though InputSanitizer was used during mapping, we perform additional XSS validation
-            // This ensures no malicious content passes through, providing multiple layers of security
-            $xssErrors = $this->validationHelper->validateXssAttempts(
-                $dto,
-                ['deliveryAddress', 'deliveryInstructions', 'clientFirstName', 'clientLastName', 'clientPhone', 'clientEmail']
-            );
             
-            if (!empty($xssErrors)) {
-                // Return 400 Bad Request for security violations (not 422, as this is a security issue)
-                // XSS attempts are treated as security violations, not validation errors
-                return new JsonResponse([
-                    'success' => false,
-                    'message' => 'Données invalides détectées',
-                    'errors' => $xssErrors
-                ], 400);
-            }
+            // Validation passed, get the validated DTO
+            $dto = $validationResult;
 
-            // Create the order using domain service with DTO
+            // Step 6: Create the order using domain service
             $order = $this->orderService->createOrder($dto);
 
-            // Notify admin about new order (non-blocking)
-            try {
-                $this->emailService->sendOrderNotificationToAdmin($order);
-            } catch (\Exception $e) {
-                // Log silently; do not break order creation
-                $this->logger->warning('Order admin notification failed', [
-                    'orderId' => $order->getId(),
-                    'error' => $e->getMessage()
-                ]);
-            }
+            // Step 7: Notify admin about new order (non-blocking, doesn't break order creation if fails)
+            $this->notifyAdminAboutNewOrder($order);
 
-            // Convert items to response DTOs
-            $orderItems = [];
-            foreach ($order->getItems() as $item) {
-                $orderItems[] = new OrderItemDTO(
-                    id: $item->getId(),
-                    productId: $item->getProductId(),
-                    productName: $item->getProductName(),
-                    unitPrice: (float) $item->getUnitPrice(),
-                    quantity: $item->getQuantity(),
-                    total: (float) $item->getTotal()
-                );
-            }
+            // Step 8: Build success response
+            $responseArray = $this->buildOrderResponse($order);
 
-            $orderResponse = new OrderResponseDTO(
-                id: $order->getId(),
-                no: $order->getNo(),
-                status: $order->getStatus()->value,
-                deliveryMode: $order->getDeliveryMode()->value,
-                deliveryAddress: $order->getDeliveryAddress(),
-                deliveryZip: $order->getDeliveryZip(),
-                deliveryInstructions: $order->getDeliveryInstructions(),
-                deliveryFee: (float) $order->getDeliveryFee(),
-                paymentMode: $order->getPaymentMode()->value,
-                clientFirstName: $order->getClientFirstName(),
-                clientLastName: $order->getClientLastName(),
-                clientPhone: $order->getClientPhone(),
-                clientEmail: $order->getClientEmail(),
-                subtotal: (float) $order->getSubtotal(),
-                taxAmount: (float) $order->getTaxAmount(),
-                total: (float) $order->getTotal(),
-                createdAt: $order->getCreatedAt()->format(\DateTime::ATOM),
-                items: $orderItems
-            );
-
-            $response = new ApiResponseDTO(
-                success: true,
-                message: 'Commande créée avec succès',
-                order: $orderResponse
-            );
-
-            $responseArray = $response->toArray();
-
-            // Store idempotent response if key provided
-            if ($idempotencyKey !== '') {
-                $cached = $this->cache->getItem('idem_order_' . hash('sha256', $idempotencyKey));
-                $cached->set(['body' => $responseArray, 'status' => 201]);
-                // TTL is configurable via order.idempotency_ttl parameter
-                try {
-                    $idempotencyTtl = $this->getParameter('order.idempotency_ttl');
-                } catch (\Exception $e) {
-                    // Fallback to default if parameter not found (should not happen in production)
-                    $idempotencyTtl = 600; // 10 minutes default
-                    $this->logger->warning('Parameter order.idempotency_ttl not found, using default', [
-                        'default' => $idempotencyTtl
-                    ]);
-                }
-                $cached->expiresAfter($idempotencyTtl);
-                $this->cache->save($cached);
-            }
+            // Step 9: Store idempotent response if key provided (for duplicate request prevention)
+            $this->storeIdempotentResponse($idempotencyKey, $responseArray);
 
             return $this->json($responseArray, 201);
 
@@ -350,6 +232,287 @@ class OrderController extends AbstractController
             );
             return $this->json($response->toArray(), 500);
         }
+    }
+
+    /**
+     * Validate request payload size
+     *
+     * This method checks if the request payload exceeds the maximum allowed size.
+     * This protects against DoS attacks via excessively large payloads.
+     *
+     * @param Request $request HTTP request to validate
+     * @return JsonResponse|null Error response if payload is too large, null if valid
+     */
+    private function validatePayloadSize(Request $request): ?JsonResponse
+    {
+        $rawContent = $request->getContent();
+        
+        // Get max payload size from parameters (with fallback if parameter not found)
+        try {
+            $maxPayloadBytes = $this->getParameter('order.max_payload_bytes');
+        } catch (\Exception $e) {
+            // Fallback to default if parameter not found (should not happen in production)
+            $maxPayloadBytes = 65536; // 64KB default
+            $this->logger->warning('Parameter order.max_payload_bytes not found, using default', [
+                'default' => $maxPayloadBytes
+            ]);
+        }
+        
+        if (strlen($rawContent) > $maxPayloadBytes) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Requête trop volumineuse'
+            ], 413);
+        }
+
+        return null;
+    }
+
+    /**
+     * Validate CSRF token
+     *
+     * This method validates the CSRF token from request headers.
+     * CSRF protection prevents cross-site request forgery attacks.
+     *
+     * @param Request $request HTTP request containing CSRF token
+     * @param CsrfTokenManagerInterface $csrfTokenManager CSRF token manager
+     * @return JsonResponse|null Error response if token is invalid, null if valid
+     */
+    private function validateCsrfToken(Request $request, CsrfTokenManagerInterface $csrfTokenManager): ?JsonResponse
+    {
+        $csrfToken = $request->headers->get('X-CSRF-Token');
+        if (!$csrfToken || !$csrfTokenManager->isTokenValid(new CsrfToken('submit', $csrfToken))) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Token CSRF invalide'
+            ], 403);
+        }
+
+        return null;
+    }
+
+    /**
+     * Check idempotency and return cached response if request was already processed
+     *
+     * Idempotency ensures that the same client action does not create duplicate orders.
+     * If a request with the same Idempotency-Key was already processed, we return
+     * the cached response instead of processing the request again.
+     *
+     * @param string $idempotencyKey Idempotency key from request header (empty string if not provided)
+     * @return JsonResponse|null Cached response if request was already processed, null if new request
+     */
+    private function checkIdempotency(string $idempotencyKey): ?JsonResponse
+    {
+        if ($idempotencyKey === '') {
+            // No idempotency key provided, proceed with new request
+            return null;
+        }
+
+        // Check if we already processed this request
+        $cached = $this->cache->getItem('idem_order_' . hash('sha256', $idempotencyKey));
+        if ($cached->isHit()) {
+            // Request was already processed, return cached response
+            $cachedPayload = $cached->get();
+            return new JsonResponse($cachedPayload['body'] ?? [], $cachedPayload['status'] ?? 201);
+        }
+
+        // New request, proceed with processing
+        return null;
+    }
+
+    /**
+     * Get JSON data from request
+     *
+     * This method retrieves JSON data from the request, prioritizing filtered data
+     * from JsonFieldWhitelistSubscriber if available. This ensures mass assignment
+     * protection works effectively.
+     *
+     * @param Request $request HTTP request containing JSON data
+     * @return array|null Parsed JSON data as array, or null if parsing failed
+     */
+    private function getJsonDataFromRequest(Request $request): ?array
+    {
+        // Priority 1: Use filtered data from JsonFieldWhitelistSubscriber if available
+        // This ensures only authorized fields reach the controller (mass assignment protection)
+        // The subscriber filters out unauthorized fields before the request reaches here
+        $data = $request->attributes->get('filtered_json_data');
+        
+        if ($data !== null) {
+            return $data;
+        }
+
+        // Priority 2: Fallback to parsing raw content if subscriber didn't process it
+        // (This should rarely happen for API endpoints, but provides backward compatibility)
+        $rawContent = $request->getContent();
+        $data = json_decode($rawContent, true);
+        
+        return is_array($data) ? $data : null;
+    }
+
+    /**
+     * Validate order data (DTO validation + XSS check)
+     *
+     * This method performs comprehensive validation of order data:
+     * 1. Maps array data to OrderCreateRequest DTO
+     * 2. Validates DTO using Symfony Validator
+     * 3. Checks for XSS attempts in user input fields
+     *
+     * @param array $data Raw order data from request
+     * @return OrderCreateRequest|JsonResponse Validated DTO if validation passes, error response if validation fails
+     */
+    private function validateOrderData(array $data): OrderCreateRequest|JsonResponse
+    {
+        // Map payload to DTO using ValidationHelper
+        // Note: Data is already filtered by JsonFieldWhitelistSubscriber, so only authorized fields are present
+        // This provides defense in depth: subscriber filters at request level, DTO validates at domain level
+        $dto = $this->validationHelper->mapArrayToDto($data, OrderCreateRequest::class);
+
+        // Validate DTO using Symfony Validator
+        $violations = $this->validator->validate($dto);
+        if (count($violations) > 0) {
+            $errors = $this->validationHelper->extractViolationMessages($violations);
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Erreur de validation',
+                'errors' => $errors
+            ], 422);
+        }
+
+        // Check for XSS attempts after sanitization (defense in depth)
+        // Even though InputSanitizer was used during mapping, we perform additional XSS validation
+        // This ensures no malicious content passes through, providing multiple layers of security
+        $xssErrors = $this->validationHelper->validateXssAttempts(
+            $dto,
+            ['deliveryAddress', 'deliveryInstructions', 'clientFirstName', 'clientLastName', 'clientPhone', 'clientEmail']
+        );
+        
+        if (!empty($xssErrors)) {
+            // Return 400 Bad Request for security violations (not 422, as this is a security issue)
+            // XSS attempts are treated as security violations, not validation errors
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Données invalides détectées',
+                'errors' => $xssErrors
+            ], 400);
+        }
+
+        // Validation passed, return the validated DTO
+        return $dto;
+    }
+
+    /**
+     * Notify admin about new order (non-blocking)
+     *
+     * This method sends an email notification to the admin about a new order.
+     * It's non-blocking: if email sending fails, it logs the error but doesn't
+     * break the order creation process.
+     *
+     * @param \App\Entity\Order $order Created order entity
+     */
+    private function notifyAdminAboutNewOrder(\App\Entity\Order $order): void
+    {
+        try {
+            $this->emailService->sendOrderNotificationToAdmin($order);
+        } catch (\Exception $e) {
+            // Log silently; do not break order creation
+            // Email notification is a nice-to-have feature, not critical for order creation
+            $this->logger->warning('Order admin notification failed', [
+                'orderId' => $order->getId(),
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Build order response DTO
+     *
+     * This method converts an Order entity to an OrderResponseDTO for API response.
+     * It includes all order details and converts order items to DTOs.
+     *
+     * @param \App\Entity\Order $order Order entity to convert
+     * @return array Response data as array (ready for JSON serialization)
+     */
+    private function buildOrderResponse(\App\Entity\Order $order): array
+    {
+        // Convert order items to response DTOs
+        $orderItems = [];
+        foreach ($order->getItems() as $item) {
+            $orderItems[] = new OrderItemDTO(
+                id: $item->getId(),
+                productId: $item->getProductId(),
+                productName: $item->getProductName(),
+                unitPrice: (float) $item->getUnitPrice(),
+                quantity: $item->getQuantity(),
+                total: (float) $item->getTotal()
+            );
+        }
+
+        // Build order response DTO
+        $orderResponse = new OrderResponseDTO(
+            id: $order->getId(),
+            no: $order->getNo(),
+            status: $order->getStatus()->value,
+            deliveryMode: $order->getDeliveryMode()->value,
+            deliveryAddress: $order->getDeliveryAddress(),
+            deliveryZip: $order->getDeliveryZip(),
+            deliveryInstructions: $order->getDeliveryInstructions(),
+            deliveryFee: (float) $order->getDeliveryFee(),
+            paymentMode: $order->getPaymentMode()->value,
+            clientFirstName: $order->getClientFirstName(),
+            clientLastName: $order->getClientLastName(),
+            clientPhone: $order->getClientPhone(),
+            clientEmail: $order->getClientEmail(),
+            subtotal: (float) $order->getSubtotal(),
+            taxAmount: (float) $order->getTaxAmount(),
+            total: (float) $order->getTotal(),
+            createdAt: $order->getCreatedAt()->format(\DateTime::ATOM),
+            items: $orderItems
+        );
+
+        // Build API response DTO
+        $response = new ApiResponseDTO(
+            success: true,
+            message: 'Commande créée avec succès',
+            order: $orderResponse
+        );
+
+        return $response->toArray();
+    }
+
+    /**
+     * Store idempotent response in cache
+     *
+     * This method stores the order creation response in cache using the idempotency key.
+     * If the same request is made again with the same idempotency key, the cached
+     * response will be returned instead of creating a duplicate order.
+     *
+     * @param string $idempotencyKey Idempotency key from request header (empty string if not provided)
+     * @param array $responseArray Response data to cache
+     */
+    private function storeIdempotentResponse(string $idempotencyKey, array $responseArray): void
+    {
+        if ($idempotencyKey === '') {
+            // No idempotency key provided, nothing to cache
+            return;
+        }
+
+        // Store response in cache for idempotency
+        $cached = $this->cache->getItem('idem_order_' . hash('sha256', $idempotencyKey));
+        $cached->set(['body' => $responseArray, 'status' => 201]);
+        
+        // TTL is configurable via order.idempotency_ttl parameter
+        try {
+            $idempotencyTtl = $this->getParameter('order.idempotency_ttl');
+        } catch (\Exception $e) {
+            // Fallback to default if parameter not found (should not happen in production)
+            $idempotencyTtl = 600; // 10 minutes default
+            $this->logger->warning('Parameter order.idempotency_ttl not found, using default', [
+                'default' => $idempotencyTtl
+            ]);
+        }
+        
+        $cached->expiresAfter($idempotencyTtl);
+        $this->cache->save($cached);
     }
 
     /**

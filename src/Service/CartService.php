@@ -13,68 +13,117 @@ use Symfony\Component\HttpFoundation\RequestStack;
  * All cart operations are session-based and do not persist to database
  * until an order is created.
  *
+ * Responsibilities:
+ * - Session-based cart storage and retrieval
+ * - Adding/removing/updating cart items
+ * - Calculating cart totals and item counts
+ * - Fetching menu item details from database when adding new items
+ * - Formatting cart data for API responses
+ *
  * Cart structure:
  * - Stored in session under 'cart' key
  * - Format: [menuItemId => ['id', 'name', 'price', 'image', 'category', 'quantity']]
  * - Automatically calculates totals and item counts
  *
- * Features:
- * - Automatic quantity increment when adding existing items
- * - Image path resolution (handles relative/absolute paths)
- * - Cart total and item count calculations
- * - Session-based persistence (per-user cart)
+ * Design principles:
+ * - Single Responsibility: Only handles cart operations, not image path resolution
+ * - Session-based: Cart data is stored in user session, not database
+ * - Stateless operations: Each method call is independent (except for session state)
+ * - Clear separation: Image path resolution delegated to MenuItemImageResolver
+ *
+ * Side effects:
+ * - Modifies session data (cart storage)
+ * - Reads from database (MenuItemRepository) when adding new items
+ * - Does NOT persist to database (cart is temporary until order creation)
  */
 class CartService
 {
+    /**
+     * Session key used to store cart data
+     *
+     * All cart operations use this key to read/write cart data from session.
+     * The cart is stored as an associative array where keys are menu item IDs.
+     */
     private const CART_SESSION_KEY = 'cart';
 
+    /**
+     * Constructor
+     *
+     * Injects required dependencies:
+     * - RequestStack: For accessing Symfony session to store/retrieve cart data
+     * - MenuItemRepository: For fetching menu item details from database when adding items
+     * - MenuItemImageResolver: For resolving image paths to consistent format
+     *
+     * @param RequestStack $requestStack Symfony request stack for session access
+     * @param MenuItemRepository $menuItemRepository Repository for menu item database queries
+     * @param MenuItemImageResolver $imageResolver Service for resolving image paths
+     */
     public function __construct(
         private RequestStack $requestStack,
-        private MenuItemRepository $menuItemRepository
+        private MenuItemRepository $menuItemRepository,
+        private MenuItemImageResolver $imageResolver
     ) {}
 
     /**
      * Add item to cart or increase quantity if item already exists
      *
-     * If the menu item ID already exists in the cart, its quantity is incremented.
-     * Otherwise, a new cart entry is created with the specified quantity.
-     * Fetches menu item details from database to populate cart entry.
+     * This method handles two scenarios:
+     * 1. Item already in cart: Increments the existing quantity by the specified amount
+     * 2. New item: Fetches menu item details from database and creates a new cart entry
      *
-     * @param int $menuItemId Menu item ID from database
-     * @param int $quantity Quantity to add (default: 1)
+     * When adding a new item, the method:
+     * - Fetches menu item entity from database using MenuItemRepository
+     * - Extracts item details (id, name, price, image, category)
+     * - Resolves image path using MenuItemImageResolver (handles various path formats)
+     * - Creates cart entry with initial quantity
+     *
+     * Side effects:
+     * - Modifies session data (updates cart in session)
+     * - Reads from database (MenuItemRepository::find) when adding new items
+     *
+     * @param int $menuItemId Menu item ID from database (must exist in database)
+     * @param int $quantity Quantity to add (default: 1, must be positive)
      * @return array Updated cart details with items, total, and itemCount
-     * @throws \InvalidArgumentException If menu item not found
+     * @throws \InvalidArgumentException If menu item not found in database
      */
     public function add(int $menuItemId, int $quantity = 1): array
     {
+        // Get current session and retrieve existing cart (or empty array if cart doesn't exist)
         $session = $this->requestStack->getSession();
         $cart = $session->get(self::CART_SESSION_KEY, []);
 
-        // If item already exists, increment quantity
+        // Check if item already exists in cart
+        // If yes, increment quantity (don't fetch from database again)
         if (isset($cart[$menuItemId])) {
             $cart[$menuItemId]['quantity'] += $quantity;
         } else {
-            // Fetch menu item details from database
+            // Item doesn't exist in cart, fetch full details from database
+            // This is necessary to get item name, price, image, and category
             $menuItem = $this->menuItemRepository->find($menuItemId);
             
+            // Validate that menu item exists in database
+            // Throw exception if item not found (prevents adding invalid items to cart)
             if (!$menuItem) {
                 throw new \InvalidArgumentException("Menu item not found: $menuItemId");
             }
 
-            // Create new cart entry with item details
+            // Create new cart entry with all item details
+            // Image path is resolved using MenuItemImageResolver to ensure consistent format
             $cart[$menuItemId] = [
                 'id' => $menuItem->getId(),
                 'name' => $menuItem->getName(),
                 'price' => (float) $menuItem->getPrice(),
-                'image' => $this->resolveImagePath($menuItem->getImage()),
+                'image' => $this->imageResolver->resolve($menuItem->getImage()),
                 'category' => $menuItem->getCategory(),
                 'quantity' => $quantity,
             ];
         }
 
         // Persist updated cart to session
+        // This ensures cart state is saved and available on next request
         $session->set(self::CART_SESSION_KEY, $cart);
         
+        // Return formatted cart details (items array, total, itemCount)
         return $this->getCartDetails($cart);
     }
 
@@ -82,86 +131,137 @@ class CartService
      * Remove item completely from cart
      *
      * Removes the item with the given menu item ID from the cart entirely.
-     * This is different from setting quantity to 0 (which also removes it).
+     * This operation is different from setting quantity to 0 (which also removes it
+     * but goes through updateQuantity method).
      *
-     * @param int $menuItemId Menu item ID to remove
-     * @return array Updated cart details after removal
+     * Side effects:
+     * - Modifies session data (removes item from cart in session)
+     *
+     * @param int $menuItemId Menu item ID to remove (must exist in cart)
+     * @return array Updated cart details after removal (items, total, itemCount)
      * @throws \InvalidArgumentException If item not found in cart
      */
     public function remove(int $menuItemId): array
     {
+        // Get current session and retrieve existing cart
         $session = $this->requestStack->getSession();
         $cart = $session->get(self::CART_SESSION_KEY, []);
 
+        // Validate that item exists in cart before attempting removal
+        // This prevents silent failures and provides clear error messages
         if (!isset($cart[$menuItemId])) {
             throw new \InvalidArgumentException("Cart item not found: $menuItemId");
         }
 
+        // Remove item from cart array using unset
+        // This completely removes the item, not just sets quantity to 0
         unset($cart[$menuItemId]);
+        
+        // Persist updated cart to session (without the removed item)
         $session->set(self::CART_SESSION_KEY, $cart);
 
+        // Return formatted cart details after removal
         return $this->getCartDetails($cart);
     }
 
     /**
      * Update item quantity in cart
      *
-     * Updates the quantity of an existing cart item. If quantity is set to 0,
-     * the item is removed from the cart (equivalent to remove operation).
+     * Updates the quantity of an existing cart item. This method handles two cases:
+     * 1. Quantity > 0: Updates the item's quantity to the new value
+     * 2. Quantity <= 0: Removes the item from cart (equivalent to remove operation)
      *
-     * @param int $menuItemId Menu item ID to update
-     * @param int $quantity New quantity (0 removes the item)
-     * @return array Updated cart details after quantity change
+     * Side effects:
+     * - Modifies session data (updates item quantity or removes item from cart)
+     *
+     * @param int $menuItemId Menu item ID to update (must exist in cart)
+     * @param int $quantity New quantity (0 or negative removes the item)
+     * @return array Updated cart details after quantity change (items, total, itemCount)
      * @throws \InvalidArgumentException If item not found in cart
      */
     public function updateQuantity(int $menuItemId, int $quantity): array
     {
+        // Get current session and retrieve existing cart
         $session = $this->requestStack->getSession();
         $cart = $session->get(self::CART_SESSION_KEY, []);
 
+        // Validate that item exists in cart before attempting update
         if (!isset($cart[$menuItemId])) {
             throw new \InvalidArgumentException("Cart item not found: $menuItemId");
         }
 
+        // Handle quantity update or removal
+        // If quantity is 0 or negative, remove item (same as remove operation)
+        // Otherwise, update quantity to new value
         if ($quantity <= 0) {
             unset($cart[$menuItemId]);
         } else {
             $cart[$menuItemId]['quantity'] = $quantity;
         }
+        
+        // Persist updated cart to session
         $session->set(self::CART_SESSION_KEY, $cart);
 
+        // Return formatted cart details after quantity change
         return $this->getCartDetails($cart);
     }
 
     /**
      * Get current cart contents with calculated totals
      *
-     * Returns complete cart state including all items, total price,
-     * and total item count. Used by API endpoints to return cart data.
+     * Returns complete cart state including all items, total price, and total item count.
+     * This is a read-only operation that does not modify cart state.
      *
-     * @return array Cart details with items, total, and itemCount
+     * Used by:
+     * - API endpoints to return cart data to frontend
+     * - OrderService to retrieve cart contents before creating order
+     *
+     * Side effects:
+     * - None (read-only operation, does not modify session or database)
+     *
+     * @return array Cart details with:
+     *   - 'items': Array of cart items (each with id, name, price, image, category, quantity)
+     *   - 'total': Total price of all items (sum of price * quantity for each item)
+     *   - 'itemCount': Total quantity of all items (sum of all quantities)
      */
     public function getCart(): array
     {
+        // Get current session and retrieve cart (or empty array if cart doesn't exist)
         $session = $this->requestStack->getSession();
         $cart = $session->get(self::CART_SESSION_KEY, []);
         
+        // Format and return cart details (calculates totals and item count)
         return $this->getCartDetails($cart);
     }
 
     /**
      * Clear entire cart (remove all items)
      *
-     * Removes all items from the cart, effectively emptying it.
-     * Useful for order completion or user-initiated cart reset.
+     * Removes all items from the cart, effectively emptying it. This operation
+     * completely removes the cart from session storage.
      *
-     * @return array Empty cart structure with zero totals
+     * Typical use cases:
+     * - After successful order creation (cart is cleared automatically)
+     * - User-initiated cart reset
+     * - Session cleanup
+     *
+     * Side effects:
+     * - Modifies session data (removes cart key from session)
+     *
+     * @return array Empty cart structure with:
+     *   - 'items': Empty array
+     *   - 'total': 0.0
+     *   - 'itemCount': 0
      */
     public function clear(): array
     {
+        // Get current session
         $session = $this->requestStack->getSession();
+        
+        // Remove cart key from session (completely clears cart)
         $session->remove(self::CART_SESSION_KEY);
         
+        // Return empty cart structure (items=[], total=0, itemCount=0)
         return $this->getCartDetails([]);
     }
 
@@ -169,15 +269,26 @@ class CartService
      * Get total item count in cart
      *
      * Returns the sum of all item quantities (not the number of unique items).
-     * For example, if cart has 2x Item A and 3x Item B, returns 5.
+     * This counts the total quantity of all items, not the number of different items.
      *
-     * @return int Total quantity of all items in cart
+     * Examples:
+     * - Cart with 2x Item A and 3x Item B → returns 5 (not 2)
+     * - Cart with 1x Item A → returns 1
+     * - Empty cart → returns 0
+     *
+     * Side effects:
+     * - None (read-only operation)
+     *
+     * @return int Total quantity of all items in cart (sum of all item quantities)
      */
     public function getItemCount(): int
     {
+        // Get current session and retrieve cart
         $session = $this->requestStack->getSession();
         $cart = $session->get(self::CART_SESSION_KEY, []);
         
+        // Calculate total quantity by summing all item quantities
+        // Loop through each item in cart and add its quantity to total count
         $count = 0;
         foreach ($cart as $item) {
             $count += $item['quantity'];
@@ -190,82 +301,77 @@ class CartService
      * Calculate cart total price
      *
      * Sums up all item prices multiplied by their quantities.
-     * Result is rounded to 2 decimal places for currency precision.
+     * Result is rounded to 2 decimal places for currency precision (Euro format).
      *
-     * @return float Total cart price rounded to 2 decimals
+     * Calculation formula:
+     * total = sum(item['price'] * item['quantity']) for all items in cart
+     *
+     * Side effects:
+     * - None (read-only operation, does not modify cart or session)
+     *
+     * @return float Total cart price rounded to 2 decimal places (e.g., 25.99)
      */
     public function getTotal(): float
     {
+        // Get current session and retrieve cart
         $session = $this->requestStack->getSession();
         $cart = $session->get(self::CART_SESSION_KEY, []);
         
+        // Calculate total by summing price * quantity for each item
+        // Start with 0 and accumulate total for each cart item
         $total = 0;
         foreach ($cart as $item) {
             $total += $item['price'] * $item['quantity'];
         }
         
+        // Round to 2 decimal places for currency precision (Euro format)
         return round($total, 2);
     }
 
     /**
      * Format cart details for API response
      *
-     * Calculates totals and item count from cart array.
-     * Converts cart associative array to indexed array of items.
+     * This private helper method formats the raw cart array from session into
+     * a structured response format suitable for API endpoints. It performs:
+     * 1. Converts associative array (keyed by menuItemId) to indexed array
+     * 2. Calculates total price (sum of price * quantity for all items)
+     * 3. Calculates total item count (sum of all quantities)
+     * 4. Rounds total to 2 decimal places for currency precision
      *
-     * @param array $cart Cart array from session
-     * @return array Formatted cart with items, total, and itemCount
+     * This method is used internally by all public methods that return cart data
+     * to ensure consistent response format across all cart operations.
+     *
+     * @param array $cart Cart array from session (associative array keyed by menuItemId)
+     * @return array Formatted cart with:
+     *   - 'items': Indexed array of cart items (converted from associative array)
+     *   - 'total': Total price rounded to 2 decimals
+     *   - 'itemCount': Total quantity of all items
      */
     private function getCartDetails(array $cart): array
     {
+        // Convert associative array (keyed by menuItemId) to indexed array
+        // This makes the response format consistent and easier to work with in frontend
         $items = array_values($cart);
+        
+        // Initialize counters for calculations
         $total = 0;
         $itemCount = 0;
 
+        // Calculate total price and item count by iterating through all items
+        // Total = sum of (price * quantity) for each item
+        // ItemCount = sum of all quantities
         foreach ($items as $item) {
             $total += $item['price'] * $item['quantity'];
             $itemCount += $item['quantity'];
         }
 
+        // Return formatted cart structure
+        // This format is used consistently across all cart API responses
         return [
             'items' => $items,
-            'total' => round($total, 2),
+            'total' => round($total, 2),  // Round to 2 decimals for currency precision
             'itemCount' => $itemCount,
         ];
-    }
-
-    /**
-     * Resolve image path to absolute URL or relative path
-     *
-     * Handles various image path formats:
-     * - Absolute URLs (http/https) - returned as-is
-     * - Absolute paths starting with /uploads/ or /assets/ - returned as-is
-     * - Relative paths starting with assets/ - prepended with /
-     * - Other paths - prepended with /uploads/menu/
-     * - Null/empty - returns default placeholder image
-     *
-     * @param string|null $image Image path from database
-     * @return string Resolved image path for frontend use
-     */
-    private function resolveImagePath(?string $image): string
-    {
-        if (!$image) {
-            return '/assets/img/default-dish.png';
-        }
-
-        if (str_starts_with($image, 'http')) {
-            return $image;
-        }
-
-        if (str_starts_with($image, '/uploads/') || str_starts_with($image, '/assets/')) {
-            return $image;
-        }
-
-        if (str_starts_with($image, 'assets/')) {
-            return '/' . $image;
-        }
-
-        return '/uploads/menu/' . ltrim($image, '/');
     }
 }
 
