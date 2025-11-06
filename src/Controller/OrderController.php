@@ -142,7 +142,18 @@ class OrderController extends AbstractController
         try {
             // Optional request size guard (protect against excessively large payloads)
             $rawContent = $request->getContent();
-            $maxPayloadBytes = $this->getParameter('order.max_payload_bytes');
+            
+            // Get max payload size from parameters (with fallback if parameter not found)
+            try {
+                $maxPayloadBytes = $this->getParameter('order.max_payload_bytes');
+            } catch (\Exception $e) {
+                // Fallback to default if parameter not found (should not happen in production)
+                $maxPayloadBytes = 65536; // 64KB default
+                $this->logger->warning('Parameter order.max_payload_bytes not found, using default', [
+                    'default' => $maxPayloadBytes
+                ]);
+            }
+            
             if (strlen($rawContent) > $maxPayloadBytes) {
                 return new JsonResponse([
                     'success' => false,
@@ -272,7 +283,15 @@ class OrderController extends AbstractController
                 $cached = $this->cache->getItem('idem_order_' . hash('sha256', $idempotencyKey));
                 $cached->set(['body' => $responseArray, 'status' => 201]);
                 // TTL is configurable via order.idempotency_ttl parameter
-                $idempotencyTtl = $this->getParameter('order.idempotency_ttl');
+                try {
+                    $idempotencyTtl = $this->getParameter('order.idempotency_ttl');
+                } catch (\Exception $e) {
+                    // Fallback to default if parameter not found (should not happen in production)
+                    $idempotencyTtl = 600; // 10 minutes default
+                    $this->logger->warning('Parameter order.idempotency_ttl not found, using default', [
+                        'default' => $idempotencyTtl
+                    ]);
+                }
                 $cached->expiresAfter($idempotencyTtl);
                 $this->cache->save($cached);
             }

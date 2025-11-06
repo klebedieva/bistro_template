@@ -352,7 +352,34 @@ window.orderAPI = {
             body: JSON.stringify(payload || {})
         });
         
-        const data = await res.json();
+        // Check if response is JSON before parsing
+        // If server returns HTML error page (e.g., 500 error), we need to handle it gracefully
+        // This prevents "Unexpected token '<'" errors when trying to parse HTML as JSON
+        const contentType = res.headers.get('content-type');
+        let data;
+        
+        if (contentType && contentType.includes('application/json')) {
+            try {
+                data = await res.json();
+            } catch (e) {
+                // If JSON parsing fails despite correct content-type, log for debugging
+                console.error('Failed to parse JSON response:', e);
+                throw new Error('Erreur lors de la création de la commande. Veuillez réessayer.');
+            }
+        } else {
+            // Server returned non-JSON response (likely HTML error page)
+            // This usually means:
+            // - Server error (500) - PHP fatal error or uncaught exception
+            // - Redirect to error page
+            // - Server configuration issue
+            const text = await res.text();
+            console.error('Server returned non-JSON response:', {
+                status: res.status,
+                contentType: contentType,
+                preview: text.substring(0, 200) // First 200 chars for debugging
+            });
+            throw new Error(`Erreur serveur (${res.status}). Veuillez réessayer plus tard.`);
+        }
         
         /**
          * Check if request succeeded and response indicates success
