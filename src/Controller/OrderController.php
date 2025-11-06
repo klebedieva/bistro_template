@@ -142,7 +142,8 @@ class OrderController extends AbstractController
         try {
             // Optional request size guard (protect against excessively large payloads)
             $rawContent = $request->getContent();
-            if (strlen($rawContent) > 65536) { // 64KB hard limit for this endpoint
+            $maxPayloadBytes = $this->getParameter('order.max_payload_bytes');
+            if (strlen($rawContent) > $maxPayloadBytes) {
                 return new JsonResponse([
                     'success' => false,
                     'message' => 'Requête trop volumineuse'
@@ -270,8 +271,9 @@ class OrderController extends AbstractController
             if ($idempotencyKey !== '') {
                 $cached = $this->cache->getItem('idem_order_' . hash('sha256', $idempotencyKey));
                 $cached->set(['body' => $responseArray, 'status' => 201]);
-                // Short TTL (e.g., 10 minutes) is enough to deduplicate user retries
-                $cached->expiresAfter(600);
+                // TTL is configurable via order.idempotency_ttl parameter
+                $idempotencyTtl = $this->getParameter('order.idempotency_ttl');
+                $cached->expiresAfter($idempotencyTtl);
                 $this->cache->save($cached);
             }
 

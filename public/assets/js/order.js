@@ -1919,14 +1919,12 @@ window.zipCodeAPI = {
             body: JSON.stringify({ zipCode })
         });
         const data = await res.json();
-        
-        /**
-         * Use centralized error handling
-         */
-        if (!res.ok) {
-            throw new Error(data?.error || `Erreur ${res.status}`);
+        // Consider business-level success flag
+        if (!res.ok || data?.success !== true) {
+            throw new Error(data?.message || data?.error || `Erreur ${res.status}`);
         }
-        return data;
+        // Return normalized payload shape expected by callers
+        return data.data || {};
     },
     
     /**
@@ -1945,14 +1943,10 @@ window.zipCodeAPI = {
             body: JSON.stringify({ address, zipCode })
         });
         const data = await res.json();
-        
-        /**
-         * Use centralized error handling
-         */
-        if (!res.ok) {
-            throw new Error(data?.error || `Erreur ${res.status}`);
+        if (!res.ok || data?.success !== true) {
+            throw new Error(data?.message || data?.error || `Erreur ${res.status}`);
         }
-        return data;
+        return data.data || {};
     }
 };
 

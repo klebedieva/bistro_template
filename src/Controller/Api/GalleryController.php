@@ -98,12 +98,14 @@ class GalleryController extends AbstractController
     {
         try {
             // Extract query parameters
-            $limit = (int) $request->query->get('limit', 50); // Default limit: 50 images
+            $defaultLimit = $this->getParameter('gallery.default_limit');
+            $maxLimit = $this->getParameter('gallery.max_limit');
+            $limit = (int) $request->query->get('limit', $defaultLimit);
             $category = $request->query->get('category'); // Optional category filter
 
-            // Validate limit parameter (must be between 1 and 100)
-            if ($limit < 1 || $limit > 100) {
-                $response = new \App\DTO\ApiResponseDTO(success: false, message: 'La limite doit être comprise entre 1 et 100');
+            // Validate limit parameter (must be between 1 and max_limit)
+            if ($limit < 1 || $limit > $maxLimit) {
+                $response = new \App\DTO\ApiResponseDTO(success: false, message: "La limite doit être comprise entre 1 et {$maxLimit}");
                 return $this->json($response->toArray(), 400);
             }
 

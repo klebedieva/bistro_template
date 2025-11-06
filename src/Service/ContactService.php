@@ -21,8 +21,12 @@ class ContactService
     /**
      * Create and persist a ContactMessage from validated DTO.
      *
-     * @param ContactCreateRequest $dto Validated request DTO
-     * @return ContactMessage Persisted entity
+     * Side effects:
+     * - Creates new ContactMessage entity
+     * - Persists entity to database (persist + flush)
+     *
+     * @param ContactCreateRequest $dto Validated contact form request DTO
+     * @return ContactMessage Persisted contact message entity
      */
     public function createContactMessage(ContactCreateRequest $dto): ContactMessage
     {
@@ -42,6 +46,14 @@ class ContactService
 
     /**
      * Persist a ContactMessage entity coming from legacy form handling.
+     *
+     * This method is used for form-based submissions where entity is pre-populated.
+     *
+     * Side effects:
+     * - Persists entity to database (persist + flush)
+     *
+     * @param ContactMessage $message Pre-populated contact message entity from form
+     * @return ContactMessage Persisted contact message entity
      */
     public function createContactMessageFromEntity(ContactMessage $message): ContactMessage
     {

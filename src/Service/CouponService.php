@@ -23,8 +23,12 @@ class CouponService
     /**
      * Validate a coupon and compute discount details for a given order amount.
      *
-     * @param CouponValidateRequest $dto
-     * @return array{couponId:int,code:string,discountType:mixed,discountValue:mixed,discountAmount:string,newTotal:string}
+     * This is a read-only operation that validates coupon eligibility and calculates
+     * discount without modifying any data. No side effects.
+     *
+     * @param CouponValidateRequest $dto Validated coupon validation request
+     * @return array{couponId:int,code:string,discountType:mixed,discountValue:mixed,discountAmount:string,newTotal:string} Discount details
+     * @throws \InvalidArgumentException If coupon is invalid, inactive, expired, usage limit reached, or order amount too low
      */
     public function validateCoupon(CouponValidateRequest $dto): array
     {
@@ -63,6 +67,17 @@ class CouponService
 
     /**
      * Apply coupon usage increment after successful order placement.
+     *
+     * Side effects:
+     * - Increments coupon usage count (via Coupon::incrementUsage())
+     * - Persists changes to database (flush)
+     *
+     * This should only be called after order creation is confirmed to ensure
+     * coupon usage tracking is accurate.
+     *
+     * @param int $couponId Coupon ID to apply
+     * @return void
+     * @throws \InvalidArgumentException If coupon not found or no longer usable
      */
     public function applyCoupon(int $couponId): void
     {
@@ -82,7 +97,9 @@ class CouponService
     /**
      * Return list of active coupons formatted for API output.
      *
-     * @return array<int, array<string, mixed>>
+     * This is a read-only operation. No side effects.
+     *
+     * @return array<int, array<string, mixed>> Array of coupon data arrays
      */
     public function listActiveCoupons(): array
     {

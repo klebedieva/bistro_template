@@ -23,11 +23,14 @@ class ReservationService
      * Create and persist a Reservation from validated DTO data.
      *
      * Side effects:
+     * - Creates new Reservation entity
      * - Sets initial status to PENDING (via ReservationStatus enum)
      * - Initializes confirmation flags to false
+     * - Persists entity to database (persist + flush)
      *
      * @param ReservationCreateRequest $dto Validated reservation request data
      * @return Reservation Persisted reservation entity
+     * @throws \InvalidArgumentException If validation fails
      */
     public function createReservation(ReservationCreateRequest $dto): Reservation
     {
@@ -51,7 +54,17 @@ class ReservationService
 
     /**
      * Persist a Reservation entity coming from a legacy form.
-     * Ensures initial domain invariants are set when absent.
+     *
+     * Ensures initial domain invariants are set when absent (status, confirmation flags).
+     * This method is used for form-based submissions where entity is pre-populated.
+     *
+     * Side effects:
+     * - Sets default status to PENDING if not set
+     * - Sets isConfirmed to false if not set
+     * - Persists entity to database (persist + flush)
+     *
+     * @param Reservation $reservation Pre-populated reservation entity from form
+     * @return Reservation Persisted reservation entity
      */
     public function createReservationFromEntity(Reservation $reservation): Reservation
     {
@@ -73,9 +86,16 @@ class ReservationService
      *
      * Automatically sets confirmation timestamp/message when moving to CONFIRMED.
      *
-     * @param Reservation $reservation Target reservation
-     * @param ReservationStatus $status New status
-     * @param string|null $message Optional confirmation message stored on the reservation
+     * Side effects:
+     * - Updates reservation status
+     * - Sets confirmedAt timestamp when status is CONFIRMED
+     * - Sets confirmationMessage if provided
+     * - Persists changes to database (flush)
+     *
+     * @param Reservation $reservation Target reservation entity
+     * @param ReservationStatus $status New status to set
+     * @param string|null $message Optional confirmation message (only used when status is CONFIRMED)
+     * @return void
      */
     public function changeStatus(Reservation $reservation, ReservationStatus $status, ?string $message = null): void
     {

@@ -49,6 +49,23 @@ class RestaurantSettingsService
     }
 
     /**
+     * Get restaurant exact coordinates (latitude, longitude)
+     *
+     * Used by delivery validation to compute distances precisely.
+     * Falls back to Marseille center if not configured.
+     *
+     * @return array{lat: float, lng: float}
+     */
+    public function getRestaurantCoordinates(): array
+    {
+        $restaurant = $this->parameterBag->get('restaurant');
+        // Coordinates are stored in restaurant.coords (not restaurant.delivery.coords)
+        $lat = isset($restaurant['coords']['lat']) ? (float)$restaurant['coords']['lat'] : 43.2965;
+        $lng = isset($restaurant['coords']['lng']) ? (float)$restaurant['coords']['lng'] : 5.3698;
+        return ['lat' => $lat, 'lng' => $lng];
+    }
+
+    /**
      * Get VAT (Value Added Tax) rate
      *
      * @return float VAT rate as decimal (e.g., 0.1 for 10%)

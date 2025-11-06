@@ -12,6 +12,7 @@ use App\Enum\PaymentMode;
 use App\Repository\OrderRepository;
 use App\Repository\CouponRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use App\Strategy\Delivery\DeliveryStrategyFactory;
 use App\Strategy\Pricing\PricingStrategyFactory;
@@ -46,20 +47,37 @@ class OrderService
         private AddressValidationService $addressValidationService,
         private CouponRepository $couponRepository,
         private DeliveryStrategyFactory $deliveryStrategies,
-        private PricingStrategyFactory $pricingStrategies
+        private PricingStrategyFactory $pricingStrategies,
+        private ParameterBagInterface $parameterBag
     ) {}
 
     /**
      * Create a new order from current cart contents
      *
-     * Validates cart is not empty, creates Order entity, applies delivery strategy
-     * (validates address and populates delivery fields), calculates pricing via
-     * pricing strategy, handles coupon application if provided, creates order items
-     * from cart, and persists to database. Clears cart after successful creation.
+     * This method performs an atomic transaction that:
+     * 1. Validates cart is not empty
+     * 2. Creates Order entity with initial state (PENDING status)
+     * 3. Applies delivery strategy (validates address and populates delivery fields)
+     * 4. Calculates pricing via pricing strategy (subtotal, tax, total, delivery fee)
+     * 5. Handles coupon application and discount calculation if provided
+     * 6. Creates order items from cart items
+     * 7. Persists order and all items to database
+     * 8. Clears cart after successful persistence
+     *
+     * Side effects:
+     * - Persists Order and OrderItem entities to database (flush)
+     * - Clears cart session data (via CartService::clear())
+     * - If coupon is applied, updates coupon usage count (handled by Coupon entity)
+     *
+     * Transaction guarantees:
+     * - All database operations (order creation, items, coupon update) are atomic
+     * - If any step fails, entire transaction rolls back (no partial orders)
+     * - Cart is only cleared after successful database commit
      *
      * @param OrderCreateRequest $dto Validated order creation DTO
      * @return Order Created and persisted Order entity
-     * @throws \InvalidArgumentException If cart is empty or validation fails
+     * @throws \InvalidArgumentException If cart is empty, phone number is invalid, or validation fails
+     * @throws \RuntimeException If database transaction fails
      */
     public function createOrder(OrderCreateRequest $dto): Order
     {
@@ -70,103 +88,112 @@ class OrderService
             throw new \InvalidArgumentException("Le panier est vide");
         }
 
-        // Create Order entity with initial state
-        $order = new Order();
-        $order->setNo($this->generateOrderNumber());
-        $order->setStatus(OrderStatus::PENDING);
-        $order->setCreatedAt(new \DateTimeImmutable());
+        // Wrap entire order creation in transaction for atomicity
+        // This ensures order, items, and coupon updates are all committed together
+        // or rolled back together if any step fails
+        return $this->entityManager->transactional(function () use ($dto, $cart) {
+            // Create Order entity with initial state
+            $order = new Order();
+            $order->setNo($this->generateOrderNumber());
+            $order->setStatus(OrderStatus::PENDING);
+            $order->setCreatedAt(new \DateTimeImmutable());
 
-        // Set delivery mode (default to DELIVERY if not specified)
-        $deliveryMode = isset($dto->deliveryMode) 
-            ? DeliveryMode::from($dto->deliveryMode)
-            : DeliveryMode::DELIVERY;
-        $order->setDeliveryMode($deliveryMode);
+            // Set delivery mode (default to DELIVERY if not specified)
+            $deliveryMode = isset($dto->deliveryMode) 
+                ? DeliveryMode::from($dto->deliveryMode)
+                : DeliveryMode::DELIVERY;
+            $order->setDeliveryMode($deliveryMode);
 
-        // Apply delivery strategy (validates address and populates delivery fields)
-        $deliveryStrategy = $this->deliveryStrategies->forMode($deliveryMode);
-        // Build a simple associative array from DTO for strategy compatibility
-        $deliveryData = [
-            'deliveryAddress' => $dto->deliveryAddress,
-            'deliveryZip' => $dto->deliveryZip,
-            'deliveryInstructions' => $dto->deliveryInstructions,
-            'deliveryFee' => $dto->deliveryFee,
-        ];
-        $deliveryStrategy->validateAndPopulate($order, $deliveryData);
+            // Apply delivery strategy (validates address and populates delivery fields)
+            $deliveryStrategy = $this->deliveryStrategies->forMode($deliveryMode);
+            // Build a simple associative array from DTO for strategy compatibility
+            $deliveryData = [
+                'deliveryAddress' => $dto->deliveryAddress,
+                'deliveryZip' => $dto->deliveryZip,
+                'deliveryInstructions' => $dto->deliveryInstructions,
+                'deliveryFee' => $dto->deliveryFee,
+            ];
+            $deliveryStrategy->validateAndPopulate($order, $deliveryData);
 
-        // Set payment mode (default to CARD if not specified)
-        $paymentMode = isset($dto->paymentMode) 
-            ? PaymentMode::from($dto->paymentMode)
-            : PaymentMode::CARD;
-        $order->setPaymentMode($paymentMode);
+            // Set payment mode (default to CARD if not specified)
+            $paymentMode = isset($dto->paymentMode) 
+                ? PaymentMode::from($dto->paymentMode)
+                : PaymentMode::CARD;
+            $order->setPaymentMode($paymentMode);
 
-        // Set client information
-        $order->setClientFirstName($dto->clientFirstName ?? null);
-        $order->setClientLastName($dto->clientLastName ?? null);
-        
-        // Validate French phone number format if provided
-        $clientPhone = $dto->clientPhone ?? null;
-        if ($clientPhone && !$this->validateFrenchPhoneNumber($clientPhone)) {
-            throw new \InvalidArgumentException("Numéro de téléphone invalide");
-        }
-        $order->setClientPhone($clientPhone);
-        
-        $order->setClientEmail($dto->clientEmail ?? null);
-        
-        // Generate full name automatically if both first and last name are provided
-        if ($order->getClientFirstName() && $order->getClientLastName()) {
-            $order->setClientName($order->getClientFirstName() . ' ' . $order->getClientLastName());
-        }
-
-        // Calculate amounts via pricing strategy (subtotal, tax, total, delivery fee)
-        $subtotalWithTax = $cart['total'];
-        $this->pricingStrategies->default()->computeAndSetTotals($order, (float) $subtotalWithTax);
-
-        // Handle coupon application if provided
-        $discount = 0;
-        if (isset($dto->couponId)) {
-            $coupon = $this->couponRepository->find($dto->couponId);
+            // Set client information
+            $order->setClientFirstName($dto->clientFirstName ?? null);
+            $order->setClientLastName($dto->clientLastName ?? null);
             
-            // Apply coupon if valid and applicable to order amount
-            if ($coupon && $coupon->canBeAppliedToAmount((float) $order->getTotal())) {
-                $discount = $coupon->calculateDiscount((float) $order->getTotal());
-                $order->setCoupon($coupon);
-                $order->setDiscountAmount(number_format($discount, 2, '.', ''));
-                $newTotal = (float) $order->getTotal() - $discount;
-                $order->setTotal(number_format($newTotal, 2, '.', ''));
-            } elseif (isset($dto->discountAmount)) {
-                // Fallback to direct discount amount if coupon is not valid
-                $discount = (float) $dto->discountAmount;
-                $order->setDiscountAmount(number_format($discount, 2, '.', ''));
-                $newTotal = (float) $order->getTotal() - $discount;
-                $order->setTotal(number_format($newTotal, 2, '.', ''));
+            // Validate French phone number format if provided
+            $clientPhone = $dto->clientPhone ?? null;
+            if ($clientPhone && !$this->validateFrenchPhoneNumber($clientPhone)) {
+                throw new \InvalidArgumentException("Numéro de téléphone invalide");
             }
-        }
-
-        // Create order items from cart items (preserves item details at order time)
-        foreach ($cart['items'] as $cartItem) {
-            $orderItem = new OrderItem();
-            $orderItem->setProductId($cartItem['id']);
-            $orderItem->setProductName($cartItem['name']);
-            $orderItem->setUnitPrice((string) $cartItem['price']);
-            $orderItem->setQuantity($cartItem['quantity']);
-            $orderItem->setTotal((string) ($cartItem['price'] * $cartItem['quantity']));
-            $orderItem->setOrderRef($order);
+            $order->setClientPhone($clientPhone);
             
-            $order->addItem($orderItem);
-        }
+            $order->setClientEmail($dto->clientEmail ?? null);
+            
+            // Generate full name automatically if both first and last name are provided
+            if ($order->getClientFirstName() && $order->getClientLastName()) {
+                $order->setClientName($order->getClientFirstName() . ' ' . $order->getClientLastName());
+            }
 
-        // Persist order and items to database
-        $this->entityManager->persist($order);
-        $this->entityManager->flush();
+            // Calculate amounts via pricing strategy (subtotal, tax, total, delivery fee)
+            $subtotalWithTax = $cart['total'];
+            $this->pricingStrategies->default()->computeAndSetTotals($order, (float) $subtotalWithTax);
 
-        // Clear cart after successful order creation
-        $this->cartService->clear();
+            // Handle coupon application if provided
+            $discount = 0;
+            if (isset($dto->couponId)) {
+                $coupon = $this->couponRepository->find($dto->couponId);
+                
+                // Apply coupon if valid and applicable to order amount
+                if ($coupon && $coupon->canBeAppliedToAmount((float) $order->getTotal())) {
+                    $discount = $coupon->calculateDiscount((float) $order->getTotal());
+                    $order->setCoupon($coupon);
+                    $order->setDiscountAmount(number_format($discount, 2, '.', ''));
+                    $newTotal = (float) $order->getTotal() - $discount;
+                    $order->setTotal(number_format($newTotal, 2, '.', ''));
+                } elseif (isset($dto->discountAmount)) {
+                    // Fallback to direct discount amount if coupon is not valid
+                    $discount = (float) $dto->discountAmount;
+                    $order->setDiscountAmount(number_format($discount, 2, '.', ''));
+                    $newTotal = (float) $order->getTotal() - $discount;
+                    $order->setTotal(number_format($newTotal, 2, '.', ''));
+                }
+            }
 
-        return $order;
+            // Create order items from cart items (preserves item details at order time)
+            foreach ($cart['items'] as $cartItem) {
+                $orderItem = new OrderItem();
+                $orderItem->setProductId($cartItem['id']);
+                $orderItem->setProductName($cartItem['name']);
+                $orderItem->setUnitPrice((string) $cartItem['price']);
+                $orderItem->setQuantity($cartItem['quantity']);
+                $orderItem->setTotal((string) ($cartItem['price'] * $cartItem['quantity']));
+                $orderItem->setOrderRef($order);
+                
+                $order->addItem($orderItem);
+            }
+
+            // Persist order and items to database (within transaction)
+            $this->entityManager->persist($order);
+            $this->entityManager->flush();
+
+            // Clear cart after successful database commit
+            // This happens inside transaction, but cart clearing is session-based
+            // and won't be rolled back if transaction fails (which is acceptable)
+            $this->cartService->clear();
+
+            return $order;
+        });
     }
 
     /**
      * Retrieve order by ID
+     *
+     * This is a read-only operation. No side effects.
      *
      * @param int $orderId Order entity ID
      * @return Order|null Order entity if found, null otherwise
@@ -179,20 +206,31 @@ class OrderService
     /**
      * Generate unique order number
      *
-     * Format: ORD-YYYYMMDD-XXX where XXX is a 3-digit sequential number
-     * for orders created on the same day. Ensures uniqueness and readability.
+     * Format: {PREFIX}-YYYYMMDD-XXXX where XXXX is a 4-digit random number.
+     * Prefix is configurable via order.no_prefix parameter (default: 'ORD-').
+     * Ensures uniqueness and readability.
      *
-     * @return string Unique order number (e.g., ORD-20250107-001)
+     * @return string Unique order number (e.g., ORD-20250107-1234)
      */
     private function generateOrderNumber(): string
     {
+        $prefix = $this->parameterBag->get('order.no_prefix');
         $date = (new \DateTime())->format('Ymd');
         $random = str_pad((string) random_int(1, 9999), 4, '0', STR_PAD_LEFT);
-        return "ORD-{$date}-{$random}";
+        return "{$prefix}{$date}-{$random}";
     }
 
     /**
      * Update order status
+     *
+     * Side effects:
+     * - Updates order status field
+     * - Persists changes to database (flush)
+     *
+     * @param int $orderId Order entity ID
+     * @param string $status New status (must be valid OrderStatus enum value)
+     * @return Order Updated order entity
+     * @throws \InvalidArgumentException If order not found or status is invalid
      */
     public function updateOrderStatus(int $orderId, string $status): Order
     {

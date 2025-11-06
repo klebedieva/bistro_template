@@ -3,6 +3,15 @@
 
 parameters:
     app.base_url: '%env(APP_BASE_URL)%'
+    
+    # Order configuration
+    order.idempotency_ttl: 600  # Idempotency cache TTL in seconds (10 minutes)
+    order.max_payload_bytes: 65536  # Maximum request payload size (64KB)
+    order.no_prefix: 'ORD-'  # Order number prefix
+    
+    # Gallery configuration
+    gallery.default_limit: 50  # Default number of images to return
+    gallery.max_limit: 100  # Maximum number of images per request
 
 services:
     # default configuration for services in *this* file

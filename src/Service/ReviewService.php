@@ -27,8 +27,14 @@ class ReviewService
      * - New reviews are created as not approved (moderation required)
      * - Optionally binds the review to a specific MenuItem
      *
+     * Side effects:
+     * - Creates new Review entity
+     * - Sets isApproved to false (requires admin moderation)
+     * - Associates with MenuItem if provided
+     * - Persists entity to database (persist + flush)
+     *
      * @param ReviewCreateRequest $dto Validated review data
-     * @param MenuItem|null $menuItem Optional dish association
+     * @param MenuItem|null $menuItem Optional dish association (null for general restaurant reviews)
      * @return Review Persisted review entity
      */
     public function createReview(ReviewCreateRequest $dto, ?MenuItem $menuItem = null): Review
@@ -52,6 +58,16 @@ class ReviewService
 
     /**
      * Persist a Review entity coming from legacy forms, ensuring moderation flag default.
+     *
+     * This method is used for form-based submissions where entity is pre-populated.
+     * Ensures moderation flag is set to false if not already set.
+     *
+     * Side effects:
+     * - Sets isApproved to false if not set
+     * - Persists entity to database (persist + flush)
+     *
+     * @param Review $review Pre-populated review entity from form
+     * @return Review Persisted review entity
      */
     public function createReviewFromEntity(Review $review): Review
     {

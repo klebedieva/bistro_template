@@ -5,6 +5,10 @@ parameters:
             fee: 5.00
             free_delivery_threshold: 50.00
             radius_km: 5
+        # Exact restaurant coordinates (used for distance calculations)
+        coords:
+            lat: 43.2958784824937   # Exact latitude of the restaurant
+            lng: 5.395759357443253  # Exact longitude of the restaurant
         contact:
             phone: '+33 4 91 XX XX XX'
             email: 'contact@letroisquarts.fr'
