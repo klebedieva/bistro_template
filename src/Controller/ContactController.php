@@ -27,17 +27,41 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  * - Process form submission (POST)
  * - AJAX form submission endpoint
  * 
+ * Architecture:
+ * - Controller is thin: only handles request/response, validation, and delegates to services
+ * - Business logic (entity creation, persistence) is encapsulated in ContactService
+ * - This follows Single Responsibility Principle: controllers don't call persist()/flush() directly
+ * 
  * All user input is sanitized to prevent XSS attacks before saving to database.
  * Email notifications are sent to admin (non-blocking - failures are logged).
  */
 class ContactController extends AbstractController
 {
+    /**
+     * Constructor for ContactController
+     *
+     * Injects dependencies required for contact form handling:
+     * - EntityManagerInterface: Used only for legacy form handling (not in AJAX endpoint)
+     * - SymfonyEmailService: Sends email notifications to admin
+     * - LoggerInterface: Logs errors for debugging
+     * - ValidatorInterface: Validates DTO data using Symfony Validator
+     * - ValidationHelper: Centralizes validation message extraction and DTO mapping
+     * - ContactService: Encapsulates contact message creation and persistence (business logic)
+     *
+     * @param EntityManagerInterface $em Entity manager (legacy form support)
+     * @param SymfonyEmailService $emailService Email service for notifications
+     * @param LoggerInterface $logger Logger for error tracking
+     * @param ValidatorInterface $validator Symfony validator for DTO validation
+     * @param ValidationHelper $validationHelper Helper for validation operations
+     * @param \App\Service\ContactService $contactService Service for creating contact messages
+     */
     public function __construct(
         private EntityManagerInterface $em,
         private SymfonyEmailService $emailService,
         private LoggerInterface $logger,
         private ValidatorInterface $validator,
-        private ValidationHelper $validationHelper
+        private ValidationHelper $validationHelper,
+        private \App\Service\ContactService $contactService
     ) {}
 
     /**
@@ -190,18 +214,11 @@ class ContactController extends AbstractController
                 return $this->json($response->toArray(), 400);
             }
             
-            // Create and save contact message
-            $contactMessage = new ContactMessage();
-            $contactMessage->setFirstName($dto->firstName);
-            $contactMessage->setLastName($dto->lastName);
-            $contactMessage->setEmail($dto->email);
-            $contactMessage->setPhone($dto->phone);
-            $contactMessage->setSubject($dto->subject);
-            $contactMessage->setMessage($dto->message);
-            $contactMessage->setConsent($dto->consent);
-            
-            $this->em->persist($contactMessage);
-            $this->em->flush();
+            // Delegate business logic to ContactService (no direct persist/flush in controller)
+            // This follows Single Responsibility Principle: controller handles HTTP, service handles domain logic
+            // The service encapsulates entity creation, initialization, and persistence
+            // This makes the code more testable (can mock service) and reusable (service can be called from elsewhere)
+            $contactMessage = $this->contactService->createContactMessage($dto);
 
             // Send notification to admin
             try {

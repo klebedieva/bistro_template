@@ -28,18 +28,42 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 /**
  * Public site pages: home, menu, gallery, reservation, reviews.
  *
+ * Architecture:
+ * - Controller is thin: handles request/response, validation, and delegates to services
+ * - Business logic (entity creation, persistence) is encapsulated in ReservationService
+ * - This follows Single Responsibility Principle: controllers don't call persist()/flush() directly
+ *
  * Notes:
  * - Uses repositories/services only for read operations and simple form handling.
  * - Security-sensitive endpoints (AJAX reservation) include CSRF checks and input sanitization.
  */
 class HomeController extends AbstractController
 {
+    /**
+     * Constructor for HomeController
+     *
+     * Injects dependencies required for public pages and reservation handling:
+     * - SymfonyEmailService: Sends email notifications for reservations
+     * - TableAvailabilityService: Checks table availability for reservations
+     * - LoggerInterface: Logs errors for debugging
+     * - ValidatorInterface: Validates DTO data using Symfony Validator
+     * - ValidationHelper: Centralizes validation message extraction and DTO mapping
+     * - ReservationService: Encapsulates reservation creation and persistence (business logic)
+     *
+     * @param SymfonyEmailService $emailService Email service for notifications
+     * @param TableAvailabilityService $availability Service for checking table availability
+     * @param LoggerInterface $logger Logger for error tracking
+     * @param ValidatorInterface $validator Symfony validator for DTO validation
+     * @param ValidationHelper $validationHelper Helper for validation operations
+     * @param \App\Service\ReservationService $reservationService Service for creating reservations
+     */
     public function __construct(
         private SymfonyEmailService $emailService,
         private TableAvailabilityService $availability,
         private LoggerInterface $logger,
         private ValidatorInterface $validator,
-        private ValidationHelper $validationHelper
+        private ValidationHelper $validationHelper,
+        private \App\Service\ReservationService $reservationService
     ) {}
 
     #[Route('/', name: 'app_home')]
@@ -220,21 +244,11 @@ class HomeController extends AbstractController
             // Variant B: do not block on availability in the public endpoint.
             // Admin will check availability and confirm later.
 
-            // Create and save reservation using validated DTO
-            $reservation = new Reservation();
-            $reservation->setFirstName($dto->firstName);
-            $reservation->setLastName($dto->lastName);
-            $reservation->setEmail($dto->email);
-            $reservation->setPhone($dto->phone);
-            $reservation->setDate(new \DateTime($dto->date));
-            $reservation->setTime($dto->time);
-            $reservation->setGuests($dto->guests);
-            $reservation->setMessage($dto->message);
-            $reservation->setStatus(ReservationStatus::PENDING);
-            $reservation->setIsConfirmed(false);
-            
-            $entityManager->persist($reservation);
-            $entityManager->flush();
+            // Delegate creation to ReservationService (controller stays thin)
+            // This follows Single Responsibility Principle: controller handles HTTP, service handles domain logic
+            // The service encapsulates entity creation, status initialization (PENDING), and persistence
+            // This makes the code more testable (can mock service) and reusable (service can be called from elsewhere)
+            $reservation = $this->reservationService->createReservation($dto);
 
             // Send notification to admin
             try {

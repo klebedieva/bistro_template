@@ -19,6 +19,11 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  * - List approved reviews with pagination
  * - Create new reviews (pending moderation)
  * 
+ * Architecture:
+ * - Controller is thin: only handles request/response, validation, and delegates to services
+ * - Business logic (entity creation, persistence) is encapsulated in ReviewService
+ * - This follows Single Responsibility Principle: controllers don't call persist()/flush() directly
+ * 
  * Note: Only returns approved reviews for general listing.
  * Dish-specific reviews are handled by DishReviewController.
  */
@@ -26,9 +31,22 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 #[OA\Tag(name: 'Reviews')]
 class ReviewController extends AbstractController
 {
+    /**
+     * Constructor for ReviewController
+     *
+     * Injects dependencies required for review API operations:
+     * - ValidatorInterface: Validates DTO data using Symfony Validator
+     * - ValidationHelper: Centralizes validation message extraction and DTO mapping
+     * - ReviewService: Encapsulates review creation and persistence (business logic)
+     *
+     * @param ValidatorInterface $validator Symfony validator for DTO validation
+     * @param ValidationHelper $validationHelper Helper for validation operations
+     * @param \App\Service\ReviewService $reviewService Service for creating reviews
+     */
     public function __construct(
         private ValidatorInterface $validator,
-        private ValidationHelper $validationHelper
+        private ValidationHelper $validationHelper,
+        private \App\Service\ReviewService $reviewService
     ) {}
     /**
      * List approved reviews with pagination support
@@ -161,17 +179,12 @@ class ReviewController extends AbstractController
             return $this->json($response->toArray(), 422);
         }
 
-        // Create new review entity (not approved by default - requires moderation)
-        $review = (new Review())
-            ->setName($dto->name)
-            ->setEmail($dto->email !== '' ? $dto->email : null)
-            ->setRating((int)$dto->rating)
-            ->setComment($dto->comment)
-            ->setIsApproved(false); // All new reviews require admin approval
-
-        // Persist to database
-        $em->persist($review);
-        $em->flush();
+        // Delegate creation to ReviewService (no direct persist/flush in controller)
+        // This follows Single Responsibility Principle: controller handles HTTP, service handles domain logic
+        // The service encapsulates entity creation, approval flag initialization (false), and persistence
+        // This makes the code more testable (can mock service) and reusable (service can be called from elsewhere)
+        // Pass null as menuItem since this is a general restaurant review (not dish-specific)
+        $review = $this->reviewService->createReview($dto, null);
 
         $response = new \App\DTO\ApiResponseDTO(success: true, message: 'Avis soumis. En attente de validation.');
         return $this->json($response->toArray());
