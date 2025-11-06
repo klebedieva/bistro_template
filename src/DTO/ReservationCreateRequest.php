@@ -3,6 +3,7 @@
 namespace App\DTO;
 
 use Symfony\Component\Validator\Constraints as Assert;
+use App\Validator\Constraints as AppAssert;
 
 /**
  * Reservation Creation Request Data Transfer Object
@@ -10,8 +11,13 @@ use Symfony\Component\Validator\Constraints as Assert;
  * DTO for validating reservation submissions from API clients.
  * Used with Symfony Validator to ensure data integrity before creating reservations.
  *
+ * Class-level constraint (ValidReservationRequest) enforces cross-field rules:
+ * - date must be parseable and not in the past (today allowed)
+ * - time must be HH:MM, 30-minute steps, within business hours 14:00–22:30
+ *
  * All validation messages are in French to match the application's language.
  */
+#[AppAssert\ValidReservationRequest]
 class ReservationCreateRequest
 {
     #[Assert\NotBlank(message: 'Le prénom est requis')]

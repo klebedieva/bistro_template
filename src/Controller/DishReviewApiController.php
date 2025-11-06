@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\MenuItem;
+use App\Repository\MenuItemRepository;
 use App\Entity\Review;
 use App\Repository\ReviewRepository;
 use App\Service\ValidationHelper;
@@ -48,7 +49,8 @@ class DishReviewApiController extends AbstractController
     public function __construct(
         private ValidatorInterface $validator,
         private ValidationHelper $validationHelper,
-        private \App\Service\ReviewService $reviewService
+        private \App\Service\ReviewService $reviewService,
+        private MenuItemRepository $menuItemRepository
     ) {}
     /**
      * List approved reviews for a specific dish by ID
@@ -68,10 +70,14 @@ class DishReviewApiController extends AbstractController
     #[OA\Parameter(name: 'limit', in: 'query', required: false, description: 'Items per page (default: 100, max: 100)', schema: new OA\Schema(type: 'integer', minimum: 1, maximum: 100))]
     #[OA\Response(response: 200, description: 'OK', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'data', type: 'object')]))]
     #[OA\Response(response: 404, description: 'Dish not found', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string')]))]
-    public function list(int $id, ReviewRepository $repo, EntityManagerInterface $em): JsonResponse
+    /**
+     * Use MenuItemRepository instead of EntityManager to reduce coupling and make
+     * the action easier to unit test (repository can be mocked directly).
+     */
+    public function list(int $id, ReviewRepository $repo): JsonResponse
     {
         // Verify that the dish exists
-        $menuItem = $em->find(MenuItem::class, $id);
+        $menuItem = $this->menuItemRepository->find($id);
         if (!$menuItem) {
             $response = new \App\DTO\ApiResponseDTO(success: false, message: 'Plat introuvable');
             return $this->json($response->toArray(), 404);
@@ -129,7 +135,11 @@ class DishReviewApiController extends AbstractController
     #[OA\Response(response: 400, description: 'Invalid JSON', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string')]))]
     #[OA\Response(response: 422, description: 'Validation error', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string'), new OA\Property(property: 'errors', type: 'array', items: new OA\Items(type: 'string'))]))]
     #[OA\Response(response: 404, description: 'Dish not found', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string')]))]
-    public function add(int $id, Request $request, EntityManagerInterface $em): JsonResponse
+    /**
+     * Use MenuItemRepository instead of EntityManager to reduce coupling and make
+     * the action easier to unit test (repository can be mocked directly).
+     */
+    public function add(int $id, Request $request): JsonResponse
     {
         // Parse JSON request body
         $data = json_decode($request->getContent(), true);
@@ -139,7 +149,7 @@ class DishReviewApiController extends AbstractController
         }
 
         // Verify that the dish exists
-        $menuItem = $em->find(MenuItem::class, $id);
+        $menuItem = $this->menuItemRepository->find($id);
         if (!$menuItem) {
             $response = new \App\DTO\ApiResponseDTO(success: false, message: 'Plat introuvable');
             return $this->json($response->toArray(), 404);

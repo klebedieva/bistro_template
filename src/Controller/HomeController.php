@@ -89,11 +89,13 @@ class HomeController extends AbstractController
         return $this->render('pages/menu.html.twig');
     }
 
+    /**
+     * Use GalleryImageRepository instead of EntityManager::getRepository() to
+     * reduce coupling with Doctrine internals and make the action more testable.
+     */
     #[Route('/gallery', name: 'app_gallery')]
-    public function gallery(EntityManagerInterface $entityManager): Response
+    public function gallery(GalleryImageRepository $galleryRepository): Response
     {
-        $galleryRepository = $entityManager->getRepository(\App\Entity\GalleryImage::class);
-        
         // Get all active images
         $images = $galleryRepository->findAllActive();
         
