@@ -24,7 +24,12 @@ class CgvController extends AbstractController
     #[Route('/cgv', name: 'app_cgv')]
     public function index(): Response
     {
-        return $this->render('pages/cgv.html.twig');
+        return $this->render('pages/cgv.html.twig', [
+            'seo_title' => 'Conditions générales de vente | Le Trois Quarts',
+            'seo_description' => 'Consultez les conditions générales de vente du restaurant Le Trois Quarts : réservations, paiements, responsabilités et données personnelles.',
+            'seo_og_description' => 'Toutes les informations légales et conditions de vente du Trois Quarts.',
+            'seo_robots' => 'noindex,follow',
+        ]);
     }
 }
 

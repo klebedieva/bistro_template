@@ -1,10 +1,7 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Galerie - Le Trois Quarts{% endblock %}
-
 {% block stylesheets %}
     {{ parent() }}
-    <meta name="description" content="Découvrez l'ambiance du Trois Quarts en images. Photos de notre terrasse, plats et intérieur.">
     <!-- Page-specific styles for the gallery page -->
     <link rel="stylesheet" href="{{ asset('assets/css/gallery.css') }}?v={{ 'now'|date('YmdHis') }}">
 {% endblock %}

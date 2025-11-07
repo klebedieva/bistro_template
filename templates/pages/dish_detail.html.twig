@@ -1,11 +1,39 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ item.name }} - Détails{% endblock %}
-
 {% block stylesheets %}
     {{ parent() }}
     <!-- Page-specific styles for the dish detail page -->
     <link rel="stylesheet" href="{{ asset('assets/css/dish-detail.css') }}">
+{% endblock %}
+
+{% block extra_head %}
+    {{ parent() }}
+    <script type="application/ld+json">
+        {{ {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            'itemListElement': [
+                {
+                    '@type': 'ListItem',
+                    'position': 1,
+                    'name': 'Accueil',
+                    'item': path('app_home')|abs_url
+                },
+                {
+                    '@type': 'ListItem',
+                    'position': 2,
+                    'name': 'Menu',
+                    'item': path('app_menu')|abs_url
+                },
+                {
+                    '@type': 'ListItem',
+                    'position': 3,
+                    'name': item.name,
+                    'item': app.request.uri
+                }
+            ]
+        }|json_encode(constant('JSON_UNESCAPED_SLASHES'))|raw }}
+    </script>
 {% endblock %}
 
 {% block body %}

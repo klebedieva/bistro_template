@@ -1,6 +1,8 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Page non trouvée - Le Trois Quarts | Brasserie Marseille{% endblock %}
+{% set seo_title = 'Page non trouvée | Le Trois Quarts' %}
+{% set seo_description = "La page que vous recherchez n'existe plus. Découvrez notre menu ou contactez le Trois Quarts pour obtenir de l'aide." %}
+{% set seo_robots = 'noindex,follow' %}
 
 {% block stylesheets %}
     {{ parent() }}

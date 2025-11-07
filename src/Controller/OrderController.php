@@ -67,7 +67,11 @@ class OrderController extends AbstractApiController
     #[Route('/order', name: 'app_order')]
     public function index(): Response
     {
-        return $this->render('pages/order.html.twig');
+        return $this->render('pages/order.html.twig', [
+            'seo_title' => 'Commander en ligne | Le Trois Quarts Marseille',
+            'seo_description' => 'Finalisez votre commande au Trois Quarts : choisissez livraison ou retrait, renseignez vos coordonnées et confirmez votre panier.',
+            'seo_og_description' => 'Passez commande au Trois Quarts en quelques étapes simples : panier, livraison, paiement et confirmation.',
+        ]);
     }
 
     /**

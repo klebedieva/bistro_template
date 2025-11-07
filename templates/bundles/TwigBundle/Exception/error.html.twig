@@ -1,6 +1,8 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Page non trouvée ({{ status_code|default(404) }}){% endblock %}
+{% set seo_title = 'Erreur ' ~ (status_code|default(500)) ~ ' | Le Trois Quarts' %}
+{% set seo_description = "Une erreur est survenue. Retournez à l'accueil du Trois Quarts ou contactez-nous pour obtenir de l'aide." %}
+{% set seo_robots = 'noindex,follow' %}
 
 {% block stylesheets %}
     {{ parent() }}

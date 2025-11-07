@@ -101,6 +101,24 @@ class ReviewRepository extends ServiceEntityRepository
     }
 
     /**
+     * Returns aggregate stats (count + average) for restaurant-wide approved reviews.
+     */
+    public function getApprovedGeneralStats(): array
+    {
+        $row = $this->createQueryBuilder('r')
+            ->select('COUNT(r.id) AS cnt, COALESCE(AVG(r.rating), 0) AS avg')
+            ->andWhere('r.menuItem IS NULL')
+            ->andWhere('r.isApproved = 1')
+            ->getQuery()
+            ->getSingleResult();
+
+        return [
+            'cnt' => (int)($row['cnt'] ?? 0),
+            'avg' => (float)($row['avg'] ?? 0.0),
+        ];
+    }
+
+    /**
      * Returns approved reviews for a specific dish with optional pagination.
      *
      * @return Review[]

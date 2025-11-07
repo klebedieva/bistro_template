@@ -1,12 +1,47 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Avis Clients - Le Trois Quarts{% endblock %}
-
 {% block stylesheets %}
     {{ parent() }}
-    <meta name="description" content="Découvrez les avis de nos clients sur Le Trois Quarts, brasserie conviviale à Marseille. Partagez votre expérience avec nous.">
     <!-- Page-specific styles for the reviews page -->
     <link rel="stylesheet" href="{{ asset('assets/css/reviews.css') }}?v={{ 'now'|date('YmdHis') }}">
+{% endblock %}
+
+{% block extra_head %}
+    {{ parent() }}
+    {% if reviewStats.cnt > 0 %}
+        <script type="application/ld+json">
+            {{ {
+                '@context': 'https://schema.org',
+                '@type': 'AggregateRating',
+                'itemReviewed': {
+                    '@type': 'Restaurant',
+                    'name': 'Le Trois Quarts'
+                },
+                'ratingValue': reviewStats.avg|number_format(1, '.', ''),
+                'ratingCount': reviewStats.cnt
+            }|json_encode(constant('JSON_UNESCAPED_SLASHES'))|raw }}
+        </script>
+    {% endif %}
+    <script type="application/ld+json">
+        {{ {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            'itemListElement': [
+                {
+                    '@type': 'ListItem',
+                    'position': 1,
+                    'name': 'Accueil',
+                    'item': path('app_home')|abs_url
+                },
+                {
+                    '@type': 'ListItem',
+                    'position': 2,
+                    'name': 'Avis',
+                    'item': app.request.uri
+                }
+            ]
+        }|json_encode(constant('JSON_UNESCAPED_SLASHES'))|raw }}
+    </script>
 {% endblock %}
 
 {% block body %}

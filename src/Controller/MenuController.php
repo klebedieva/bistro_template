@@ -98,6 +98,9 @@ final class MenuController extends AbstractController
         return $this->render('pages/menu.html.twig', [
             'menuItemsJson' => $menuItemsJson,
             'drinksJson' => $drinksJson,
+            'seo_title' => 'Menu restaurant | Le Trois Quarts Marseille',
+            'seo_description' => 'Consultez le menu complet du Trois Quarts : plats méditerranéens, desserts gourmands et boissons sélectionnées.',
+            'seo_og_description' => 'Une carte de saison, des produits frais et des recettes généreuses : découvrez le menu du Trois Quarts.',
         ]);
     }
 
@@ -166,6 +169,14 @@ final class MenuController extends AbstractController
         $ratingCount = $approvedStats['cnt'];
         $ratingAvg = $approvedStats['avg'];
 
+        $rawDescription = strip_tags($item->getDescription() ?? '');
+        $normalizedDescription = trim($rawDescription) !== ''
+            ? trim($rawDescription)
+            : sprintf('Découvrez %s, une spécialité du Trois Quarts au cœur du Camas.', $item->getName());
+        $shortDescription = mb_strlen($normalizedDescription) > 155
+            ? mb_substr($normalizedDescription, 0, 152) . '...'
+            : $normalizedDescription;
+
         return $this->render('pages/dish_detail.html.twig', [
             'item' => $item,
             'image' => $image,
@@ -176,6 +187,11 @@ final class MenuController extends AbstractController
             'related' => $related,
             'ratingCount' => $ratingCount,
             'ratingAvg' => $ratingAvg,
+            'seo_title' => sprintf('%s | Le Trois Quarts Marseille', $item->getName()),
+            'seo_description' => $shortDescription,
+            'seo_og_description' => $shortDescription,
+            'seo_image' => $image ?? null,
+            'seo_og_type' => 'article',
         ]);
     }
 }

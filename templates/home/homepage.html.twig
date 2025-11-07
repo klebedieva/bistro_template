@@ -1,17 +1,32 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Le Trois Quarts - Brasserie Marseille{% endblock %}
-
 {% block stylesheets %}
     {# Use base layout includes to avoid duplicate CSS/JS. Keep only page-specific needs. #}
     {{ parent() }}
-    <meta name="description" content="Bienvenue au Trois Quarts, votre brasserie conviviale au cœur du quartier du Camas à Marseille. Terrasse ensoleillée, cuisine généreuse et ambiance chaleureuse.">
     <!-- Page-specific styles for the homepage gallery -->
     <link rel="stylesheet" href="{{ asset('assets/css/gallery.css') }}?v={{ 'now'|date('YmdHis') }}">
 {% endblock %}
 
 {% block hero %}
     {% include 'partials/hero-home.html.twig' %}
+{% endblock %}
+
+{% block extra_head %}
+    {{ parent() }}
+    {% if reviewStats.cnt > 0 %}
+        <script type="application/ld+json">
+            {{ {
+                '@context': 'https://schema.org',
+                '@type': 'Restaurant',
+                'name': 'Le Trois Quarts',
+                'aggregateRating': {
+                    '@type': 'AggregateRating',
+                    'ratingValue': reviewStats.avg|number_format(1, '.', ''),
+                    'ratingCount': reviewStats.cnt
+                }
+            }|json_encode(constant('JSON_UNESCAPED_SLASHES'))|raw }}
+        </script>
+    {% endif %}
 {% endblock %}
 
 {% block body %}

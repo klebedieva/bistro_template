@@ -4,7 +4,89 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token('submit') }}">
-    <title>{% block title %}Welcome!{% endblock %}</title>
+
+    {# ----------------------------------------------------------------- #}
+    {# SEO BASICS: TITLE, DESCRIPTION, ROBOTS, CANONICAL                  #}
+    {# ----------------------------------------------------------------- #}
+    {% set default_title = 'Le Trois Quarts – Brasserie au cœur du Camas' %}
+    {% set default_description = 'Le Trois Quarts propose une cuisine méditerranéenne généreuse, un service chaleureux et une terrasse conviviale à Marseille.' %}
+    {% set meta_title = seo_title|default(default_title) %}
+    {% set meta_description = seo_description|default(default_description) %}
+    {% set meta_robots = seo_robots|default('index,follow') %}
+    {% set canonical_url = seo_canonical|default(app.request is defined and app.request ? app.request.schemeAndHttpHost ~ app.request.pathInfo : null) %}
+
+    <title>{% block title %}{{ meta_title }}{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}{{ meta_description }}{% endblock %}">
+    <meta name="robots" content="{{ meta_robots }}">
+    {% if canonical_url %}
+        <link rel="canonical" href="{{ canonical_url }}">
+    {% endif %}
+
+    {# ----------------------------------------------------------------- #}
+    {# SOCIAL SHARING TAGS (OPEN GRAPH + TWITTER)                         #}
+    {# ----------------------------------------------------------------- #}
+    {% set og_title = seo_og_title|default(meta_title) %}
+    {% set og_description = seo_og_description|default(meta_description) %}
+    {% set og_image = seo_image|default(asset('logo-footer1.png')) %}
+    {% set og_type = seo_og_type|default('website') %}
+    {% set og_url = canonical_url|default(app.request is defined and app.request ? app.request.schemeAndHttpHost ~ app.request.requestUri : null) %}
+
+    <meta property="og:title" content="{{ og_title }}">
+    <meta property="og:description" content="{{ og_description }}">
+    <meta property="og:type" content="{{ og_type }}">
+    {% if og_url %}<meta property="og:url" content="{{ og_url }}">{% endif %}
+    <meta property="og:image" content="{{ og_image }}">
+
+    <meta name="twitter:card" content="{{ seo_twitter_card|default('summary_large_image') }}">
+    <meta name="twitter:title" content="{{ seo_twitter_title|default(og_title) }}">
+    <meta name="twitter:description" content="{{ seo_twitter_description|default(og_description) }}">
+    <meta name="twitter:image" content="{{ seo_twitter_image|default(og_image) }}">
+
+    {# ----------------------------------------------------------------- #}
+    {# STRUCTURED DATA (JSON-LD)                                         #}
+    {# ----------------------------------------------------------------- #}
+    <script type="application/ld+json">
+        {{ {
+            '@context': 'https://schema.org',
+            '@type': 'Restaurant',
+            'name': 'Le Trois Quarts',
+            'url': canonical_url|default(og_url),
+            'image': og_image,
+            'description': meta_description,
+            'servesCuisine': ['Cuisine méditerranéenne', 'Cuisine française'],
+            'address': {
+                '@type': 'PostalAddress',
+                'streetAddress': '139 Boulevard Chave',
+                'addressLocality': 'Marseille',
+                'postalCode': '13005',
+                'addressCountry': 'FR'
+            },
+            'telephone': '+33 4 91 92 96 16',
+            'priceRange': '€€',
+            'openingHoursSpecification': [
+                {
+                    '@type': 'OpeningHoursSpecification',
+                    'dayOfWeek': [
+                        'Monday',
+                        'Tuesday',
+                        'Wednesday',
+                        'Thursday',
+                        'Friday',
+                        'Saturday',
+                        'Sunday'
+                    ],
+                    'opens': '08:00',
+                    'closes': '23:00'
+                }
+            ],
+            'sameAs': [
+                'https://www.facebook.com/bistroletroisquarts/?locale=fr_FR',
+                'https://www.instagram.com/letroisquarts'
+            ]
+        }|json_encode(constant('JSON_UNESCAPED_SLASHES'))|raw }}
+    </script>
+
+    {% block extra_head %}{% endblock %}
 
     {# Favicon #}
     <link rel="icon" href="{{ asset('favicon.png') }}" type="image/png">

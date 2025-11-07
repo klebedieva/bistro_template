@@ -1,7 +1,5 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Menu - Le Trois Quarts{% endblock %}
-
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('assets/css/menu.css') }}?v={{ 'now'|date('YmdHis') }}">

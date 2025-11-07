@@ -1,10 +1,7 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Contact - Le Trois Quarts{% endblock %}
-
 {% block stylesheets %}
     {{ parent() }}
-    <meta name="description" content="Contactez Le Trois Quarts. Adresse, téléphone, horaires et formulaire de contact.">
     <!-- Page-specific styles for the contact page -->
     <link rel="stylesheet" href="{{ asset('assets/css/contact.css') }}?v={{ 'now'|date('YmdHis') }}">
 {% endblock %}
