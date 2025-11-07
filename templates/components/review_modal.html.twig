@@ -27,16 +27,25 @@ Usage:
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">Note *</label>
-                        <div class="rating-stars">
-                            <i class="bi bi-star star-rating" data-rating="1"></i>
-                            <i class="bi bi-star star-rating" data-rating="2"></i>
-                            <i class="bi bi-star star-rating" data-rating="3"></i>
-                            <i class="bi bi-star star-rating" data-rating="4"></i>
-                            <i class="bi bi-star star-rating" data-rating="5"></i>
+                        {% set rating_label_id = (modal_id|default('addReviewModal')) ~ 'RatingLabel' %}
+                        <label class="form-label" id="{{ rating_label_id }}">Note *</label>
+                        <div class="rating-stars" role="radiogroup" aria-labelledby="{{ rating_label_id }}">
+                            {% for star in 1..5 %}
+                                <button
+                                    type="button"
+                                    class="star-rating bi bi-star"
+                                    data-rating="{{ star }}"
+                                    role="radio"
+                                    aria-checked="false"
+                                    aria-label="{{ star }} sur 5"
+                                    aria-posinset="{{ star }}"
+                                    aria-setsize="5"
+                                    tabindex="{{ star == 1 ? '0' : '-1' }}"
+                                ></button>
+                            {% endfor %}
                         </div>
-                        <input type="hidden" id="{{ modal_id|default('addReviewModal') }}Rating" name="rating" value="0">
-                        <small class="text-muted">Cliquez sur les étoiles pour noter</small>
+                        <small class="text-muted" id="{{ modal_id|default('addReviewModal') ~ 'RatingHelp' }}">Cliquez ou utilisez les flèches pour sélectionner une note</small>
+                        <input type="hidden" id="{{ modal_id|default('addReviewModal') }}Rating" name="rating" value="0" aria-describedby="{{ modal_id|default('addReviewModal') ~ 'RatingHelp' }}">
                         <div class="invalid-feedback" id="{{ modal_id|default('addReviewModal') }}RatingError"></div>
                     </div>
                     

@@ -208,6 +208,68 @@
         });
         
         /**
+         * Enable keyboard navigation for star buttons (radio-style interaction)
+         */
+        document.addEventListener('keydown', function(e) {
+            if (!e.target || !e.target.classList || !e.target.classList.contains('star-rating')) {
+                return;
+            }
+            const star = e.target;
+            const group = star.closest('.rating-stars');
+            if (!group) { return; }
+
+            const modalId = group.closest('.modal')?.id || 'addReviewModal';
+            const elements = getFormElements(modalId);
+            const ratingInput = elements ? elements.ratingInput : document.getElementById(modalId + 'Rating');
+            if (!ratingInput) { return; }
+
+            const maxRating = 5;
+            const minRating = 1;
+            let currentRating = parseInt(ratingInput.value) || 0;
+            let newRating = currentRating;
+            let handled = false;
+
+            switch (e.key) {
+                case 'ArrowRight':
+                case 'ArrowUp':
+                    newRating = currentRating > 0 ? Math.min(maxRating, currentRating + 1) : parseInt(star.getAttribute('data-rating'));
+                    handled = true;
+                    break;
+                case 'ArrowLeft':
+                case 'ArrowDown':
+                    if (currentRating > 0) {
+                        newRating = Math.max(minRating, currentRating - 1);
+                    } else {
+                        newRating = parseInt(star.getAttribute('data-rating'));
+                    }
+                    handled = true;
+                    break;
+                case 'Home':
+                    newRating = minRating;
+                    handled = true;
+                    break;
+                case 'End':
+                    newRating = maxRating;
+                    handled = true;
+                    break;
+                case 'Delete':
+                case 'Backspace':
+                    newRating = 0;
+                    handled = true;
+                    break;
+                default:
+                    break;
+            }
+
+            if (handled) {
+                e.preventDefault();
+                const targetStar = newRating > 0 ? group.querySelector(`[data-rating="${newRating}"]`) : group.querySelector('[data-rating="1"]');
+                setRating(newRating, ratingInput, { focusTarget: targetStar || star });
+                validateRating(ratingInput);
+            }
+        });
+        
+        /**
          * Handle star hover (preview rating)
          * Shows preview of rating when user hovers over stars
          */
@@ -243,7 +305,7 @@
                 
                 // Reset to currently selected rating
                 const currentRating = parseInt(ratingInput.value);
-                highlightStars(currentRating, stars);
+                highlightStars(currentRating, stars, { updateAria: true });
             }
         }, true); // Use capture phase for better performance
     }
@@ -308,9 +370,12 @@
         if (group) {
             group.addEventListener('mouseleave', function() {
                 const currentRating = parseInt(ratingInput.value);
-                highlightStars(currentRating, newStars);
+                highlightStars(currentRating, newStars, { updateAria: true });
             });
         }
+
+        const currentRatingValue = parseInt(ratingInput.value) || 0;
+        setRating(currentRatingValue, ratingInput);
     }
 
     /**
@@ -319,13 +384,32 @@
      * @param {number} rating - The rating value (1-5)
      * @param {HTMLElement} ratingInput - The hidden input element storing the rating
      */
-    function setRating(rating, ratingInput) {
+    function setRating(rating, ratingInput, options = {}) {
+        const { focusTarget = null } = options;
         // Set rating value in hidden input
         ratingInput.value = rating;
         
+        const modalElement = ratingInput.closest('.modal');
+        if (!modalElement) {
+            return;
+        }
+
         // Find stars in the same modal and highlight them
-        const stars = ratingInput.closest('.modal').querySelectorAll('.star-rating');
-        highlightStars(rating, stars);
+        const stars = modalElement.querySelectorAll('.star-rating');
+        if (!stars || stars.length === 0) {
+            return;
+        }
+        highlightStars(rating, stars, { updateAria: true });
+
+        stars.forEach((star, index) => {
+            const starValue = index + 1;
+            const shouldBeTabbable = rating > 0 ? starValue === rating : starValue === 1;
+            star.setAttribute('tabindex', shouldBeTabbable ? '0' : '-1');
+        });
+
+        if (focusTarget && typeof focusTarget.focus === 'function') {
+            focusTarget.focus();
+        }
     }
 
     /**
@@ -338,7 +422,8 @@
      * @param {number} rating - The rating value (0-5)
      * @param {NodeList} stars - The star elements to update
      */
-    function highlightStars(rating, stars) {
+    function highlightStars(rating, stars, options = {}) {
+        const { updateAria = false } = options;
         stars.forEach((star, index) => {
             // Index is 0-based, rating is 1-based
             if (index < rating) {
@@ -349,6 +434,11 @@
                 // Star is not selected - show empty star
                 star.classList.remove('bi-star-fill');
                 star.classList.add('bi-star');
+            }
+
+            if (updateAria) {
+                const isChecked = index < rating;
+                star.setAttribute('aria-checked', isChecked ? 'true' : 'false');
             }
         });
     }
@@ -1011,8 +1101,7 @@
          * Reset stars
          * Set all stars to empty state (rating = 0)
          */
-        const stars = form.querySelectorAll('.star-rating');
-        highlightStars(0, stars);
+        setRating(0, elements.ratingInput);
         
         /**
          * Clear error messages
