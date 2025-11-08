@@ -5,203 +5,207 @@
 // Prevents dropdowns (Tom Select, Select2) from being cut off at bottom of viewport
 // by dynamically adding spacer elements and scrolling page when needed.
 
-(function() {
-  /**
-   * Spacer element used to extend page height for scrolling
-   * Created once and reused for all dropdown adjustments
-   */
-  let spacerEl = null;
-
-  /**
-   * Get scroll container for EasyAdmin
-   * 
-   * EasyAdmin uses window scroll by default.
-   * Falls back to nearest scrollable ancestor if needed.
-   * 
-   * @returns {Window} Window object for scrolling
-   */
-  function getScrollContainer() {
-    return window;
-  }
-
-  /**
-   * Ensure dropdown is fully visible by adding spacer and scrolling
-   * 
-   * Calculates if dropdown overflows viewport bottom and adds
-   * invisible spacer element to allow page scrolling.
-   * 
-   * @param {HTMLElement} dropdown - Dropdown element to check
-   */
-  function ensureSpaceAndScroll(dropdown) {
-    if (!dropdown) return;
-    
+(function () {
     /**
-     * Calculate dropdown position and viewport overflow
-     * Add 16px padding for visual spacing
+     * Spacer element used to extend page height for scrolling
+     * Created once and reused for all dropdown adjustments
      */
-    const rect = dropdown.getBoundingClientRect();
-    const overflow = rect.bottom - window.innerHeight + 16;
-    
-    if (overflow > 0) {
-      /**
-       * Create spacer element if it doesn't exist
-       * Spacer is invisible and positioned at end of body
-       */
-      if (!spacerEl) {
-        spacerEl = document.createElement('div');
-        spacerEl.id = 'ea-dropdown-spacer';
-        spacerEl.style.cssText = 'width:1px;height:0;visibility:hidden;';
-        document.body.appendChild(spacerEl);
-      }
-      
-      /**
-       * Set spacer height to match overflow amount
-       * This extends page height, allowing scroll
-       */
-      spacerEl.style.height = overflow + 'px';
-      
-      /**
-       * Scroll page to reveal dropdown
-       * Uses smooth scrolling for better UX
-       */
-      getScrollContainer().scrollTo({ 
-        top: window.scrollY + overflow, 
-        behavior: 'smooth' 
-      });
+    let spacerEl = null;
+
+    /**
+     * Get scroll container for EasyAdmin
+     *
+     * EasyAdmin uses window scroll by default.
+     * Falls back to nearest scrollable ancestor if needed.
+     *
+     * @returns {Window} Window object for scrolling
+     */
+    function getScrollContainer() {
+        return window;
     }
-  }
 
-  /**
-   * Clear added spacer height
-   * 
-   * Resets spacer to 0px when dropdown closes.
-   * Keeps spacer element in DOM for reuse.
-   */
-  function clearAddedSpace() {
-    if (spacerEl) {
-      spacerEl.style.height = '0px';
-    }
-  }
-
-  /**
-   * Watch Tom Select dropdowns for overflow
-   * 
-   * Tom Select is used by EasyAdmin for AssociationField/ChoiceField with tags.
-   * Monitors clicks and checks all visible dropdowns for viewport overflow.
-   */
-  function watchTomSelect() {
     /**
-     * Listen for clicks to detect dropdown opening
-     * Uses requestAnimationFrame to wait for dropdown rendering
+     * Ensure dropdown is fully visible by adding spacer and scrolling
+     *
+     * Calculates if dropdown overflows viewport bottom and adds
+     * invisible spacer element to allow page scrolling.
+     *
+     * @param {HTMLElement} dropdown - Dropdown element to check
      */
-    document.addEventListener('click', function() {
-      requestAnimationFrame(function() {
+    function ensureSpaceAndScroll(dropdown) {
+        if (!dropdown) return;
+
         /**
-         * Find all Tom Select dropdowns
-         * Check each visible dropdown for overflow
+         * Calculate dropdown position and viewport overflow
+         * Add 16px padding for visual spacing
          */
-        const dropdowns = document.querySelectorAll('.ts-dropdown');
-        dropdowns.forEach(function(dd) {
-          /**
-           * Only process visible dropdowns
-           * Check both display style and offsetParent
-           */
-          if (dd.style.display !== 'none' && dd.offsetParent !== null) {
-            ensureSpaceAndScroll(dd);
-          }
-        });
-      });
-    });
+        const rect = dropdown.getBoundingClientRect();
+        const overflow = rect.bottom - window.innerHeight + 16;
 
-    /**
-     * Clean up spacer when dropdown closes
-     * Triggered when clicking outside dropdown or control
-     */
-    document.addEventListener('mousedown', function(e) {
-      if (!e.target.closest('.ts-dropdown') && !e.target.closest('.ts-control')) {
-        clearAddedSpace();
-      }
-    });
-  }
-
-  /**
-   * Watch Select2 dropdowns for overflow (fallback support)
-   * 
-   * Select2 may be used in some legacy forms.
-   * Uses MutationObserver to detect when Select2 dropdown opens.
-   */
-  function watchSelect2() {
-    const observer = new MutationObserver(function() {
-      const open = document.querySelector('.select2-container--open .select2-dropdown');
-      if (open) {
-        ensureSpaceAndScroll(open);
-      } else {
-        clearAddedSpace();
-      }
-    });
-    
-    /**
-     * Observe document body for changes
-     * Watches for attribute changes and DOM additions
-     */
-    observer.observe(document.body, { 
-      attributes: true, 
-      childList: true, 
-      subtree: true 
-    });
-  }
-
-  /**
-   * Initialize dropdown scroll handling
-   * 
-   * Sets up watchers for Tom Select and Select2.
-   * Also creates generic MutationObserver to catch late DOM changes.
-   */
-  document.addEventListener('DOMContentLoaded', function() {
-    watchTomSelect();
-    watchSelect2();
-
-    /**
-     * Generic observer to catch late DOM changes
-     * 
-     * TomSelect renders dropdowns dynamically after initial page load.
-     * This observer catches newly added dropdowns and attribute changes.
-     */
-    const observer = new MutationObserver(function(mutations) {
-      mutations.forEach(function(m) {
-        /**
-         * Check for newly added dropdown nodes
-         * Process only element nodes with ts-dropdown class
-         */
-        if (m.addedNodes) {
-          m.addedNodes.forEach(function(n) {
-            if (n.nodeType === 1 && n.classList && n.classList.contains('ts-dropdown')) {
-              ensureSpaceAndScroll(n);
+        if (overflow > 0) {
+            /**
+             * Create spacer element if it doesn't exist
+             * Spacer is invisible and positioned at end of body
+             */
+            if (!spacerEl) {
+                spacerEl = document.createElement('div');
+                spacerEl.id = 'ea-dropdown-spacer';
+                spacerEl.style.cssText = 'width:1px;height:0;visibility:hidden;';
+                document.body.appendChild(spacerEl);
             }
-          });
+
+            /**
+             * Set spacer height to match overflow amount
+             * This extends page height, allowing scroll
+             */
+            spacerEl.style.height = overflow + 'px';
+
+            /**
+             * Scroll page to reveal dropdown
+             * Uses smooth scrolling for better UX
+             */
+            getScrollContainer().scrollTo({
+                top: window.scrollY + overflow,
+                behavior: 'smooth',
+            });
         }
-        
-        /**
-         * Check for attribute changes on dropdown elements
-         * Handles visibility/display style changes
-         */
-        if (m.target && m.target.classList && m.target.classList.contains('ts-dropdown')) {
-          ensureSpaceAndScroll(m.target);
-        }
-      });
-    });
-    
+    }
+
     /**
-     * Observe document body for changes
-     * Watches child list, subtree, and style/class attributes
+     * Clear added spacer height
+     *
+     * Resets spacer to 0px when dropdown closes.
+     * Keeps spacer element in DOM for reuse.
      */
-    observer.observe(document.body, { 
-      childList: true, 
-      subtree: true, 
-      attributes: true, 
-      attributeFilter: ['style', 'class'] 
+    function clearAddedSpace() {
+        if (spacerEl) {
+            spacerEl.style.height = '0px';
+        }
+    }
+
+    /**
+     * Watch Tom Select dropdowns for overflow
+     *
+     * Tom Select is used by EasyAdmin for AssociationField/ChoiceField with tags.
+     * Monitors clicks and checks all visible dropdowns for viewport overflow.
+     */
+    function watchTomSelect() {
+        /**
+         * Listen for clicks to detect dropdown opening
+         * Uses requestAnimationFrame to wait for dropdown rendering
+         */
+        document.addEventListener('click', function () {
+            requestAnimationFrame(function () {
+                /**
+                 * Find all Tom Select dropdowns
+                 * Check each visible dropdown for overflow
+                 */
+                const dropdowns = document.querySelectorAll('.ts-dropdown');
+                dropdowns.forEach(function (dd) {
+                    /**
+                     * Only process visible dropdowns
+                     * Check both display style and offsetParent
+                     */
+                    if (dd.style.display !== 'none' && dd.offsetParent !== null) {
+                        ensureSpaceAndScroll(dd);
+                    }
+                });
+            });
+        });
+
+        /**
+         * Clean up spacer when dropdown closes
+         * Triggered when clicking outside dropdown or control
+         */
+        document.addEventListener('mousedown', function (e) {
+            if (!e.target.closest('.ts-dropdown') && !e.target.closest('.ts-control')) {
+                clearAddedSpace();
+            }
+        });
+    }
+
+    /**
+     * Watch Select2 dropdowns for overflow (fallback support)
+     *
+     * Select2 may be used in some legacy forms.
+     * Uses MutationObserver to detect when Select2 dropdown opens.
+     */
+    function watchSelect2() {
+        const observer = new MutationObserver(function () {
+            const open = document.querySelector('.select2-container--open .select2-dropdown');
+            if (open) {
+                ensureSpaceAndScroll(open);
+            } else {
+                clearAddedSpace();
+            }
+        });
+
+        /**
+         * Observe document body for changes
+         * Watches for attribute changes and DOM additions
+         */
+        observer.observe(document.body, {
+            attributes: true,
+            childList: true,
+            subtree: true,
+        });
+    }
+
+    /**
+     * Initialize dropdown scroll handling
+     *
+     * Sets up watchers for Tom Select and Select2.
+     * Also creates generic MutationObserver to catch late DOM changes.
+     */
+    document.addEventListener('DOMContentLoaded', function () {
+        watchTomSelect();
+        watchSelect2();
+
+        /**
+         * Generic observer to catch late DOM changes
+         *
+         * TomSelect renders dropdowns dynamically after initial page load.
+         * This observer catches newly added dropdowns and attribute changes.
+         */
+        const observer = new MutationObserver(function (mutations) {
+            mutations.forEach(function (m) {
+                /**
+                 * Check for newly added dropdown nodes
+                 * Process only element nodes with ts-dropdown class
+                 */
+                if (m.addedNodes) {
+                    m.addedNodes.forEach(function (n) {
+                        if (
+                            n.nodeType === 1 &&
+                            n.classList &&
+                            n.classList.contains('ts-dropdown')
+                        ) {
+                            ensureSpaceAndScroll(n);
+                        }
+                    });
+                }
+
+                /**
+                 * Check for attribute changes on dropdown elements
+                 * Handles visibility/display style changes
+                 */
+                if (m.target && m.target.classList && m.target.classList.contains('ts-dropdown')) {
+                    ensureSpaceAndScroll(m.target);
+                }
+            });
+        });
+
+        /**
+         * Observe document body for changes
+         * Watches child list, subtree, and style/class attributes
+         */
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['style', 'class'],
+        });
     });
-  });
 })();
 
 // ============================================================================
@@ -211,40 +215,45 @@
 // Allows admins to insert pre-written response templates into message textarea.
 // Supports EasyAdmin Turbo/Stimulus navigation for dynamic page loads.
 
-(function() {
+(function () {
     /**
      * Get client first name from global AdminConfig
-     * 
+     *
      * Injected from template via window.AdminConfig for personalization.
      * Falls back to empty string if not available.
-     * 
+     *
      * @type {string}
      */
-    const clientFirstName = (window.AdminConfig && window.AdminConfig.clientFirstName) 
-        ? window.AdminConfig.clientFirstName 
-        : '';
-    
+    const clientFirstName =
+        window.AdminConfig && window.AdminConfig.clientFirstName
+            ? window.AdminConfig.clientFirstName
+            : '';
+
     /**
      * Insert template text into message textarea
-     * 
+     *
      * Sets textarea value to template and focuses the field.
-     * 
+     *
      * @param {string} template - Template text to insert
      */
     function insertTemplate(template) {
         const messageTextarea = document.getElementById('message');
         if (messageTextarea) {
-            messageTextarea.value = template;
+            const greeting =
+                clientFirstName && !messageTextarea.value.includes(clientFirstName)
+                    ? `Bonjour ${clientFirstName},\n\n`
+                    : '';
+            messageTextarea.value = greeting + template;
             messageTextarea.focus();
         }
     }
-    
+
     /**
      * Reply templates for different message types
-     * 
+     *
      * Templates are used via data-template attribute on buttons.
      * Internal aliases provided for backward compatibility.
-     * 
+     *
      * @type {Object<string, string>}
      */
     const templates = {
@@ -274,35 +283,35 @@ Nous ferons le nécessaire pour vous apporter une solution rapidement.`,
 
 [Insérez ici les informations spécifiques]
 
-N'hésitez pas à nous contacter si vous avez d'autres questions.`
+N'hésitez pas à nous contacter si vous avez d'autres questions.`,
     };
-    
+
     /**
      * Set up template button event delegation
-     * 
+     *
      * Uses event delegation on document for better performance.
      * Handles dynamically added buttons (e.g., after Turbo navigation).
      * Only set up once to prevent duplicate listeners.
      */
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         const button = e.target.closest('.template-btn');
         if (!button) return;
-        
+
         const templateType = button.dataset.template;
         if (templates[templateType]) {
             insertTemplate(templates[templateType]);
         }
     });
-    
+
     /**
      * Expose clearMessage function globally
-     * 
+     *
      * Allows inline buttons to clear message textarea.
      * Used by buttons outside template button group.
      * Re-exposed on each page load to ensure it's available.
      */
     function bindTemplateButtons() {
-        window.clearMessage = function() {
+        window.clearMessage = function () {
             const messageTextarea = document.getElementById('message');
             if (messageTextarea) {
                 messageTextarea.value = '';
@@ -313,7 +322,7 @@ N'hésitez pas à nous contacter si vous avez d'autres questions.`
 
     /**
      * Initialize template functionality
-     * 
+     *
      * Binds on DOM ready and after EasyAdmin Turbo navigation.
      * Handles both initial page load and dynamic page changes.
      */
@@ -322,10 +331,10 @@ N'hésitez pas à nous contacter si vous avez d'autres questions.`
     } else {
         bindTemplateButtons();
     }
-    
+
     /**
      * Re-bind clearMessage after Turbo navigation
-     * 
+     *
      * EasyAdmin uses Turbo for navigation, which replaces page content.
      * This listener ensures clearMessage is available after page changes.
      */

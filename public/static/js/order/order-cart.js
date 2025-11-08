@@ -14,10 +14,10 @@
 
 /**
  * Common cart update logic
- * 
+ *
  * Refreshes cart display and updates all related UI components.
  * This function consolidates cart update logic to prevent duplication.
- * 
+ *
  * @param {Object} orderData - Current order data state (passed by reference)
  * @returns {Promise<void>}
  */
@@ -31,7 +31,7 @@ async function refreshCartUI(orderData) {
 
 /**
  * Event handler for cart quantity controls
- * 
+ *
  * This handler is set up once and uses event delegation to handle
  * all quantity and remove button clicks. It's defined outside
  * loadCartItems() to prevent duplicate listeners.
@@ -40,14 +40,14 @@ let cartItemsClickHandler = null;
 
 /**
  * Load current cart and render the order summary items block
- * 
+ *
  * This function:
  * - Fetches cart data from API
  * - Updates orderData.items with current cart items
  * - Renders cart items in checkout UI
  * - Handles empty cart state
  * - Sets up event listeners for quantity controls and remove buttons (once)
- * 
+ *
  * @param {Object} orderData - Current order data state (passed by reference)
  * @returns {Promise<void>}
  */
@@ -72,7 +72,7 @@ async function loadCartItems(orderData) {
         console.error('Error loading cart:', error);
         cart = { items: [] };
     }
-    
+
     /**
      * Ensure items is an array
      * Safely handle unexpected data structures
@@ -98,7 +98,7 @@ async function loadCartItems(orderData) {
     /**
      * Get sanitize function
      */
-    const sanitizeInput = window.OrderUtils?.sanitizeInput || ((v) => v.trim());
+    const sanitizeInput = window.OrderUtils?.sanitizeInput || (v => v.trim());
 
     /**
      * Render cart items HTML
@@ -106,7 +106,7 @@ async function loadCartItems(orderData) {
      * Includes aria-attributes for accessibility
      */
     let html = '';
-    items.forEach((it, index) => {
+    items.forEach(it => {
         const itemTotal = Number(it.price) * Number(it.quantity);
         html += `
             <div class="cart-item" role="listitem" aria-label="Article: ${sanitizeInput(it.name)}, quantité: ${it.quantity}, prix: ${itemTotal.toFixed(2)}€">
@@ -139,39 +139,38 @@ async function loadCartItems(orderData) {
      * Prevents memory leaks and improves performance
      */
     if (!cartItemsClickHandler) {
-        cartItemsClickHandler = async function(e) {
+        cartItemsClickHandler = async function (e) {
             /**
              * Find clicked button (quantity or remove)
              */
             const btn = e.target.closest('.quantity-btn, .remove-from-cart');
             if (!btn) return;
-            
+
             e.preventDefault();
             e.stopPropagation();
-            
+
             const id = parseInt(btn.getAttribute('data-id'));
             if (!id) return;
-            
+
             try {
                 /**
                  * Handle remove button
                  */
                 if (btn.classList.contains('remove-from-cart')) {
                     await window.cartAPI.removeItem(id);
-                }
-                /**
-                 * Handle quantity buttons
-                 */
-                else if (btn.classList.contains('quantity-btn')) {
+                } else if (btn.classList.contains('quantity-btn')) {
+                    /**
+                     * Handle quantity buttons
+                     */
                     const action = btn.getAttribute('data-action');
                     const current = orderData.items.find(i => Number(i.id) === Number(id));
-                    
+
                     if (!current) {
                         console.warn('Item not found in cart:', id);
                         await refreshCartUI(orderData);
                         return;
                     }
-                    
+
                     if (action === 'increase') {
                         /**
                          * Increase quantity by 1
@@ -190,7 +189,7 @@ async function loadCartItems(orderData) {
                         }
                     }
                 }
-                
+
                 /**
                  * Refresh cart UI after successful change
                  * This updates orderData.items with fresh data from server
@@ -203,7 +202,7 @@ async function loadCartItems(orderData) {
                  * Log error for debugging
                  */
                 console.error('Error modifying cart quantity:', error);
-                
+
                 /**
                  * Show error notification to user
                  * Use showNotification if available, otherwise fallback to alert
@@ -216,7 +215,7 @@ async function loadCartItems(orderData) {
                 } else {
                     alert(errorMessage);
                 }
-                
+
                 /**
                  * Refresh cart UI even on error to ensure consistency
                  * This ensures UI reflects actual server state
@@ -228,24 +227,24 @@ async function loadCartItems(orderData) {
                 }
             }
         };
-        
+
         container.addEventListener('click', cartItemsClickHandler);
     }
 }
 
 /**
  * Recompute and render the financial summary (HT/TVA/Total)
- * 
+ *
  * This function:
  * - Calculates subtotal with tax (TTC) from cart items
  * - Calculates subtotal without tax (HT) and tax amount
  * - Applies delivery fee and discount
  * - Updates UI with all financial totals
  * - Dynamically shows/hides discount line
- * 
+ *
  * Note: Menu prices already include taxes (TTC), so we calculate
  * backwards to get HT (without tax) amount.
- * 
+ *
  * @param {Object} orderData - Current order data state (passed by reference)
  */
 function updateOrderSummary(orderData) {
@@ -257,12 +256,12 @@ function updateOrderSummary(orderData) {
     const getElement = window.OrderUtils?.getElement || (id => document.getElementById(id));
     const container = getElement('summaryItems');
     if (!container) return;
-    
+
     /**
      * Get constants
      */
-    const TAX_RATE = window.OrderConstants?.TAX_RATE || 0.10;
-    
+    const TAX_RATE = window.OrderConstants?.TAX_RATE || 0.1;
+
     /**
      * Calculate subtotal with tax (TTC)
      * Sum of all item prices × quantities
@@ -287,7 +286,7 @@ function updateOrderSummary(orderData) {
      */
     const subtotalWithoutTax = subtotalWithTax / (1 + TAX_RATE);
     const taxAmount = subtotalWithTax - subtotalWithoutTax;
-    
+
     /**
      * Calculate final total
      * Subtotal + delivery fee - discount
@@ -295,7 +294,7 @@ function updateOrderSummary(orderData) {
     const deliveryFee = orderData.deliveryFee || 0;
     const discount = orderData.discount || 0;
     const total = subtotalWithTax + deliveryFee - discount;
-    
+
     /**
      * Update subtotal and tax display
      * Use cached getElement for better performance
@@ -305,14 +304,14 @@ function updateOrderSummary(orderData) {
     const totalEl = getElement('totalAmount');
     if (subEl) subEl.textContent = subtotalWithoutTax.toFixed(2) + '€';
     if (taxEl) taxEl.textContent = taxAmount.toFixed(2) + '€';
-    
+
     /**
      * Update or add discount line dynamically
      * Shows discount only when coupon is applied
      */
     const totalsContainer = document.querySelector('.summary-totals');
     let discountLine = getElement('discountLine');
-    
+
     if (discount > 0) {
         /**
          * Create discount line if it doesn't exist
@@ -336,12 +335,12 @@ function updateOrderSummary(orderData) {
          */
         discountLine.remove();
     }
-    
+
     /**
      * Update total amount display
      */
     if (totalEl) totalEl.textContent = total.toFixed(2) + '€';
-    
+
     /**
      * Update orderData with calculated values
      * Used for order submission
@@ -355,6 +354,5 @@ function updateOrderSummary(orderData) {
 window.OrderCart = {
     loadCartItems,
     updateOrderSummary,
-    refreshCartUI
+    refreshCartUI,
 };
-

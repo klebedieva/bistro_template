@@ -17,12 +17,12 @@
 
 /**
  * CartAPI class provides methods to interact with the server-side cart API.
- * 
+ *
  * This class encapsulates all cart operations and handles:
  * - Caching to prevent duplicate API calls
  * - Request deduplication (multiple simultaneous calls reuse the same request)
  * - Error handling with fallbacks
- * 
+ *
  * @class CartAPI
  */
 class CartAPI {
@@ -33,27 +33,27 @@ class CartAPI {
     constructor() {
         // Base URL for all cart API endpoints
         this.baseUrl = '/api/cart';
-        
+
         /**
          * Short-lived cache to avoid duplicate concurrent calls
-         * 
+         *
          * Why cache?
          * - Multiple parts of the page may request cart data simultaneously
          * - During a single render cycle, we don't need multiple API calls
          * - Cache prevents race conditions and reduces server load
-         * 
+         *
          * Cache structure: { items: [], total: 0, itemCount: 0 }
          */
-        this._cartCache = null;      // Cached cart data
-        this._cartCacheAt = 0;       // Timestamp when cache was created (milliseconds)
-        
+        this._cartCache = null; // Cached cart data
+        this._cartCacheAt = 0; // Timestamp when cache was created (milliseconds)
+
         /**
          * In-flight request tracking
          * If multiple parts of code request cart simultaneously, they all
          * wait for the same request instead of making separate API calls
          */
-        this._inflightCart = null;   // Promise of ongoing request
-        
+        this._inflightCart = null; // Promise of ongoing request
+
         /**
          * Cache Time-To-Live (TTL) in milliseconds
          * 500ms is sufficient for a single render cycle
@@ -64,23 +64,23 @@ class CartAPI {
 
     /**
      * Retrieve the cart from the server
-     * 
+     *
      * This method:
      * 1. Checks cache first (fast path if cache is fresh)
      * 2. Reuses in-flight request if one exists (prevents duplicate calls)
      * 3. Makes API call if needed
      * 4. Updates cache with fresh data
-     * 
+     *
      * @returns {Promise<Object>} Cart object with structure:
      *   { items: Array, total: number, itemCount: number }
-     * 
+     *
      * @example
      * const cart = await cartAPI.getCart();
      * console.log(cart.items); // Array of cart items
      */
     async getCart() {
         const now = Date.now();
-        
+
         /**
          * Fast path: Return cached data if it's still fresh
          * Check if cache exists and is less than 500ms old
@@ -88,7 +88,7 @@ class CartAPI {
         if (this._cartCache && now - this._cartCacheAt < this._CACHE_TTL_MS) {
             return this._cartCache;
         }
-        
+
         /**
          * Request deduplication: Reuse in-flight request if one exists
          * If multiple parts of code call getCart() simultaneously, they
@@ -97,7 +97,7 @@ class CartAPI {
         if (this._inflightCart) {
             return this._inflightCart;
         }
-        
+
         /**
          * Create new API request
          * This is an async IIFE (Immediately Invoked Function Expression)
@@ -108,29 +108,29 @@ class CartAPI {
                 // Make GET request to cart API endpoint
                 const response = await fetch(this.baseUrl, {
                     method: 'GET',
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: { 'Content-Type': 'application/json' },
                 });
-                
+
                 // Check if request was successful
                 if (!response.ok) {
                     throw new Error('Erreur lors de la récupération du panier');
                 }
-                
+
                 // Parse JSON response
                 const data = await response.json();
-                
+
                 // Extract cart data (handle both success and error responses)
                 const cart = data.success ? data.cart : { items: [], total: 0, itemCount: 0 };
-                
+
                 // Update cache with fresh data
                 this._cartCache = cart;
                 this._cartCacheAt = Date.now();
-                
+
                 return cart;
             } catch (error) {
                 // Log error for debugging
                 console.error('Error getting cart:', error);
-                
+
                 // Return empty cart on error (graceful degradation)
                 return { items: [], total: 0, itemCount: 0 };
             } finally {
@@ -138,18 +138,18 @@ class CartAPI {
                 this._inflightCart = null;
             }
         })();
-        
+
         return this._inflightCart;
     }
 
     /**
      * Add an item to the cart
-     * 
+     *
      * @param {string|number} itemId - The ID of the menu item to add
      * @param {number} [quantity=1] - Quantity to add (default: 1)
      * @returns {Promise<Object>} Updated cart object
      * @throws {Error} If the API request fails
-     * 
+     *
      * @example
      * await cartAPI.addItem(123, 2); // Add 2 of item 123
      */
@@ -158,9 +158,9 @@ class CartAPI {
             // Make POST request to add item endpoint
             const response = await window.apiRequest(`${this.baseUrl}/add`, {
                 method: 'POST',
-                body: JSON.stringify({ itemId, quantity })
+                body: JSON.stringify({ itemId, quantity }),
             });
-            
+
             // Check HTTP response status first
             if (!response.ok) {
                 // Try to parse error message from response
@@ -168,23 +168,23 @@ class CartAPI {
                 try {
                     const errorData = await response.json();
                     errorMessage = errorData.message || errorData.error || errorMessage;
-                } catch (_) {
+                } catch {
                     // If JSON parsing fails, use default message
                 }
                 throw new Error(errorMessage);
             }
-            
+
             // Invalidate cache (cart has changed, cache is stale)
             this._cartCacheAt = 0;
-            
+
             // Parse response
             const data = await response.json();
-            
+
             // Check if operation was successful
             if (!data.success) {
-                throw new Error(data.message || 'Erreur lors de l\'ajout');
+                throw new Error(data.message || "Erreur lors de l'ajout");
             }
-            
+
             // Return updated cart
             return data.cart;
         } catch (error) {
@@ -195,11 +195,11 @@ class CartAPI {
 
     /**
      * Remove an item from the cart
-     * 
+     *
      * @param {string|number} itemId - The ID of the item to remove
      * @returns {Promise<Object>} Updated cart object
      * @throws {Error} If the API request fails
-     * 
+     *
      * @example
      * await cartAPI.removeItem(123); // Remove item 123
      */
@@ -207,9 +207,9 @@ class CartAPI {
         try {
             // Make DELETE request to remove item endpoint
             const response = await window.apiRequest(`${this.baseUrl}/remove/${itemId}`, {
-                method: 'DELETE'
+                method: 'DELETE',
             });
-            
+
             // Check HTTP response status first
             if (!response.ok) {
                 // Try to parse error message from response
@@ -217,23 +217,23 @@ class CartAPI {
                 try {
                     const errorData = await response.json();
                     errorMessage = errorData.message || errorData.error || errorMessage;
-                } catch (_) {
+                } catch {
                     // If JSON parsing fails, use default message
                 }
                 throw new Error(errorMessage);
             }
-            
+
             // Invalidate cache (cart has changed)
             this._cartCacheAt = 0;
-            
+
             // Parse response
             const data = await response.json();
-            
+
             // Check if operation was successful
             if (!data.success) {
                 throw new Error(data.message || 'Erreur lors de la suppression');
             }
-            
+
             // Return updated cart
             return data.cart;
         } catch (error) {
@@ -244,12 +244,12 @@ class CartAPI {
 
     /**
      * Update the quantity of an item in the cart
-     * 
+     *
      * @param {string|number} itemId - The ID of the item
      * @param {number} quantity - New quantity (must be > 0)
      * @returns {Promise<Object>} Updated cart object
      * @throws {Error} If the API request fails
-     * 
+     *
      * @example
      * await cartAPI.updateQuantity(123, 5); // Set quantity to 5
      */
@@ -258,9 +258,9 @@ class CartAPI {
             // Make PUT request to update quantity endpoint
             const response = await window.apiRequest(`${this.baseUrl}/update/${itemId}`, {
                 method: 'PUT',
-                body: JSON.stringify({ quantity })
+                body: JSON.stringify({ quantity }),
             });
-            
+
             // Check HTTP response status first
             if (!response.ok) {
                 // Try to parse error message from response
@@ -268,23 +268,23 @@ class CartAPI {
                 try {
                     const errorData = await response.json();
                     errorMessage = errorData.message || errorData.error || errorMessage;
-                } catch (_) {
+                } catch {
                     // If JSON parsing fails, use default message
                 }
                 throw new Error(errorMessage);
             }
-            
+
             // Invalidate cache (cart has changed)
             this._cartCacheAt = 0;
-            
+
             // Parse response
             const data = await response.json();
-            
+
             // Check if operation was successful
             if (!data.success) {
                 throw new Error(data.message || 'Erreur lors de la mise à jour');
             }
-            
+
             // Return updated cart
             return data.cart;
         } catch (error) {
@@ -295,10 +295,10 @@ class CartAPI {
 
     /**
      * Clear the entire cart (remove all items)
-     * 
+     *
      * @returns {Promise<Object>} Empty cart object
      * @throws {Error} If the API request fails
-     * 
+     *
      * @example
      * await cartAPI.clearCart(); // Empty the cart
      */
@@ -306,9 +306,9 @@ class CartAPI {
         try {
             // Make POST request to clear cart endpoint
             const response = await window.apiRequest(`${this.baseUrl}/clear`, {
-                method: 'POST'
+                method: 'POST',
             });
-            
+
             // Check HTTP response status first
             if (!response.ok) {
                 // Try to parse error message from response
@@ -316,23 +316,23 @@ class CartAPI {
                 try {
                     const errorData = await response.json();
                     errorMessage = errorData.message || errorData.error || errorMessage;
-                } catch (_) {
+                } catch {
                     // If JSON parsing fails, use default message
                 }
                 throw new Error(errorMessage);
             }
-            
+
             // Invalidate cache (cart is now empty)
             this._cartCacheAt = 0;
-            
+
             // Parse response
             const data = await response.json();
-            
+
             // Check if operation was successful
             if (!data.success) {
                 throw new Error(data.message || 'Erreur lors du vidage');
             }
-            
+
             // Return empty cart
             return data.cart;
         } catch (error) {
@@ -343,12 +343,12 @@ class CartAPI {
 
     /**
      * Get the total number of items in the cart
-     * 
+     *
      * This method derives the count from the cached cart to avoid
      * making an extra API call. It reuses getCart() which uses cache.
-     * 
+     *
      * @returns {Promise<number>} Total item count
-     * 
+     *
      * @example
      * const count = await cartAPI.getCount(); // e.g., 5
      */
@@ -390,20 +390,20 @@ window.cartAPI = new CartAPI();
 
 /**
  * Toggle the cart sidebar open/closed
- * 
+ *
  * This function:
  * - Opens/closes the cart sidebar
  * - Manages body scroll lock when sidebar is open
  * - Refreshes cart when opening
- * 
+ *
  * @global
  */
-window.toggleCart = function() {
+window.toggleCart = function () {
     const cartSidebar = document.getElementById('cartSidebar');
     if (cartSidebar) {
         // Toggle 'open' class (CSS handles the animation)
         cartSidebar.classList.toggle('open');
-        
+
         if (cartSidebar.classList.contains('open')) {
             // Sidebar is now open
             // Update aria attributes for accessibility
@@ -428,15 +428,15 @@ window.toggleCart = function() {
 
 /**
  * Reset cart active state after a delay
- * 
+ *
  * This is used to prevent accidental cart closing when user is
  * actively interacting with cart controls (buttons, inputs).
- * 
+ *
  * After 2 seconds of inactivity, the cart can be closed by clicking outside.
- * 
+ *
  * @global
  */
-window.resetCartActiveState = function() {
+window.resetCartActiveState = function () {
     setTimeout(() => {
         window.cartIsActive = false;
     }, 2000);
@@ -448,7 +448,7 @@ window.resetCartActiveState = function() {
 
 /**
  * Initialize cart navigation functionality
- * 
+ *
  * Sets up:
  * - Click handlers for cart link and close button
  * - Click-outside-to-close behavior
@@ -466,11 +466,11 @@ function initCartNavigation() {
      * Handle cart link click (opens cart sidebar)
      */
     if (cartNavLink) {
-        cartNavLink.addEventListener('click', function(e) {
+        cartNavLink.addEventListener('click', function (e) {
             // Prevent default link behavior
             e.preventDefault();
             // Toggle cart sidebar
-            toggleCart();
+            window.toggleCart();
         });
     }
 
@@ -478,34 +478,35 @@ function initCartNavigation() {
      * Handle close button click (closes cart sidebar)
      */
     if (closeCart) {
-        closeCart.addEventListener('click', function() {
+        closeCart.addEventListener('click', function () {
             // Clear active state
             window.cartIsActive = false;
             // Close sidebar
-            toggleCart();
+            window.toggleCart();
         });
     }
 
     /**
      * Close cart when clicking outside
-     * 
+     *
      * This is a common UX pattern - clicking outside a modal/sidebar closes it.
      * However, we need to be careful not to close when clicking on:
      * - Cart controls (quantity buttons, cart actions)
      * - Cart header (title, close button)
      * - Cart navigation link (to open cart)
      */
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         // Only act if cart is open
         if (cartSidebar && cartSidebar.classList.contains('open')) {
             /**
              * Check if click is on a cart control element
              * These elements should NOT close the cart when clicked
              */
-            const isCartControl = e.target.closest('.cart-qty-btn') || 
-                                 e.target.closest('.cart-item-controls') ||
-                                 e.target.closest('.cart-actions') ||
-                                 e.target.closest('.cart-header');
+            const isCartControl =
+                e.target.closest('.cart-qty-btn') ||
+                e.target.closest('.cart-item-controls') ||
+                e.target.closest('.cart-actions') ||
+                e.target.closest('.cart-header');
 
             /**
              * Close cart if:
@@ -513,10 +514,12 @@ function initCartNavigation() {
              * - Click is NOT on the cart nav link (to open cart)
              * - Click is NOT on cart controls
              */
-            if (!cartSidebar.contains(e.target) && 
-                !cartNavLink.contains(e.target) && 
-                !isCartControl) {
-                toggleCart();
+            if (
+                !cartSidebar.contains(e.target) &&
+                !(cartNavLink && cartNavLink.contains(e.target)) &&
+                !isCartControl
+            ) {
+                window.toggleCart();
             }
         }
     });
@@ -525,10 +528,10 @@ function initCartNavigation() {
      * Close cart with Escape key
      * Standard keyboard shortcut for closing modals/sidebars
      */
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && cartSidebar && cartSidebar.classList.contains('open')) {
             window.cartIsActive = false;
-            toggleCart();
+            window.toggleCart();
         }
     });
 
@@ -545,7 +548,7 @@ function initCartNavigation() {
 
 /**
  * Initialize cart sidebar functionality
- * 
+ *
  * Sets up:
  * - Clear cart button with confirmation
  * - Order button (redirects to order page)
@@ -558,35 +561,35 @@ function initCartSidebar() {
 
     /**
      * Set up event delegation for quantity buttons
-     * 
+     *
      * Instead of attaching listeners to each button individually (which would
      * need to be re-attached every time cart updates), we attach one listener
      * to the parent container. This listener handles clicks on all buttons,
      * including dynamically added ones.
-     * 
+     *
      * Benefits:
      * - Only one listener in memory (not one per button)
      * - Works for dynamically added buttons (no need to re-attach)
      * - More efficient and performant
      */
     if (cartItems) {
-        cartItems.addEventListener('click', async function(e) {
+        cartItems.addEventListener('click', async function (e) {
             // Check if click was on a quantity button
             const btn = e.target.closest('.cart-qty-btn');
             if (!btn) return; // Not a quantity button, ignore
-            
+
             // Prevent default button behavior
             e.preventDefault();
-            
+
             // Set cart as active (prevents accidental closing)
             window.cartIsActive = true;
             // Reset active state after delay
             if (window.resetCartActiveState) window.resetCartActiveState();
-            
+
             // Get item ID and action from data attributes
             const id = parseInt(btn.getAttribute('data-id'));
             const action = btn.getAttribute('data-action');
-            
+
             // Call appropriate function based on action
             if (action === 'decrease') {
                 await window.removeFromCartSidebar(id);
@@ -604,38 +607,39 @@ function initCartSidebar() {
      * Shows confirmation dialog before clearing cart
      */
     if (clearCartBtn) {
-        clearCartBtn.addEventListener('click', async function() {
+        clearCartBtn.addEventListener('click', async function () {
             /**
              * Show confirmation dialog
              * Uses showConfirmDialog if available, falls back to native confirm()
-             * 
+             *
              * We wrap it in a Promise to use async/await syntax
              */
-            const confirmed = typeof showConfirmDialog === 'function'
-                ? await new Promise(resolve => {
-                    showConfirmDialog(
-                        'Confirmation', 
-                        'Êtes-vous sûr de vouloir vider votre panier ?', 
-                        () => resolve(true)
-                    );
-                })
-                : confirm('Êtes-vous sûr de vouloir vider votre panier ?');
+            const confirmed =
+                typeof window.showConfirmDialog === 'function'
+                    ? await new Promise(resolve => {
+                          window.showConfirmDialog(
+                              'Confirmation',
+                              'Êtes-vous sûr de vouloir vider votre panier ?',
+                              () => resolve(true)
+                          );
+                      })
+                    : window.confirm('Êtes-vous sûr de vouloir vider votre panier ?');
 
             // Only proceed if user confirmed
             if (confirmed) {
                 try {
                     // Clear cart via API
                     await window.cartAPI.clearCart();
-                    
+
                     // Update UI
                     await updateCartNavigation();
                     await updateCartSidebar();
-                    
+
                     // Show success notification
                     if (window.showCartNotification) {
                         window.showCartNotification('Panier vidé avec succès', 'success');
                     }
-                    
+
                     /**
                      * Trigger menu re-render if available
                      * This updates item quantities in the menu page
@@ -643,13 +647,13 @@ function initCartSidebar() {
                     if (window.renderMenu && typeof window.renderMenu === 'function') {
                         await window.renderMenu();
                     }
-                    
+
                     /**
                      * Dispatch cartUpdated event
                      * Other parts of the app listen to this event to update their UI
                      */
                     window.dispatchEvent(new CustomEvent('cartUpdated'));
-                    
+
                     /**
                      * Close cart sidebar after clearing
                      * Cart is empty, no need to keep sidebar open
@@ -667,7 +671,7 @@ function initCartSidebar() {
                         window.showCartNotification('Erreur lors du vidage du panier', 'error');
                     } else {
                         // Fallback to alert if notification system not available
-                        alert('Erreur lors du vidage du panier');
+                        window.alert('Erreur lors du vidage du panier');
                     }
                 }
             }
@@ -680,10 +684,10 @@ function initCartSidebar() {
      */
     const orderBtn = document.getElementById('orderBtn');
     if (orderBtn) {
-        orderBtn.addEventListener('click', async function() {
+        orderBtn.addEventListener('click', async function () {
             // Get current cart
             const cart = await window.cartAPI.getCart();
-            
+
             // Only redirect if cart has items
             if (cart.items.length > 0) {
                 window.location.href = '/order';
@@ -692,7 +696,7 @@ function initCartSidebar() {
                 if (window.showCartNotification) {
                     window.showCartNotification('Votre panier est vide', 'warning');
                 } else {
-                    alert('Votre panier est vide');
+                    window.alert('Votre panier est vide');
                 }
             }
         });
@@ -705,14 +709,14 @@ function initCartSidebar() {
 
 /**
  * Update the cart sidebar display
- * 
+ *
  * This function:
  * - Fetches latest cart data from API
  * - Renders cart items in the sidebar
  * - Updates total price
  * - Handles empty cart state
  * - Attaches event listeners to quantity buttons
- * 
+ *
  * @async
  */
 async function updateCartSidebar() {
@@ -822,7 +826,7 @@ async function updateCartSidebar() {
          * event delegation in initCartSidebar(). This means we don't need
          * to attach listeners here - they're already set up on the parent
          * container and will work for all buttons, including dynamically added ones.
-         * 
+         *
          * This is more efficient than attaching listeners to each button individually.
          */
     } catch (error) {
@@ -844,20 +848,20 @@ async function updateCartSidebar() {
 
 /**
  * Remove item from cart (via sidebar controls)
- * 
+ *
  * If quantity > 1, decreases quantity.
  * If quantity = 1, removes item entirely.
- * 
+ *
  * @param {string|number} itemId - The ID of the item to remove/decrease
  * @global
  */
-window.removeFromCartSidebar = async function(itemId) {
+window.removeFromCartSidebar = async function (itemId) {
     try {
         // Get current cart
         const cart = await window.cartAPI.getCart();
         // Find the item in cart
         const item = cart.items.find(i => i.id === itemId);
-        
+
         if (item) {
             if (item.quantity > 1) {
                 // Decrease quantity (item stays in cart)
@@ -874,16 +878,16 @@ window.removeFromCartSidebar = async function(itemId) {
                     window.showCartNotification(`${item.name} supprimé du panier`, 'info');
                 }
             }
-            
+
             // Update UI
             await updateCartSidebar();
             await updateCartNavigation();
-            
+
             // Update quantity display on menu page (if available)
             if (window.updateQuantityDisplay) {
                 window.updateQuantityDisplay(itemId);
             }
-            
+
             // Dispatch event for other components
             window.dispatchEvent(new CustomEvent('cartUpdated'));
         }
@@ -898,35 +902,35 @@ window.removeFromCartSidebar = async function(itemId) {
 /**
  * Add item to cart (via sidebar controls)
  * Increases quantity of existing item in cart.
- * 
+ *
  * @param {string|number} itemId - The ID of the item to increase
  * @global
  */
-window.addToCartSidebar = async function(itemId) {
+window.addToCartSidebar = async function (itemId) {
     try {
         // Get current cart
         const cart = await window.cartAPI.getCart();
         // Find the item in cart
         const item = cart.items.find(i => i.id === itemId);
-        
+
         if (item) {
             // Increase quantity
             await window.cartAPI.updateQuantity(itemId, item.quantity + 1);
-            
+
             // Update UI
             await updateCartSidebar();
             await updateCartNavigation();
-            
+
             // Update quantity display on menu page (if available)
             if (window.updateQuantityDisplay) {
                 window.updateQuantityDisplay(itemId);
             }
-            
+
             // Show success notification
             if (window.showCartNotification) {
                 window.showCartNotification(`Quantité de ${item.name} augmentée`, 'success');
             }
-            
+
             // Dispatch event for other components
             window.dispatchEvent(new CustomEvent('cartUpdated'));
         }
@@ -944,21 +948,21 @@ window.addToCartSidebar = async function(itemId) {
 
 /**
  * Add a menu item to the cart (called from menu page)
- * 
+ *
  * This function is used when clicking the "+" button on menu items.
- * 
+ *
  * @param {string|number} itemId - The ID of the menu item to add
  * @global
  */
-window.addMenuItemToCart = async function(itemId) {
+window.addMenuItemToCart = async function (itemId) {
     try {
         // Add item to cart (quantity = 1)
         await window.cartAPI.addItem(itemId, 1);
-        
+
         // Update UI
         await updateCartNavigation();
         await updateCartSidebar();
-        
+
         // Dispatch event for other components
         window.dispatchEvent(new CustomEvent('cartUpdated'));
     } catch (error) {
@@ -967,26 +971,27 @@ window.addMenuItemToCart = async function(itemId) {
         if (window.showCartNotification) {
             window.showCartNotification("Erreur lors de l'ajout au panier", 'error');
         }
+        console.error('Error adding menu item to cart:', error);
     }
 };
 
 /**
  * Remove a menu item from the cart (called from menu page)
- * 
+ *
  * This function is used when clicking the "-" button on menu items.
- * 
+ *
  * @param {string|number} itemId - The ID of the menu item to remove
  * @global
  */
-window.removeMenuItemFromCart = async function(itemId) {
+window.removeMenuItemFromCart = async function (itemId) {
     try {
         // Remove item from cart
         await window.cartAPI.removeItem(itemId);
-        
+
         // Update UI
         await updateCartNavigation();
         await updateCartSidebar();
-        
+
         // Dispatch event for other components
         window.dispatchEvent(new CustomEvent('cartUpdated'));
     } catch (error) {
@@ -1000,12 +1005,12 @@ window.removeMenuItemFromCart = async function(itemId) {
 
 /**
  * Update the cart count badge in the navigation bar
- * 
+ *
  * This function:
  * - Fetches cart item count
  * - Updates the count badge text
  * - Makes the badge visible (removes 'hidden' class)
- * 
+ *
  * @async
  */
 async function updateCartNavigation() {
@@ -1030,12 +1035,12 @@ async function updateCartNavigation() {
 
 /**
  * Initialize cart functionality when DOM is ready
- * 
+ *
  * This runs on page load and sets up:
  * - Cart count in navigation
  * - Cart navigation handlers
  */
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Update cart count immediately
     updateCartNavigation();
     // Initialize cart navigation (click handlers, etc.)
@@ -1044,14 +1049,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
 /**
  * Support Turbo/Hotwire navigation if present
- * 
+ *
  * Turbo (from Hotwire) is a framework for building fast web applications.
  * It intercepts link clicks and loads pages via AJAX, replacing the body.
- * 
+ *
  * This listener ensures cart functionality works with Turbo navigation.
  * Without this, cart would only work on initial page load.
  */
-window.addEventListener('turbo:load', function() {
+window.addEventListener('turbo:load', function () {
     updateCartNavigation();
     initCartNavigation();
 });
@@ -1062,7 +1067,7 @@ window.addEventListener('turbo:load', function() {
 
 /**
  * Export functions globally for compatibility
- * 
+ *
  * These functions are used by other scripts throughout the application.
  * Making them globally available ensures they can be called from anywhere.
  */

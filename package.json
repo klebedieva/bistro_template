@@ -1,0 +1,31 @@
+{
+  "name": "le_trois_quarts",
+  "version": "1.0.0",
+  "description": "Modern Symfony application that powers the public website, online ordering flow and administration tools of the Le Trois Quarts brasserie in Marseille (FR-13).",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "lint": "eslint \"public/static/js/**/*.js\" \"assets/**/*.js\"",
+    "lint:fix": "eslint \"public/static/js/**/*.js\" \"assets/**/*.js\" --fix",
+    "format": "prettier --write \"public/static/js/**/*.js\" \"assets/**/*.js\"",
+    "format:check": "prettier --check \"public/static/js/**/*.js\" \"assets/**/*.js\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-jsdoc": "^61.1.12",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-promise": "^7.2.1",
+    "globals": "^16.5.0",
+    "prettier": "^3.6.2"
+  }
+}

@@ -30,11 +30,11 @@
      */
     const patterns = {
         // Allows letters (including accents), spaces and hyphens for names.
-        name: /^[a-zA-ZÀ-ÿ\s\-]+$/,
+        name: /^[a-zA-ZÀ-ÿ\s-]+$/,
         // Basic email pattern. Server-side validation still required.
-        email: /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/,
+        email: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
         // French phone numbers (country code optional, accepts separators).
-        phone: /^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.\-]*\d{2}){4}$/
+        phone: /^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$/,
     };
 
     /**
@@ -58,7 +58,7 @@
         /<embed/gi,
         /<form/gi,
         /<link[^>]*href\s*=\s*["']?javascript:/gi,
-        /<meta[^>]*http-equiv\s*=\s*["']?refresh/gi
+        /<meta[^>]*http-equiv\s*=\s*["']?refresh/gi,
     ];
 
     /**
@@ -67,14 +67,14 @@
      * context-aware phrases without repeating string templates everywhere.
      */
     const messages = {
-        required: (label) => `${label} est requis`,
+        required: label => `${label} est requis`,
         minLength: (label, min) => `${label} doit contenir au moins ${min} caractères`,
-        nameFormat: (label) => `${label} ne peut contenir que des lettres, espaces et tirets`,
+        nameFormat: label => `${label} ne peut contenir que des lettres, espaces et tirets`,
         emailFormat: () => `L'email n'est pas valide`,
         phoneFormat: () => `Le numéro de téléphone n'est pas valide`,
         numericMin: (label, min) => `${label} doit être au moins ${min}`,
-        xss: (label) => `${label} contient des éléments non autorisés`,
-        maxLength: (label, max) => `${label} ne peut pas dépasser ${max} caractères`
+        xss: label => `${label} contient des éléments non autorisés`,
+        maxLength: (label, max) => `${label} ne peut pas dépasser ${max} caractères`,
     };
 
     /**
@@ -187,12 +187,7 @@
      * min/max lengths are acceptable.
      */
     function validateMessage(value, options = {}) {
-        const {
-            label = 'Le message',
-            required = false,
-            min = 0,
-            max = 1000
-        } = options;
+        const { label = 'Le message', required = false, min = 0, max = 1000 } = options;
 
         const trimmed = value.trim();
 
@@ -200,7 +195,10 @@
             return required ? result(false, messages.required(label)) : result(true, '', trimmed);
         }
         if (containsXss(trimmed)) {
-            return result(false, `${label} contient des éléments non autorisés (balises HTML, JavaScript, etc.)`);
+            return result(
+                false,
+                `${label} contient des éléments non autorisés (balises HTML, JavaScript, etc.)`
+            );
         }
         if (trimmed.length < min) {
             return result(false, messages.minLength(label, min));
@@ -222,9 +220,8 @@
      * @param {{valid:boolean,message:string}} validationResult - Result produced by a validator
      */
     function applyFieldState(field, errorTarget, validationResult) {
-        const errorElement = typeof errorTarget === 'string'
-            ? document.getElementById(errorTarget)
-            : errorTarget;
+        const errorElement =
+            typeof errorTarget === 'string' ? document.getElementById(errorTarget) : errorTarget;
 
         if (!field) {
             return;
@@ -257,9 +254,8 @@
      * before running a fresh validation pass.
      */
     function clearFieldState(field, errorTarget) {
-        const errorElement = typeof errorTarget === 'string'
-            ? document.getElementById(errorTarget)
-            : errorTarget;
+        const errorElement =
+            typeof errorTarget === 'string' ? document.getElementById(errorTarget) : errorTarget;
 
         if (field) {
             field.classList.remove('is-valid', 'is-invalid');
@@ -284,7 +280,6 @@
         validatePhone,
         validateMessage,
         applyFieldState,
-        clearFieldState
+        clearFieldState,
     };
 })(window);
-

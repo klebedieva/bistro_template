@@ -31,10 +31,10 @@
 
 /**
  * Canonical order data state bag
- * 
+ *
  * This object stores all order data collected across checkout steps.
  * Used for payload building when submitting order to backend.
- * 
+ *
  * Structure:
  * - items: Array of cart items
  * - delivery: Delivery mode, address, date, time
@@ -53,7 +53,7 @@ let orderData = {
     payment: {},
     total: 0,
     coupon: null,
-    discount: 0
+    discount: 0,
 };
 
 // Export orderData to global scope for use by modules and inline handlers
@@ -61,16 +61,16 @@ window.orderData = orderData;
 
 /**
  * Initialize order page when DOM is ready
- * 
+ *
  * Sets up the checkout process when page loads.
  */
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     initOrderPage();
 });
 
 /**
  * Bootstrap the order page
- * 
+ *
  * This function:
  * - Loads cart items from API
  * - Updates order summary display
@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
  * - Sets up address validation
  * - Initializes promo code functionality
  * - Subscribes to cart update events
- * 
+ *
  * @returns {Promise<void>}
  */
 async function initOrderPage() {
@@ -95,7 +95,7 @@ async function initOrderPage() {
         console.error('Required order modules not loaded. Please check script loading order.');
         return;
     }
-    
+
     /**
      * Initialize aria attributes for accessibility
      * Set initial state for step indicators and content
@@ -118,7 +118,7 @@ async function initOrderPage() {
             el.setAttribute('aria-hidden', 'true');
         }
     });
-    
+
     /**
      * Load cart items and render order summary
      * This displays current cart contents in checkout
@@ -129,7 +129,7 @@ async function initOrderPage() {
     if (window.OrderCart && window.OrderCart.updateOrderSummary) {
         window.OrderCart.updateOrderSummary(orderData);
     }
-    
+
     /**
      * Initialize all form handlers and validators
      * These set up real-time validation and UI updates
@@ -145,7 +145,7 @@ async function initOrderPage() {
             window.OrderDelivery.initTimeValidation();
         }
     }
-    
+
     if (window.OrderFieldValidation) {
         if (window.OrderFieldValidation.initPhoneValidation) {
             window.OrderFieldValidation.initPhoneValidation();
@@ -154,7 +154,7 @@ async function initOrderPage() {
             window.OrderFieldValidation.initNameEmailValidation();
         }
     }
-    
+
     if (window.OrderAddress) {
         if (window.OrderAddress.initZipCodeValidation) {
             window.OrderAddress.initZipCodeValidation();
@@ -163,7 +163,7 @@ async function initOrderPage() {
             window.OrderAddress.initAddressValidation();
         }
     }
-    
+
     if (window.OrderCoupon && window.OrderCoupon.initPromoCode) {
         window.OrderCoupon.initPromoCode(orderData);
     }
@@ -173,7 +173,7 @@ async function initOrderPage() {
      * When cart is updated from sidebar or menu, refresh order page display
      * This ensures checkout always shows current cart state
      */
-    window.addEventListener('cartUpdated', async function() {
+    window.addEventListener('cartUpdated', async function () {
         if (window.OrderCart) {
             if (window.OrderCart.loadCartItems) {
                 await window.OrderCart.loadCartItems(orderData);

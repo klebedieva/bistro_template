@@ -10,20 +10,20 @@
 
 /**
  * Application constants
- * 
+ *
  * Centralized constants for maintainability and self-documentation.
  */
 const DELIVERY_FEE = 5; // Delivery fee in euros
-const TAX_RATE = 0.10; // 10% VAT
+const TAX_RATE = 0.1; // 10% VAT
 const DEBOUNCE_DELAYS = {
     ZIP_CODE: 500, // 500ms delay for postal code validation
-    ADDRESS: 800   // 800ms delay for address validation
+    ADDRESS: 800, // 800ms delay for address validation
 };
 const MIN_TIME_DELAY_HOURS = 1; // Minimum 1 hour delay for delivery time
 
 /**
  * Time slots for delivery/pickup
- * 
+ *
  * Cached array of available time slots.
  * Prevents recreation on every date change.
  */
@@ -59,27 +59,27 @@ const TIME_SLOTS = [
     { value: '21:00', text: '21h00 - 21h30' },
     { value: '21:30', text: '21h30 - 22h00' },
     { value: '22:00', text: '22h00 - 22h30' },
-    { value: '22:30', text: '22h30 - 23h00' }
+    { value: '22:30', text: '22h30 - 23h00' },
 ];
 
 /**
  * Validation patterns
- * 
+ *
  * Centralized regex patterns for consistent validation across the application.
  */
 const VALIDATION_PATTERNS = {
-    name: /^[a-zA-ZÀ-ÿ\s\-']+$/,
-    email: /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/,
+    name: /^[a-zA-ZÀ-ÿ\s'-]+$/,
+    email: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
     phone: {
         national: /^0[1-9]\d{8}$/,
-        international: /^\+33[1-9]\d{8}$/
+        international: /^\+33[1-9]\d{8}$/,
     },
-    zipCode: /^[0-9]{5}$/
+    zipCode: /^[0-9]{5}$/,
 };
 
 /**
  * XSS detection patterns
- * 
+ *
  * Simple heuristics to catch obvious XSS injection attempts.
  * These patterns detect common attack vectors:
  * - HTML tags
@@ -91,19 +91,19 @@ const VALIDATION_PATTERNS = {
  * - Dangerous HTML elements
  */
 const xssPatterns = [
-    /<[^>]*>/gi,                    // HTML tags
-    /javascript:/gi,                // JavaScript protocol
-    /on\w+\s*=/gi,                  // Event handlers (onclick, onerror, etc.)
-    /vbscript:/gi,                  // VBScript protocol
-    /data:text\/html/gi,            // Data URI with HTML
-    /expression\s*\(/gi,            // CSS expressions
-    /<script/gi,                    // Script tags
-    /<iframe/gi,                    // Iframe tags
-    /<object/gi,                    // Object tags
-    /<embed/gi,                     // Embed tags
-    /<form/gi,                      // Form tags
-    /<link[^>]*href\s*=\s*["\']?javascript:/gi, // Link with JS
-    /<meta[^>]*http-equiv\s*=\s*["\']?refresh/gi // Meta refresh
+    /<[^>]*>/gi, // HTML tags
+    /javascript:/gi, // JavaScript protocol
+    /on\w+\s*=/gi, // Event handlers (onclick, onerror, etc.)
+    /vbscript:/gi, // VBScript protocol
+    /data:text\/html/gi, // Data URI with HTML
+    /expression\s*\(/gi, // CSS expressions
+    /<script/gi, // Script tags
+    /<iframe/gi, // Iframe tags
+    /<object/gi, // Object tags
+    /<embed/gi, // Embed tags
+    /<form/gi, // Form tags
+    /<link[^>]*href\s*=\s*["']?javascript:/gi, // Link with JS
+    /<meta[^>]*http-equiv\s*=\s*["']?refresh/gi, // Meta refresh
 ];
 
 // Export constants to global scope for use by other modules
@@ -115,6 +115,5 @@ window.OrderConstants = {
     MIN_TIME_DELAY_HOURS,
     TIME_SLOTS,
     VALIDATION_PATTERNS,
-    xssPatterns
+    xssPatterns,
 };
-

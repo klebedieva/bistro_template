@@ -11,7 +11,7 @@
 // - Success message auto-hide
 // - Form reset after successful submission
 
-(function() {
+(function () {
     'use strict';
 
     // Reuse the shared helper so validation messages stay consistent
@@ -27,13 +27,13 @@
 
     /**
      * Initialize contact form functionality when DOM is ready
-     * 
+     *
      * Sets up:
      * - Real-time validation listeners
      * - Form submission handler
      * - Auto-hide success message
      */
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         setupRealTimeValidation();
         setupFormSubmission();
         setupAutoHideSuccessMessage();
@@ -45,7 +45,7 @@
 
     /**
      * Cache DOM elements to avoid repeated querySelector calls
-     * 
+     *
      * These elements are accessed multiple times during validation,
      * so caching them improves performance.
      */
@@ -53,9 +53,9 @@
 
     /**
      * Get and cache form elements
-     * 
+     *
      * Returns cached elements if available, otherwise queries DOM and caches result.
-     * 
+     *
      * @returns {Object|null} Object with all form elements, or null if form not found
      */
     function getFormElements() {
@@ -79,7 +79,7 @@
             subjectInput: form.querySelector('select[name="contact_message[subject]"]'),
             messageInput: form.querySelector('textarea[name="contact_message[message]"]'),
             consentInput: form.querySelector('input[name="contact_message[consent]"]'),
-            submitBtn: form.querySelector('button[type="submit"]')
+            submitBtn: form.querySelector('button[type="submit"]'),
         };
 
         return formElementsCache;
@@ -91,11 +91,11 @@
 
     /**
      * Set up real-time validation for all form fields
-     * 
+     *
      * This function attaches event listeners to each form field:
      * - 'input' event: Validates as user types (for immediate feedback)
      * - 'blur' event: Validates when field loses focus (for final check)
-     * 
+     *
      * Real-time validation provides better UX:
      * - Users see errors immediately
      * - Don't have to wait until form submission
@@ -113,7 +113,7 @@
             elements.firstNameInput.addEventListener('input', () => validateFirstName());
             elements.firstNameInput.addEventListener('blur', () => validateFirstName());
         }
-        
+
         /**
          * Last name validation
          * Same validation approach as first name
@@ -141,7 +141,7 @@
             elements.phoneInput.addEventListener('input', () => validatePhone());
             elements.phoneInput.addEventListener('blur', () => validatePhone());
         }
-        
+
         /**
          * Subject validation
          * Validates that a subject is selected (dropdown)
@@ -150,7 +150,7 @@
             elements.subjectInput.addEventListener('change', () => validateSubject());
             elements.subjectInput.addEventListener('blur', () => validateSubject());
         }
-        
+
         /**
          * Message validation
          * Validates message length and content (no HTML tags)
@@ -176,7 +176,7 @@
 
     /**
      * Set up form submission handler
-     * 
+     *
      * This function:
      * - Prevents default form submission
      * - Validates all fields before submission
@@ -186,11 +186,11 @@
     function setupFormSubmission() {
         const elements = getFormElements();
         if (!elements || !elements.submitBtn) return;
-        
-        elements.submitBtn.addEventListener('click', function(e) {
+
+        elements.submitBtn.addEventListener('click', function (e) {
             // Prevent default form submission (no page reload)
             e.preventDefault();
-            
+
             /**
              * Validate all fields before submission
              * All validations must pass for form to be submitted
@@ -202,10 +202,17 @@
             const isSubjectValid = validateSubject();
             const isMessageValid = validateMessage();
             const isConsentValid = validateConsent();
-            
+
             // Only submit if all validations pass
-            if (isFirstNameValid && isLastNameValid && isEmailValid && 
-                isPhoneValid && isSubjectValid && isMessageValid && isConsentValid) {
+            if (
+                isFirstNameValid &&
+                isLastNameValid &&
+                isEmailValid &&
+                isPhoneValid &&
+                isSubjectValid &&
+                isMessageValid &&
+                isConsentValid
+            ) {
                 submitContactForm();
             }
         });
@@ -217,18 +224,18 @@
 
     /**
      * Validate first name field
-     * 
+     *
      * Checks:
      * 1. Field is not empty (required)
      * 2. No XSS attempts
      * 3. Matches name pattern (letters, spaces, hyphens only)
-     * 
+     *
      * @returns {boolean} True if valid, false otherwise
      */
     function validateFirstName() {
         const elements = getFormElements();
         if (!elements || !elements.firstNameInput) return false;
-        
+
         const input = elements.firstNameInput;
         const value = input.value.trim();
         const errorElement = document.getElementById('firstNameError');
@@ -239,15 +246,15 @@
 
     /**
      * Validate last name field
-     * 
+     *
      * Same validation logic as first name
-     * 
+     *
      * @returns {boolean} True if valid, false otherwise
      */
     function validateLastName() {
         const elements = getFormElements();
         if (!elements || !elements.lastNameInput) return false;
-        
+
         const input = elements.lastNameInput;
         const value = input.value.trim();
         const errorElement = document.getElementById('lastNameError');
@@ -258,18 +265,18 @@
 
     /**
      * Validate email field
-     * 
+     *
      * Checks:
      * 1. Field is not empty (required)
      * 2. No XSS attempts
      * 3. Matches email pattern (user@domain.tld)
-     * 
+     *
      * @returns {boolean} True if valid, false otherwise
      */
     function validateEmail() {
         const elements = getFormElements();
         if (!elements || !elements.emailInput) return false;
-        
+
         const input = elements.emailInput;
         const value = input.value.trim();
         const errorElement = document.getElementById('emailError');
@@ -280,32 +287,32 @@
 
     /**
      * Validate phone field
-     * 
+     *
      * Checks:
      * 1. Field is empty OR valid (phone is optional)
      * 2. No XSS attempts (if provided)
      * 3. Matches French phone number pattern (if provided)
-     * 
+     *
      * @returns {boolean} True if valid, false otherwise
      */
     function validatePhone() {
         const elements = getFormElements();
         if (!elements || !elements.phoneInput) return true; // No phone field, consider valid
-        
+
         const input = elements.phoneInput;
         const value = input.value.trim();
         const errorElement = document.getElementById('phoneError');
-        
+
         // Phone is optional - empty is valid
         if (value === '') {
             // Clear validation state (no error, no success)
             FV.clearFieldState(input, errorElement);
             return true;
         }
-        
+
         const result = FV.validatePhone(value, {
             label: 'Le numéro de téléphone',
-            required: false
+            required: false,
         });
         FV.applyFieldState(input, errorElement, result);
         return result.valid;
@@ -313,26 +320,29 @@
 
     /**
      * Validate subject field (dropdown)
-     * 
+     *
      * Checks:
      * 1. A subject is selected (not empty)
-     * 
+     *
      * @returns {boolean} True if valid, false otherwise
      */
     function validateSubject() {
         const elements = getFormElements();
         if (!elements || !elements.subjectInput) return false;
-        
+
         const input = elements.subjectInput;
         const value = input.value;
         const errorElement = document.getElementById('subjectError');
-        
+
         // Check if empty (required field)
         if (value === '') {
-            FV.applyFieldState(input, errorElement, { valid: false, message: 'Le sujet est requis' });
+            FV.applyFieldState(input, errorElement, {
+                valid: false,
+                message: 'Le sujet est requis',
+            });
             return false;
         }
-        
+
         // All checks passed - field is valid
         FV.applyFieldState(input, errorElement, { valid: true });
         return true;
@@ -340,27 +350,27 @@
 
     /**
      * Validate message field
-     * 
+     *
      * Checks:
      * 1. Field is not empty (required)
      * 2. No XSS attempts
      * 3. Length between 10 and 1000 characters
-     * 
+     *
      * @returns {boolean} True if valid, false otherwise
      */
     function validateMessage() {
         const elements = getFormElements();
         if (!elements || !elements.messageInput) return false;
-        
+
         const input = elements.messageInput;
         const value = input.value.trim();
         const errorElement = document.getElementById('messageError');
-        
+
         const result = FV.validateMessage(value, {
             label: 'Le message',
             required: true,
             min: 10,
-            max: 1000
+            max: 1000,
         });
         FV.applyFieldState(input, errorElement, result);
         return result.valid;
@@ -368,28 +378,28 @@
 
     /**
      * Validate consent checkbox
-     * 
+     *
      * Checks:
      * 1. Checkbox is checked (required for GDPR compliance)
-     * 
+     *
      * @returns {boolean} True if valid, false otherwise
      */
     function validateConsent() {
         const elements = getFormElements();
         if (!elements || !elements.consentInput) return false;
-        
+
         const input = elements.consentInput;
         const errorElement = document.getElementById('consentError');
-        
+
         // Check if checkbox is checked (required)
         if (!input.checked) {
             FV.applyFieldState(input, errorElement, {
                 valid: false,
-                message: 'Vous devez accepter d\'être contacté'
+                message: "Vous devez accepter d'être contacté",
             });
             return false;
         }
-        
+
         // All checks passed - field is valid
         FV.applyFieldState(input, errorElement, { valid: true });
         return true;
@@ -401,19 +411,19 @@
 
     /**
      * Set field as invalid and show error message
-     * 
+     *
      * This helper function reduces code duplication across validation functions.
-     * 
+     *
      * @param {HTMLElement} input - The input element to mark as invalid
      * @param {HTMLElement} errorElement - The error message element
      * @param {string} message - The error message to display
      */
     /**
      * Set up auto-hide for success message
-     * 
+     *
      * After form submission, a success message is displayed.
      * This function automatically hides it after 5 seconds with a fade animation.
-     * 
+     *
      * Why auto-hide?
      * - Keeps UI clean after user reads the message
      * - Prevents stale messages from lingering
@@ -427,7 +437,7 @@
                 if (successMessage && successMessage.parentNode) {
                     // Add fade class for CSS animation
                     successMessage.classList.add('fade');
-                    
+
                     // Remove element after animation completes
                     setTimeout(() => {
                         if (successMessage.parentNode) {
@@ -445,7 +455,7 @@
 
     /**
      * Submit contact form via AJAX
-     * 
+     *
      * This function:
      * - Prevents page reload (AJAX submission)
      * - Shows loading state on submit button
@@ -453,7 +463,7 @@
      * - Sends POST request to server
      * - Handles success/error responses
      * - Resets form on success
-     * 
+     *
      * Why AJAX?
      * - Better UX: no page reload, instant feedback
      * - Preserves form state if needed
@@ -462,13 +472,12 @@
     function submitContactForm() {
         const elements = getFormElements();
         if (!elements || !elements.submitBtn) return;
-        
-        const form = elements.form;
+
         const submitBtn = elements.submitBtn;
-        
+
         // Store original button text for restoration
         const originalText = submitBtn.innerHTML;
-        
+
         /**
          * Show loading state
          * Disable button to prevent double submission
@@ -476,14 +485,14 @@
          */
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Envoi en cours...';
-        
+
         /**
          * Prepare form data
          * FormData is used instead of JSON to support file uploads (if needed in future)
          * Also automatically handles form encoding
          */
         const formData = new FormData();
-        
+
         // Collect all form field values (using cached elements)
         formData.append('firstName', elements.firstNameInput.value.trim());
         formData.append('lastName', elements.lastNameInput.value.trim());
@@ -493,7 +502,7 @@
         formData.append('message', elements.messageInput.value.trim());
         // Convert checkbox boolean to string ('1' or '0')
         formData.append('consent', elements.consentInput.checked ? '1' : '0');
-        
+
         /**
          * Add CSRF token to form data
          * CSRF token is required for security (prevents cross-site request forgery)
@@ -502,7 +511,7 @@
         if (csrfToken) {
             formData.append('_token', csrfToken);
         }
-        
+
         /**
          * Submit form via AJAX
          * Uses fetch API for modern, promise-based HTTP requests
@@ -511,44 +520,48 @@
             method: 'POST',
             body: formData,
             headers: {
-                'X-Requested-With': 'XMLHttpRequest' // Identifies request as AJAX
-            }
+                'X-Requested-With': 'XMLHttpRequest', // Identifies request as AJAX
+            },
         })
-        .then(response => response.json()) // Parse JSON response
-        .then(data => {
-            if (data.success) {
-                // Form submitted successfully
-                if (window.showNotification) {
-                    window.showNotification(data.message, 'success');
+            .then(response => response.json()) // Parse JSON response
+            .then(data => {
+                if (data.success) {
+                    // Form submitted successfully
+                    if (window.showNotification) {
+                        window.showNotification(data.message, 'success');
+                    }
+                    // Reset form to allow new submission
+                    resetForm();
+                } else {
+                    // Server returned error
+                    if (window.showNotification) {
+                        window.showNotification(
+                            data.message ||
+                                "Une erreur est survenue lors de l'envoi de votre message.",
+                            'error'
+                        );
+                    }
                 }
-                // Reset form to allow new submission
-                resetForm();
-            } else {
-                // Server returned error
+            })
+            .catch(error => {
+                // Network error or other exception
+                console.error('Contact form submission error:', error);
                 if (window.showNotification) {
                     window.showNotification(
-                        data.message || 'Une erreur est survenue lors de l\'envoi de votre message.', 
+                        "Une erreur est survenue lors de l'envoi de votre message.",
                         'error'
                     );
                 }
-            }
-        })
-        .catch(error => {
-            // Network error or other exception
-            console.error('Contact form submission error:', error);
-            if (window.showNotification) {
-                window.showNotification('Une erreur est survenue lors de l\'envoi de votre message.', 'error');
-            }
-        })
-        .finally(() => {
-            /**
-             * Restore button state
-             * Always runs, regardless of success or error
-             * Re-enables button and restores original text
-             */
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalText;
-        });
+            })
+            .finally(() => {
+                /**
+                 * Restore button state
+                 * Always runs, regardless of success or error
+                 * Re-enables button and restores original text
+                 */
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            });
     }
 
     // ============================================================================
@@ -557,23 +570,23 @@
 
     /**
      * Reset form after successful submission
-     * 
+     *
      * This function:
      * - Clears all form fields
      * - Removes validation states (is-valid, is-invalid classes)
      * - Clears all error messages
-     * 
+     *
      * This allows user to submit a new message without refreshing the page.
      */
     function resetForm() {
         const elements = getFormElements();
         if (!elements) return;
-        
+
         const form = elements.form;
-        
+
         // Reset all form fields to default values
         form.reset();
-        
+
         /**
          * Reset validation states
          * Remove both valid and invalid classes from all inputs
@@ -582,7 +595,7 @@
         inputs.forEach(input => {
             input.classList.remove('is-valid', 'is-invalid');
         });
-        
+
         /**
          * Clear error messages
          * Remove error text and hide error elements

@@ -16,13 +16,13 @@
 
 /**
  * Current filter state
- * 
+ *
  * These variables track the active filters for the menu:
  * - Category filter: Which category to display (all, entrees, plats, etc.)
  * - Search term: Text search filter
  * - Price filter: Price range filter
  * - Dietary filters: Vegetarian, vegan, gluten-free options
- * 
+ *
  * State is kept simple and serializable for potential future persistence.
  */
 let currentCategory = 'all';
@@ -31,7 +31,7 @@ let priceFilter = '';
 let dietaryFilters = {
     vegetarian: false,
     vegan: false,
-    glutenFree: false
+    glutenFree: false,
 };
 
 // ============================================================================
@@ -40,7 +40,7 @@ let dietaryFilters = {
 
 /**
  * Cached DOM references
- * 
+ *
  * These elements are queried once and cached for reuse throughout the page.
  * Reduces DOM queries and improves performance.
  */
@@ -59,10 +59,10 @@ let searchDebounceTimeout = null;
 
 /**
  * Debounced render menu function
- * 
+ *
  * This function delays menu rendering until user stops typing.
  * Reduces render calls by ~70-80% during search.
- * 
+ *
  * @param {number} delay - Delay in milliseconds (default: 300)
  */
 function debouncedRenderMenu(delay = 300) {
@@ -74,7 +74,7 @@ function debouncedRenderMenu(delay = 300) {
 
 /**
  * Initialize menu page features
- * 
+ *
  * This function:
  * - Caches DOM elements
  * - Sets up sticky navigation offsets
@@ -84,7 +84,7 @@ function debouncedRenderMenu(delay = 300) {
  * - Sets up event listeners for filters
  * - Updates cart display
  * - Sets up cart update listeners
- * 
+ *
  * Exit early if not on menu page (menuGrid element not found).
  */
 function initMenu() {
@@ -94,27 +94,27 @@ function initMenu() {
      */
     menuGrid = document.getElementById('menuGrid');
     noResults = document.getElementById('noResults');
-    
+
     /**
      * Exit early if not on menu page
      * Prevents errors if this script runs on wrong page
      */
     if (!menuGrid) return;
-    
+
     /**
      * Setup sticky navigation offset
      * Computes CSS variable --nav-offset for sticky positioning
      * Aligns with gallery page behavior
      */
     setupNavOffset();
-    
+
     /**
      * Observe sticky state for visual effects
      * Adds shadow and styling when filters are stuck to viewport
      * Ensures parity with Restaurant page behavior
      */
     observeStickyState();
-    
+
     /**
      * Enable sticky fallback for old browsers
      * Provides JavaScript-based sticky behavior when CSS sticky is unsupported
@@ -127,19 +127,19 @@ function initMenu() {
      * Displays all menu items with current filters applied
      */
     renderMenu();
-    
+
     /**
      * Setup event listeners for filters
      * Handles category, search, price, and dietary filter changes
      */
     setupMenuEventListeners();
-    
+
     /**
      * Update cart display on initialization
      * Shows current cart count in navigation
      */
     updateCartDisplay().catch(err => console.error('Cart display error:', err));
-    
+
     /**
      * Also update cart sidebar on initialization
      * Ensures sidebar shows current cart state
@@ -153,7 +153,7 @@ function initMenu() {
      * When cart changes (sidebar/buttons), refresh quantities without full re-render
      * This is more efficient than re-rendering entire menu
      */
-    window.addEventListener('cartUpdated', async function() {
+    window.addEventListener('cartUpdated', async function () {
         await refreshMenuQuantitiesFromCart();
         await updateCartDisplay();
     });
@@ -163,7 +163,7 @@ function initMenu() {
      * When cart is modified in another tab, re-render menu to show updated state
      * Uses storage event for cross-tab communication
      */
-    window.addEventListener('storage', async function(e) {
+    window.addEventListener('storage', async function (e) {
         if (e.key === 'cart') {
             await renderMenu();
             await updateCartDisplay();
@@ -173,13 +173,13 @@ function initMenu() {
 
 /**
  * Setup event listeners for menu filters
- * 
+ *
  * This function sets up listeners for:
  * - Category filter buttons (entrees, plats, desserts, etc.)
  * - Search input field
  * - Price filter dropdown
  * - Dietary filter checkboxes (vegetarian, vegan, gluten-free)
- * 
+ *
  * All filters trigger a menu re-render when changed.
  */
 function setupMenuEventListeners() {
@@ -188,7 +188,7 @@ function setupMenuEventListeners() {
      * Clicking a category button filters menu to show only that category
      */
     document.querySelectorAll('.filter-category').forEach(btn => {
-        btn.addEventListener('click', async function() {
+        btn.addEventListener('click', async function () {
             /**
              * Remove active class from all category buttons
              * Then add active class to clicked button
@@ -200,13 +200,13 @@ function setupMenuEventListeners() {
             });
             this.classList.add('active');
             this.setAttribute('aria-pressed', 'true');
-            
+
             /**
              * Update current category filter
              * Get category from button's data attribute
              */
             currentCategory = this.dataset.category;
-            
+
             /**
              * Re-render menu with new category filter
              * This updates the displayed menu items
@@ -222,13 +222,13 @@ function setupMenuEventListeners() {
      */
     const menuSearch = document.getElementById('menuSearch');
     if (menuSearch) {
-        menuSearch.addEventListener('input', function() {
+        menuSearch.addEventListener('input', function () {
             /**
              * Update search term (case-insensitive)
              * Convert to lowercase for consistent matching
              */
             searchTerm = this.value.toLowerCase();
-            
+
             /**
              * Re-render menu with debounce (300ms delay)
              * Waits for user to stop typing before rendering
@@ -244,13 +244,13 @@ function setupMenuEventListeners() {
      */
     const priceFilterSelect = document.getElementById('priceFilter');
     if (priceFilterSelect) {
-        priceFilterSelect.addEventListener('change', async function() {
+        priceFilterSelect.addEventListener('change', async function () {
             /**
              * Update price filter value
              * Options: empty string (no filter), 'under-15', '15-25', 'over-25'
              */
             priceFilter = this.value;
-            
+
             /**
              * Re-render menu with new price filter
              */
@@ -263,13 +263,13 @@ function setupMenuEventListeners() {
      * Filters menu items by dietary restrictions
      */
     document.querySelectorAll('.dietary-filter').forEach(checkbox => {
-        checkbox.addEventListener('change', async function() {
+        checkbox.addEventListener('change', async function () {
             /**
              * Update dietary filter state
              * Checkbox ID matches key in dietaryFilters object
              */
             dietaryFilters[this.id] = this.checked;
-            
+
             /**
              * Re-render menu with updated dietary filters
              */
@@ -280,7 +280,7 @@ function setupMenuEventListeners() {
 
 /**
  * Render menu grid according to current filters
- * 
+ *
  * This function:
  * - Filters menu items based on active filters
  * - Handles special case for 'boissons' (drinks) category
@@ -290,7 +290,7 @@ function setupMenuEventListeners() {
  * - Renders menu sections with cart quantities
  * - Attaches event listeners to rendered elements
  * - Updates cart display
- * 
+ *
  * @returns {Promise<void>}
  */
 async function renderMenu() {
@@ -299,13 +299,13 @@ async function renderMenu() {
      * Prevents errors if function called on wrong page
      */
     if (!menuGrid) return;
-    
+
     /**
      * Filter menu items based on current filter state
      * Applies category, search, price, and dietary filters
      */
     const filteredItems = filterItems();
-    
+
     /**
      * Special case: If 'boissons' (drinks) category is selected
      * Show only drinks section, hide regular menu items
@@ -354,7 +354,7 @@ async function renderMenu() {
      */
     const groupedItems = groupItemsByCategory(filteredItems);
     let html = '';
-    
+
     /**
      * Render each category section
      * Each category gets its own section with title and grid of items
@@ -364,7 +364,7 @@ async function renderMenu() {
             html += renderCategorySection(category, items, cartItems);
         }
     });
-    
+
     /**
      * Append drinks section when showing all categories
      * Drinks are always shown when "all" category is selected
@@ -372,49 +372,24 @@ async function renderMenu() {
     if (currentCategory === 'all') {
         html += renderDrinksSection();
     }
-    
+
     /**
      * Update menu grid HTML with rendered content
      * This replaces entire grid content with new filtered results
      */
     menuGrid.innerHTML = html;
-    
+
     /**
      * Attach event listeners to newly rendered elements
      * Must be done after innerHTML update since old listeners are removed
      */
     addMenuItemEventListeners();
-    
+
     /**
      * Update cart display after rendering
      * Ensures cart count in navigation is current
      */
     await updateCartDisplay();
-}
-
-// Compute and set CSS var for sticky top so the filters sit below the navbar
-function setupStickyFiltersOffset(useFixed76 = false) {
-    const navbar = document.getElementById('mainNav');
-    const root = document.documentElement;
-    const compute = () => {
-        if (useFixed76) {
-            root.style.setProperty('--menu-sticky-top', '76px');
-            return;
-        }
-        const navH = navbar ? navbar.getBoundingClientRect().height : 64;
-        const gap = 6; // smaller gap than before
-        root.style.setProperty('--menu-sticky-top', (navH + gap) + 'px');
-    };
-    compute();
-    window.addEventListener('resize', compute);
-    window.addEventListener('scroll', compute, { passive: true });
-
-    // We mirror Restaurant behavior; no JS fixed fallback unless sticky unsupported
-    const section = document.querySelector('.menu-filters-section');
-    if (section && !CSS.supports('position', 'sticky')) {
-        section.classList.add('js-fixed');
-        insertFiltersPlaceholder(section);
-    }
 }
 
 // Same approach as gallery page: expose --nav-offset (distance from viewport top)
@@ -424,9 +399,10 @@ function setupNavOffset() {
     const compute = () => {
         const navH = navbar ? navbar.getBoundingClientRect().height : 64;
         const gap = 0; // zero gap: attached to nav
-        root.style.setProperty('--nav-offset', (gap) + 'px');
+        const offset = navH + gap;
+        root.style.setProperty('--nav-offset', offset + 'px');
         // keep legacy var too, in case CSS still reads it
-        root.style.setProperty('--menu-sticky-top', (gap) + 'px');
+        root.style.setProperty('--menu-sticky-top', offset + 'px');
     };
     compute();
     window.addEventListener('resize', compute);
@@ -439,7 +415,8 @@ function observeStickyState() {
     const section = document.querySelector('.menu-filters-section');
     if (!section) return;
     const root = document.documentElement;
-    const getStickyTop = () => parseInt(getComputedStyle(root).getPropertyValue('--menu-sticky-top')) || 76;
+    const getStickyTop = () =>
+        parseInt(getComputedStyle(root).getPropertyValue('--menu-sticky-top')) || 76;
     const originalTop = section.offsetTop; // distance from document top
 
     // Only visual shadow toggle; sticky handled by CSS. Fallback remains passive.
@@ -523,31 +500,17 @@ function initMenuStickyFallback() {
     }
 
     window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', function() {
+    window.addEventListener('resize', function () {
         initialTop = getAbsoluteTop(section);
         onScroll();
     });
     onScroll();
 }
 
-// Insert a placeholder element right under the filters to avoid layout jump
-function insertFiltersPlaceholder(section) {
-    const placeholder = document.createElement('div');
-    placeholder.className = 'menu-filters-placeholder';
-    // Keep layout height when fixed
-    const resize = () => {
-        const h = section.getBoundingClientRect().height;
-        placeholder.style.height = h + 'px';
-    };
-    section.parentNode.insertBefore(placeholder, section.nextSibling);
-    window.addEventListener('resize', resize);
-    resize();
-}
-
 // Compute filtered list using current criteria
 function filterItems() {
     if (!window.menuItems) return [];
-    
+
     return window.menuItems.filter(item => {
         // Category filter
         if (currentCategory !== 'all' && item.category !== currentCategory) {
@@ -555,8 +518,11 @@ function filterItems() {
         }
 
         // Search filter
-        if (searchTerm && !item.name.toLowerCase().includes(searchTerm) && 
-            !item.description.toLowerCase().includes(searchTerm)) {
+        if (
+            searchTerm &&
+            !item.name.toLowerCase().includes(searchTerm) &&
+            !item.description.toLowerCase().includes(searchTerm)
+        ) {
             return false;
         }
 
@@ -577,13 +543,11 @@ function filterItems() {
 
         // Dietary filters
         const activeDietaryFilters = Object.entries(dietaryFilters)
-            .filter(([_, active]) => active)
-            .map(([filter, _]) => filter);
+            .filter(([, active]) => active)
+            .map(([filter]) => filter);
 
         if (activeDietaryFilters.length > 0) {
-            return activeDietaryFilters.some(filter => 
-                item.tags.includes(filter)
-            );
+            return activeDietaryFilters.some(filter => item.tags.includes(filter));
         }
 
         return true;
@@ -595,7 +559,7 @@ function groupItemsByCategory(items) {
     const grouped = {
         entrees: [],
         plats: [],
-        desserts: []
+        desserts: [],
     };
 
     items.forEach(item => {
@@ -610,24 +574,24 @@ function groupItemsByCategory(items) {
 // Render a single category section with a grid of menu cards
 // Predefined maps for classes/icons to avoid switch overhead in tight loops
 const BADGE_CLASS_BY_LABEL = {
-    'Spécialité': 'specialty',
-    'Végétarien': 'vegetarian',
+    Spécialité: 'specialty',
+    Végétarien: 'vegetarian',
     'Fait maison': 'homemade',
-    'Saison': 'seasonal',
-    'Sans Gluten': 'glutenfree'
+    Saison: 'seasonal',
+    'Sans Gluten': 'glutenfree',
 };
 
 const TAG_ICON_BY_CODE = {
     vegetarian: '<span class="dietary-icon">🌱</span>',
     vegan: '<span class="dietary-icon">🌿</span>',
-    glutenFree: '<span class="dietary-icon">🌾</span>'
+    glutenFree: '<span class="dietary-icon">🌾</span>',
 };
 
 function renderCategorySection(category, items, cartItems = []) {
     const categoryNames = {
         entrees: 'Entrées',
         plats: 'Plats Principaux',
-        desserts: 'Desserts'
+        desserts: 'Desserts',
     };
 
     let html = `
@@ -660,19 +624,20 @@ function renderMenuItem(item, qtyById /* Map<string,id> -> quantity */) {
     const idKey = String(item.id);
     const quantity = qtyById && qtyById.has(idKey) ? qtyById.get(idKey) : 0;
 
-    const badges = (item.badges || []).map(badge => {
-        const badgeClass = BADGE_CLASS_BY_LABEL[badge] || '';
-        return `<span class="menu-badge ${badgeClass}">${badge}</span>`;
-    }).join('');
+    const badges = (item.badges || [])
+        .map(badge => {
+            const badgeClass = BADGE_CLASS_BY_LABEL[badge] || '';
+            return `<span class="menu-badge ${badgeClass}">${badge}</span>`;
+        })
+        .join('');
 
     const dietaryIcons = (item.tags || []).map(tag => TAG_ICON_BY_CODE[tag] || '').join('');
 
-    const priceDisplay = (Number(item.price) || 0).toLocaleString('fr-FR', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    }) + '€';
-
-
+    const priceDisplay =
+        (Number(item.price) || 0).toLocaleString('fr-FR', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+        }) + '€';
 
     return `
         <div class="col-lg-4 col-md-6">
@@ -693,16 +658,20 @@ function renderMenuItem(item, qtyById /* Map<string,id> -> quantity */) {
                     <div class="menu-card-footer d-flex align-items-center justify-content-between">
                         <div class="menu-card-price" aria-label="Prix: ${priceDisplay}">${priceDisplay}</div>
                         <div class="menu-card-actions d-flex align-items-center gap-2" role="group" aria-label="Actions pour ${item.name}">
-                            ${quantity > 0 ? `
-                                <div class=\"quantity-controls\" role="group" aria-label="Contrôles de quantité">
-                                    <button class=\"add-to-cart-btn btn btn-sm d-flex align-items-center justify-content-center p-0 js-remove\" data-action=\"remove\" data-id=\"${item.id}\" aria-label="Diminuer la quantité de ${item.name}">
-                                        <i class=\"bi bi-dash\" aria-hidden="true"></i>
+                            ${
+                                quantity > 0
+                                    ? `
+                                <div class="quantity-controls" role="group" aria-label="Contrôles de quantité">
+                                    <button class="add-to-cart-btn btn btn-sm d-flex align-items-center justify-content-center p-0 js-remove" data-action="remove" data-id="${item.id}" aria-label="Diminuer la quantité de ${item.name}">
+                                        <i class="bi bi-dash" aria-hidden="true"></i>
                                     </button>
-                                    <span class=\"quantity-display\" aria-label="Quantité actuelle: ${quantity}">${quantity}</span>
+                                    <span class="quantity-display" aria-label="Quantité actuelle: ${quantity}">${quantity}</span>
                                 </div>
-                            ` : ''}
-                            <button class=\"add-to-cart-btn btn btn-sm d-flex align-items-center justify-content-center p-0 js-add\" data-action=\"add\" data-id=\"${item.id}\" aria-label="Ajouter ${item.name} au panier">
-                                <i class=\"bi bi-plus\" aria-hidden="true"></i>
+                            `
+                                    : ''
+                            }
+                            <button class="add-to-cart-btn btn btn-sm d-flex align-items-center justify-content-center p-0 js-add" data-action="add" data-id="${item.id}" aria-label="Ajouter ${item.name} au panier">
+                                <i class="bi bi-plus" aria-hidden="true"></i>
                             </button>
                         </div>
                     </div>
@@ -715,11 +684,13 @@ function renderMenuItem(item, qtyById /* Map<string,id> -> quantity */) {
 // Render the separate static "drinks" section (data provided server side)
 function renderDrinksSection() {
     if (!window.drinksData) return '';
-    
-    const formatDrinkPrice = (p) => {
+
+    const formatDrinkPrice = p => {
         const n = Number(p);
         if (isNaN(n)) return p;
-        return n.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + ' €';
+        return (
+            n.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + ' €'
+        );
     };
 
     let html = `
@@ -734,21 +705,29 @@ function renderDrinksSection() {
             <div class="drinks-section">
                 <div class="drinks-category">
                     <h4><i class="bi bi-cup me-2"></i>Vins</h4>
-                    ${window.drinksData.vins.map(drink => `
+                    ${window.drinksData.vins
+                        .map(
+                            drink => `
                         <div class="drink-item">
                             <span class="drink-name">${drink.name}</span>
                             <span class="drink-price">${formatDrinkPrice(drink.price)}</span>
                         </div>
-                    `).join('')}
+                    `
+                        )
+                        .join('')}
                 </div>
                 <div class="drinks-category">
                     <h4><i class="bi bi-cup-hot me-2"></i>Boissons chaudes</h4>
-                    ${window.drinksData.chaudes.map(drink => `
+                    ${window.drinksData.chaudes
+                        .map(
+                            drink => `
                         <div class="drink-item">
                             <span class="drink-name">${drink.name}</span>
                             <span class="drink-price">${formatDrinkPrice(drink.price)}</span>
                         </div>
-                    `).join('')}
+                    `
+                        )
+                        .join('')}
                 </div>
             </div>
         </div>
@@ -760,21 +739,29 @@ function renderDrinksSection() {
             <div class="drinks-section">
                 <div class="drinks-category">
                     <h4><i class="bi bi-cup-straw me-2"></i>Bières</h4>
-                    ${window.drinksData.bieres.map(drink => `
+                    ${window.drinksData.bieres
+                        .map(
+                            drink => `
                         <div class="drink-item">
                             <span class="drink-name">${drink.name}</span>
                             <span class="drink-price">${formatDrinkPrice(drink.price)}</span>
                         </div>
-                    `).join('')}
+                    `
+                        )
+                        .join('')}
                 </div>
                 <div class="drinks-category">
                     <h4><i class="bi bi-droplet me-2"></i>Boissons fraîches</h4>
-                    ${window.drinksData.fraiches.map(drink => `
+                    ${window.drinksData.fraiches
+                        .map(
+                            drink => `
                         <div class="drink-item">
                             <span class="drink-name">${drink.name}</span>
                             <span class="drink-price">${formatDrinkPrice(drink.price)}</span>
                         </div>
-                    `).join('')}
+                    `
+                        )
+                        .join('')}
                 </div>
             </div>
         </div>
@@ -790,11 +777,11 @@ function renderDrinksSection() {
 
 /**
  * Add event listeners to elements inside freshly rendered cards
- * 
+ *
  * Uses event delegation for all click handlers:
  * - Cart add/remove buttons (delegated to menuGrid)
  * - Quick view buttons (delegated to menuGrid)
- * 
+ *
  * Event delegation prevents memory leaks when menu re-renders
  * and is more performant than individual listeners.
  */
@@ -804,7 +791,7 @@ function addMenuItemEventListeners() {
      * Single listener handles all clicks, prevents memory leaks
      */
     if (menuGrid) {
-        menuGrid.addEventListener('click', async function(e) {
+        menuGrid.addEventListener('click', async function (e) {
             /**
              * Handle quick view buttons
              * Allow default navigation, just stop event propagation
@@ -814,14 +801,14 @@ function addMenuItemEventListeners() {
                 e.stopPropagation();
                 return; // Allow default navigation
             }
-            
+
             /**
              * Handle cart add/remove buttons
              * Uses data-action and data-id attributes
              */
             const btn = e.target.closest('[data-action]');
             if (!btn) return;
-            
+
             const action = btn.getAttribute('data-action');
             const id = btn.getAttribute('data-id') || btn.closest('.menu-card')?.dataset.itemId;
             if (!id) return;
@@ -849,14 +836,14 @@ function addMenuItemEventListeners() {
 
 /**
  * Common cart update logic
- * 
+ *
  * This function handles shared operations after cart modifications:
  * - Updates cart navigation and sidebar UI
  * - Keeps cart sidebar open for user convenience
  * - Dispatches cart update event
- * 
+ *
  * This reduces code duplication between addToCart and removeFromCart.
- * 
+ *
  * @param {Function} cartOperation - Async function that performs the cart operation
  */
 async function performCartUpdate(cartOperation) {
@@ -865,7 +852,7 @@ async function performCartUpdate(cartOperation) {
      * This is the specific action (add, remove, update)
      */
     await cartOperation();
-    
+
     /**
      * Update cart UI components
      * These functions refresh the cart display in navigation and sidebar
@@ -877,7 +864,7 @@ async function performCartUpdate(cartOperation) {
     if (window.updateCartSidebar) {
         await window.updateCartSidebar();
     }
-    
+
     /**
      * Keep cart sidebar open when modifying quantities
      * This provides better UX - user can see changes immediately
@@ -887,7 +874,7 @@ async function performCartUpdate(cartOperation) {
     if (window.resetCartActiveState) {
         window.resetCartActiveState();
     }
-    
+
     /**
      * Dispatch custom event for cart updates
      * This allows other parts of the app to react to cart changes
@@ -898,12 +885,14 @@ async function performCartUpdate(cartOperation) {
 
 /**
  * Menu-specific cart functions (override global cart helpers on this page)
- * 
+ *
  * Adds item to cart and updates menu card display
  */
 async function addToCart(itemId) {
     const key = String(itemId);
-    const item = window.menuItems.find(i => String(i.id) === key || parseInt(i.id) === parseInt(itemId));
+    const item = window.menuItems.find(
+        i => String(i.id) === key || parseInt(i.id) === parseInt(itemId)
+    );
     if (item) {
         try {
             /**
@@ -917,11 +906,13 @@ async function addToCart(itemId) {
                 if (!cart || !cart.items || !Array.isArray(cart.items)) {
                     throw new Error('Invalid cart response structure');
                 }
-                const updated = cart.items.find(i => String(i.id) === key || parseInt(i.id) === parseInt(itemId));
+                const updated = cart.items.find(
+                    i => String(i.id) === key || parseInt(i.id) === parseInt(itemId)
+                );
                 if (updated) {
                     updateMenuCard(updated.id, updated.quantity);
                 }
-                
+
                 /**
                  * Show notification for adding item
                  */
@@ -932,7 +923,7 @@ async function addToCart(itemId) {
         } catch (error) {
             console.error('Error adding to cart:', error);
             if (window.showCartNotification) {
-                window.showCartNotification('Erreur lors de l\'ajout au panier', 'error');
+                window.showCartNotification("Erreur lors de l'ajout au panier", 'error');
             }
         }
     }
@@ -940,17 +931,19 @@ async function addToCart(itemId) {
 
 /**
  * Remove item from cart or decrease quantity
- * 
+ *
  * Removes item from cart and updates menu card display
  */
 async function removeFromCart(itemId) {
     try {
         const cart = await window.cartAPI.getCart();
-        const item = cart.items.find(i => String(i.id) === String(itemId) || parseInt(i.id) === parseInt(itemId));
-        
+        const item = cart.items.find(
+            i => String(i.id) === String(itemId) || parseInt(i.id) === parseInt(itemId)
+        );
+
         if (item) {
             const itemName = item.name;
-            
+
             /**
              * Perform cart update using common logic
              * This handles UI updates, state management, and event dispatching
@@ -961,10 +954,15 @@ async function removeFromCart(itemId) {
                      * Decrease quantity by 1
                      * Item remains in cart with reduced quantity
                      */
-                    const updatedCart = await window.cartAPI.updateQuantity(itemId, item.quantity - 1);
-                    const updated = updatedCart.items.find(i => String(i.id) === String(itemId) || parseInt(i.id) === parseInt(itemId));
+                    const updatedCart = await window.cartAPI.updateQuantity(
+                        itemId,
+                        item.quantity - 1
+                    );
+                    const updated = updatedCart.items.find(
+                        i => String(i.id) === String(itemId) || parseInt(i.id) === parseInt(itemId)
+                    );
                     updateMenuCard(itemId, updated ? updated.quantity : item.quantity - 1);
-                    
+
                     if (window.showCartNotification) {
                         window.showCartNotification('Quantité diminuée', 'success');
                     }
@@ -975,7 +973,7 @@ async function removeFromCart(itemId) {
                      */
                     await window.cartAPI.removeItem(itemId);
                     updateMenuCard(itemId, 0);
-                    
+
                     if (window.showCartNotification) {
                         window.showCartNotification(`${itemName} supprimé du panier`, 'info');
                     }
@@ -1012,7 +1010,7 @@ async function updateCartDisplay() {
             console.error('Error updating cart display:', error);
         }
     }
-    
+
     // Also update cart sidebar if it exists
     if (window.updateCartSidebar) {
         await window.updateCartSidebar();
@@ -1039,9 +1037,9 @@ window.addMenuItemToCart = addToCart;
 window.removeMenuItemFromCart = removeFromCart;
 
 // Initialize menu when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     initMenu();
-}); 
+});
 
 // ============================================================================
 // MENU STATE REFRESH
@@ -1049,10 +1047,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 /**
  * Refresh menu quantities and cart display
- * 
+ *
  * Single function used by all refresh triggers (pageshow, visibilitychange, focus).
  * Consolidates refresh logic to prevent duplication and ensure consistent behavior.
- * 
+ *
  * @returns {Promise<void>}
  */
 async function refreshMenuState() {
@@ -1077,7 +1075,7 @@ window.addEventListener('pageshow', refreshMenuState);
  * Refresh when tab regains visibility
  * Ensures cart is up-to-date when user returns to tab
  */
-document.addEventListener('visibilitychange', function() {
+document.addEventListener('visibilitychange', function () {
     if (document.visibilityState === 'visible' && typeof renderMenu === 'function') {
         refreshMenuState();
     }
@@ -1091,11 +1089,11 @@ window.addEventListener('focus', refreshMenuState);
 
 /**
  * Update only one menu card's controls based on quantity
- * 
+ *
  * This function updates the quantity controls for a single menu card.
  * Uses DOM methods instead of innerHTML to prevent XSS attacks and
  * maintain event delegation compatibility.
- * 
+ *
  * @param {string|number} itemId - The item ID to update
  * @param {number} quantity - The new quantity to display
  */
@@ -1104,13 +1102,13 @@ function updateMenuCard(itemId, quantity) {
     if (!card) return;
     const actions = card.querySelector('.menu-card-actions');
     if (!actions) return;
-    
+
     /**
      * Clear existing content
      * Prevents accumulation of old elements
      */
     actions.innerHTML = '';
-    
+
     /**
      * Build quantity controls if quantity > 0
      * Shows decrease button and quantity display
@@ -1118,18 +1116,19 @@ function updateMenuCard(itemId, quantity) {
     if (quantity > 0) {
         const controlsDiv = document.createElement('div');
         controlsDiv.className = 'quantity-controls';
-        
+
         /**
          * Create decrease button
          * Uses data attributes for event delegation (no inline onclick)
          */
         const removeBtn = document.createElement('button');
-        removeBtn.className = 'add-to-cart-btn btn btn-sm d-flex align-items-center justify-content-center p-0 js-remove';
+        removeBtn.className =
+            'add-to-cart-btn btn btn-sm d-flex align-items-center justify-content-center p-0 js-remove';
         removeBtn.setAttribute('data-action', 'remove');
         removeBtn.setAttribute('data-id', String(itemId));
         removeBtn.innerHTML = '<i class="bi bi-dash"></i>';
         controlsDiv.appendChild(removeBtn);
-        
+
         /**
          * Create quantity display span
          */
@@ -1137,16 +1136,17 @@ function updateMenuCard(itemId, quantity) {
         quantitySpan.className = 'quantity-display';
         quantitySpan.textContent = quantity;
         controlsDiv.appendChild(quantitySpan);
-        
+
         actions.appendChild(controlsDiv);
     }
-    
+
     /**
      * Create add button
      * Uses data attributes for event delegation (no inline onclick)
      */
     const addBtn = document.createElement('button');
-    addBtn.className = 'add-to-cart-btn btn btn-sm d-flex align-items-center justify-content-center p-0 js-add';
+    addBtn.className =
+        'add-to-cart-btn btn btn-sm d-flex align-items-center justify-content-center p-0 js-add';
     addBtn.setAttribute('data-action', 'add');
     addBtn.setAttribute('data-id', String(itemId));
     addBtn.innerHTML = '<i class="bi bi-plus"></i>';
