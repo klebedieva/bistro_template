@@ -35,10 +35,9 @@ class TaxCalculationServiceTest extends TestCase
     private TaxCalculationService $taxCalculationService;
 
     /**
-     * Mock of the restaurant settings service
-     * Used to control the VAT rate returned during tests
-     * 
-     * @var RestaurantSettingsService
+     * Mock of the restaurant settings service used to control VAT rate during tests.
+     *
+     * @var RestaurantSettingsService&\PHPUnit\Framework\MockObject\MockObject
      */
     private RestaurantSettingsService $restaurantSettings;
 

@@ -44,23 +44,23 @@ class CartServiceTest extends TestCase
     private CartService $cartService;
 
     /**
-     * Mock of RequestStack to simulate Symfony request/session handling
-     * 
-     * @var RequestStack
+     * Mocked `RequestStack` (PHPUnit mock object) to simulate Symfony request/session handling.
+     *
+     * @var RequestStack&\PHPUnit\Framework\MockObject\MockObject
      */
     private RequestStack $requestStack;
 
     /**
-     * Mock of Session to simulate user session storage
-     * 
-     * @var SessionInterface
+     * Mocked `SessionInterface` (PHPUnit mock object) so we can intercept `get/set/remove` calls.
+     *
+     * @var SessionInterface&\PHPUnit\Framework\MockObject\MockObject
      */
     private SessionInterface $session;
 
     /**
-     * Mock of MenuItemRepository to simulate database queries
-     * 
-     * @var MenuItemRepository
+     * Mocked `MenuItemRepository` (PHPUnit mock object) representing database access.
+     *
+     * @var MenuItemRepository&\PHPUnit\Framework\MockObject\MockObject
      */
     private MenuItemRepository $menuItemRepository;
 

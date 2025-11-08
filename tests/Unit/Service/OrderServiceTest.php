@@ -69,39 +69,60 @@ class OrderServiceTest extends TestCase
     private OrderService $orderService;
 
     /**
-     * Mock of EntityManager for database operations
-     * 
-     * @var EntityManagerInterface
+     * Mock of EntityManager for database operations.
+     *
+     * @var EntityManagerInterface&\PHPUnit\Framework\MockObject\MockObject
      */
     private EntityManagerInterface $entityManager;
 
     /**
+     * Mock of Doctrine DBAL Connection used to simulate transactions.
+     *
+     * @var Connection&\PHPUnit\Framework\MockObject\MockObject
+     */
+    private Connection $connection;
+
+    /**
      * Mock of OrderRepository for order retrieval
      * 
-     * @var OrderRepository
+     * @var OrderRepository&\PHPUnit\Framework\MockObject\MockObject
      */
     private OrderRepository $orderRepository;
 
     /**
      * Mock of CartService for shopping cart data
      * 
-     * @var CartService
+     * @var CartService&\PHPUnit\Framework\MockObject\MockObject
      */
     private CartService $cartService;
 
     /**
      * Mock of RestaurantSettingsService for configuration
      * 
-     * @var RestaurantSettingsService
+     * @var RestaurantSettingsService&\PHPUnit\Framework\MockObject\MockObject
      */
     private RestaurantSettingsService $restaurantSettings;
 
     /**
      * Mock of AddressValidationService for delivery validation
      * 
-     * @var AddressValidationService
+     * @var AddressValidationService&\PHPUnit\Framework\MockObject\MockObject
      */
     private AddressValidationService $addressValidationService;
+
+    /**
+     * Mock of CouponRepository used for coupon lookups.
+     *
+     * @var CouponRepository&\PHPUnit\Framework\MockObject\MockObject
+     */
+    private CouponRepository $couponRepository;
+
+    /**
+     * Mock of ParameterBagInterface providing configuration values.
+     *
+     * @var ParameterBagInterface&\PHPUnit\Framework\MockObject\MockObject
+     */
+    private ParameterBagInterface $parameterBag;
 
     /**
      * Set up the test environment before each test method
