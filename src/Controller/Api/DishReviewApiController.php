@@ -1,13 +1,12 @@
 <?php
 
-namespace App\Controller;
+namespace App\Controller\Api;
 
-use App\Entity\MenuItem;
-use App\Repository\MenuItemRepository;
+use App\Controller\AbstractApiController;
 use App\Entity\Review;
+use App\Repository\MenuItemRepository;
 use App\Repository\ReviewRepository;
 use App\Service\ValidationHelper;
-use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,16 +15,16 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * Dish Review API Controller
- * 
+ *
  * RESTful API endpoints for dish-specific reviews:
  * - List approved reviews for a dish by ID
  * - Create new reviews for a dish (pending moderation)
- * 
+ *
  * Architecture:
  * - Extends AbstractApiController for common API functionality (JSON parsing, DTO validation, responses)
  * - Uses ReviewService for business logic (review creation, persistence)
  * - This follows Single Responsibility Principle: controllers don't call persist()/flush() directly
- * 
+ *
  * This is an alternative API endpoint to DishReviewController, following REST conventions.
  * Uses OpenAPI documentation for API specification.
  */
@@ -54,15 +53,15 @@ class DishReviewApiController extends AbstractApiController
     ) {
         parent::__construct($validator, $validationHelper);
     }
+
     /**
      * List approved reviews for a specific dish by ID
-     * 
+     *
      * Returns approved reviews associated with the dish identified by the ID parameter.
      * Reviews are ordered by creation date (newest first) and limited to 100 results.
-     * 
+     *
      * @param int $id Dish ID from route parameter
      * @param ReviewRepository $repo Review repository for database queries
-     * @param EntityManagerInterface $em Entity manager for finding menu item
      * @return JsonResponse List of approved dish reviews or 404 if dish not found
      */
     #[Route('/{id}/reviews', name: 'api_dish_reviews_list', methods: ['GET'])]
@@ -72,10 +71,6 @@ class DishReviewApiController extends AbstractApiController
     #[OA\Parameter(name: 'limit', in: 'query', required: false, description: 'Items per page (default: 100, max: 100)', schema: new OA\Schema(type: 'integer', minimum: 1, maximum: 100))]
     #[OA\Response(response: 200, description: 'OK', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'data', type: 'object')]))]
     #[OA\Response(response: 404, description: 'Dish not found', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string')]))]
-    /**
-     * Use MenuItemRepository instead of EntityManager to reduce coupling and make
-     * the action easier to unit test (repository can be mocked directly).
-     */
     public function list(int $id, ReviewRepository $repo): JsonResponse
     {
         // Verify that the dish exists
@@ -105,14 +100,13 @@ class DishReviewApiController extends AbstractApiController
 
     /**
      * Create a new review for a specific dish
-     * 
+     *
      * Accepts JSON review submission for a menu item identified by ID.
      * All new reviews are set to isApproved=false and require admin moderation.
      * Includes comprehensive validation of all fields.
-     * 
+     *
      * @param int $id Dish ID from route parameter
      * @param Request $request HTTP request containing JSON review data
-     * @param EntityManagerInterface $em Entity manager for database operations
      * @return JsonResponse Success/error response with validation errors if any
      */
     #[Route('/{id}/review', name: 'api_dish_reviews_add', methods: ['POST'])]
@@ -177,10 +171,6 @@ class DishReviewApiController extends AbstractApiController
             example: ['success' => false, 'message' => 'Plat introuvable']
         )
     )]
-    /**
-     * Use MenuItemRepository instead of EntityManager to reduce coupling and make
-     * the action easier to unit test (repository can be mocked directly).
-     */
     public function add(int $id, Request $request): JsonResponse
     {
         // Get JSON data from request
@@ -215,7 +205,7 @@ class DishReviewApiController extends AbstractApiController
         // The service encapsulates entity creation, approval flag initialization (false), and persistence
         // This makes the code more testable (can mock service) and reusable (service can be called from elsewhere)
         // Pass menuItem to associate the review with the specific dish
-        $review = $this->reviewService->createReview($dto, $menuItem);
+        $this->reviewService->createReview($dto, $menuItem);
 
         // Uses base class method from AbstractApiController
         return $this->successResponse(null, 'Avis soumis. En attente de validation.', 201);

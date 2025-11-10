@@ -5,7 +5,6 @@ namespace App\Controller;
 use App\Entity\MenuItem;
 use App\Entity\Review;
 use App\Repository\ReviewRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -92,7 +91,6 @@ class DishReviewController extends AbstractApiController
      * 
      * @param MenuItem $item Menu item entity (resolved from route parameter)
      * @param Request $request HTTP request containing review data
-     * @param EntityManagerInterface $em Entity manager for persisting the review
      * @return JsonResponse Success/error response
      */
     #[Route('', name: 'dish_reviews_add', methods: ['POST'])]

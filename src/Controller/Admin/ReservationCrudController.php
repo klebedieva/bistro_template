@@ -442,7 +442,8 @@ class ReservationCrudController extends AbstractCrudController
                 if ($emailSent) {
                     $this->addFlash('success', 'Réservation confirmée et email envoyé.');
                 } else {
-                    $this->addFlash('warning', 'Réservation confirmée (envoi d\'email non garanti: limite sandbox).');
+                    $this->addFlash('warning', 'Réservation confirmée 
+                    (envoi d\'email non garanti: limite sandbox).');
                 }
 
             } catch (\Throwable $e) {

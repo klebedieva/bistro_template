@@ -71,7 +71,7 @@ class ReviewService
      */
     public function createReviewFromEntity(Review $review): Review
     {
-        if ($review->getIsApproved() === null) {
+        if ($review->isIsApproved() === null) {
             $review->setIsApproved(false);
         }
 
