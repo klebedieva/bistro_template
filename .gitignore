@@ -34,9 +34,10 @@ docs/reports/
 
 ###> Custom additions ###
 # Environment files
-.env
-.env.local
-.env.*.local
+/.env
+!/.env
+/.env.local
+/.env.*.local
 
 # Log files
 *.log
