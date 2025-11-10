@@ -37,6 +37,7 @@ applications:
         hooks:
             build: |
                 set -e
+                export SYMFONY_SKIP_AUTO_SCRIPTS=1
                 composer install --no-dev --optimize-autoloader --apcu-autoloader
             deploy: |
                 set -e
