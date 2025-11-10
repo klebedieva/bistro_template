@@ -8,6 +8,7 @@ use App\Repository\ReviewRepository;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use App\Service\ValidationHelper;
 use App\Service\ReviewService;
@@ -94,8 +95,14 @@ class DishReviewController extends AbstractApiController
      * @return JsonResponse Success/error response
      */
     #[Route('', name: 'dish_reviews_add', methods: ['POST'])]
-    public function add(MenuItem $item, Request $request): JsonResponse
+    public function add(MenuItem $item, Request $request, CsrfTokenManagerInterface $csrfTokenManager): JsonResponse
     {
+        // Validate CSRF token (supports header X-CSRF-Token or _token form field)
+        $csrfError = $this->validateCsrfToken($request, $csrfTokenManager, 'review_submit');
+        if ($csrfError !== null) {
+            return $csrfError;
+        }
+
         // Build a normalized array supporting both JSON and form-encoded payloads
         // Priority 1: Use filtered data from JsonFieldWhitelistSubscriber if available (for API requests)
         // Priority 2: Parse JSON content if available

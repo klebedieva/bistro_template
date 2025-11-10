@@ -6,6 +6,7 @@ use App\Entity\Review;
 use App\Repository\ReviewRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -54,8 +55,13 @@ class AdminController extends AbstractController
      * @return Response Redirect to reviews list with success message
      */
     #[Route('/reviews/{id}/approve', name: 'app_admin_review_approve', methods: ['POST'])]
-    public function approveReview(Review $review, EntityManagerInterface $entityManager): Response
+    public function approveReview(Review $review, EntityManagerInterface $entityManager, Request $request): Response
     {
+        if (!$this->isCsrfTokenValid('review_approve_'.$review->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_admin_reviews');
+        }
+
         // Mark review as approved
         $review->setIsApproved(true);
         $entityManager->flush();
@@ -76,8 +82,13 @@ class AdminController extends AbstractController
      * @return Response Redirect to reviews list with success message
      */
     #[Route('/reviews/{id}/reject', name: 'app_admin_review_reject', methods: ['POST'])]
-    public function rejectReview(Review $review, EntityManagerInterface $entityManager): Response
+    public function rejectReview(Review $review, EntityManagerInterface $entityManager, Request $request): Response
     {
+        if (!$this->isCsrfTokenValid('review_reject_'.$review->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_admin_reviews');
+        }
+
         // Mark review as rejected (not approved)
         $review->setIsApproved(false);
         $entityManager->flush();
@@ -98,8 +109,13 @@ class AdminController extends AbstractController
      * @return Response Redirect to reviews list with success message
      */
     #[Route('/reviews/{id}/delete', name: 'app_admin_review_delete', methods: ['POST'])]
-    public function deleteReview(Review $review, EntityManagerInterface $entityManager): Response
+    public function deleteReview(Review $review, EntityManagerInterface $entityManager, Request $request): Response
     {
+        if (!$this->isCsrfTokenValid('review_delete_'.$review->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_admin_reviews');
+        }
+
         // Permanently delete the review from database
         $entityManager->remove($review);
         $entityManager->flush();

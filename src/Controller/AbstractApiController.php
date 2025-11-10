@@ -162,7 +162,7 @@ abstract class AbstractApiController extends AbstractController
      * @param CsrfTokenManagerInterface $csrfTokenManager CSRF token manager
      * @return JsonResponse|null Error response if token is invalid, null if valid
      */
-    protected function validateCsrfToken(Request $request, CsrfTokenManagerInterface $csrfTokenManager): ?JsonResponse
+    protected function validateCsrfToken(Request $request, CsrfTokenManagerInterface $csrfTokenManager, string $tokenId = 'submit'): ?JsonResponse
     {
         // Try to get token from header first (preferred for API requests)
         $csrfToken = $request->headers->get('X-CSRF-Token');
@@ -174,7 +174,7 @@ abstract class AbstractApiController extends AbstractController
         
         // Validate token using Symfony's CSRF token manager
         // Token name 'submit' is standard for form submissions
-        if (!$csrfToken || !$csrfTokenManager->isTokenValid(new CsrfToken('submit', $csrfToken))) {
+        if (!$csrfToken || !$csrfTokenManager->isTokenValid(new CsrfToken($tokenId, $csrfToken))) {
             return $this->errorResponse('Token CSRF invalide', 403);
         }
         

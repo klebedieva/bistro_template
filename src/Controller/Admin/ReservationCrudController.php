@@ -408,6 +408,11 @@ class ReservationCrudController extends AbstractCrudController
         }
 
         if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('reservation_confirm_'.$reservation->getId(), $request->request->get('_token'))) {
+                $this->addFlash('error', 'Token CSRF invalide.');
+                return $this->redirectToRoute('admin');
+            }
+
             // Final availability check
             $isFree = $availability->isAvailable(
                 $reservation->getDate(),

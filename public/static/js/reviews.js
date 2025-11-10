@@ -774,6 +774,9 @@
         const email = elements.emailInput.value.trim();
         const rating = elements.ratingInput.value;
         const comment = elements.textInput.value.trim();
+        const csrfInput = form.querySelector('input[name="_token"]');
+        const csrfToken = csrfInput ? csrfInput.value : null;
+        const dishIdInput = form.querySelector('input[name="dish_id"]');
 
         /**
          * Choose endpoint and payload format
@@ -799,7 +802,6 @@
              * Add dish_id if it's a dish review
              * This allows linking reviews to specific dishes
              */
-            const dishIdInput = form.querySelector('input[name="dish_id"]');
             if (dishIdInput) {
                 payload.dish_id = parseInt(dishIdInput.value);
             }
@@ -813,6 +815,12 @@
             payload.append('email', email);
             payload.append('rating', rating);
             payload.append('comment', comment);
+            if (dishIdInput) {
+                payload.append('dish_id', dishIdInput.value);
+            }
+            if (csrfToken) {
+                payload.append('_token', csrfToken);
+            }
         }
 
         /**
@@ -825,6 +833,7 @@
                 ? {
                       'Content-Type': 'application/json',
                       'X-Requested-With': 'XMLHttpRequest', // Identifies request as AJAX
+                      ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
                   }
                 : {},
             body: isApiEndpoint ? JSON.stringify(payload) : payload,

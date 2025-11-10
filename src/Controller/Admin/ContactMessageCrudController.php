@@ -242,6 +242,15 @@ class ContactMessageCrudController extends AbstractCrudController
         }
 
         if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('contact_reply_'.$contactMessage->getId(), $request->request->get('_token'))) {
+                $this->addFlash('error', 'Token CSRF invalide.');
+                return $this->redirectToRoute('admin', [
+                    'crudAction' => 'reply',
+                    'crudControllerFqcn' => 'App\\Controller\\Admin\\ContactMessageCrudController',
+                    'entityId' => $entityId
+                ]);
+            }
+
             $subject = $request->request->get('subject');
             $message = $request->request->get('message');
 

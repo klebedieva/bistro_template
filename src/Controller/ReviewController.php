@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
@@ -185,8 +186,14 @@ class ReviewController extends AbstractApiController
             ]
         )
     )]
-    public function create(Request $request, EntityManagerInterface $em): JsonResponse
+    public function create(Request $request, EntityManagerInterface $em, CsrfTokenManagerInterface $csrfTokenManager): JsonResponse
     {
+        // Validate CSRF token (supports header X-CSRF-Token or _token parameter)
+        $csrfError = $this->validateCsrfToken($request, $csrfTokenManager, 'review_submit');
+        if ($csrfError !== null) {
+            return $csrfError;
+        }
+
         // Get JSON data from request
         // Uses base class method from AbstractApiController
         // Returns array or JsonResponse (error if JSON invalid)

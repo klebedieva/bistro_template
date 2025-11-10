@@ -73,12 +73,14 @@
                                         <div class="btn-group" role="group">
                                             {% if not review.isApproved %}
                                                 <form method="post" action="{{ path('app_admin_review_approve', {'id': review.id}) }}" class="d-inline">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('review_approve_' ~ review.id) }}">
                                                     <button type="submit" class="btn btn-success btn-sm">
                                                         <i class="bi bi-check-circle me-1"></i>Approuver
                                                     </button>
                                                 </form>
                                             {% else %}
                                                 <form method="post" action="{{ path('app_admin_review_reject', {'id': review.id}) }}" class="d-inline">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('review_reject_' ~ review.id) }}">
                                                     <button type="submit" class="btn btn-warning btn-sm">
                                                         <i class="bi bi-x-circle me-1"></i>Rejeter
                                                     </button>
@@ -87,6 +89,7 @@
                                             
                                             <form method="post" action="{{ path('app_admin_review_delete', {'id': review.id}) }}" class="d-inline" 
                                                   onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet avis ?')">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('review_delete_' ~ review.id) }}">
                                                 <button type="submit" class="btn btn-danger btn-sm">
                                                     <i class="bi bi-trash me-1"></i>Supprimer
                                                 </button>

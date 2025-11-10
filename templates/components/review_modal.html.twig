@@ -69,6 +69,9 @@ Usage:
                     {% if review_type|default('restaurant') == 'dish' and dish_id is defined %}
                         <input type="hidden" name="dish_id" value="{{ dish_id }}">
                     {% endif %}
+                    
+                    {# CSRF token for review submissions (used for both API and form endpoints) #}
+                    <input type="hidden" name="_token" value="{{ csrf_token('review_submit') }}">
                 </form>
             </div>
             <div class="modal-footer">

@@ -11,6 +11,7 @@ use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
@@ -171,8 +172,14 @@ class DishReviewApiController extends AbstractApiController
             example: ['success' => false, 'message' => 'Plat introuvable']
         )
     )]
-    public function add(int $id, Request $request): JsonResponse
+    public function add(int $id, Request $request, CsrfTokenManagerInterface $csrfTokenManager): JsonResponse
     {
+        // Validate CSRF token (supports header X-CSRF-Token or _token parameter)
+        $csrfError = $this->validateCsrfToken($request, $csrfTokenManager, 'review_submit');
+        if ($csrfError !== null) {
+            return $csrfError;
+        }
+
         // Get JSON data from request
         // Uses base class method from AbstractApiController
         // Returns array or JsonResponse (error if JSON invalid)

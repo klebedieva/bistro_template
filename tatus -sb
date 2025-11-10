@@ -1,0 +1,231 @@
+[1mdiff --git a/src/Controller/DishReviewApiController.php b/src/Controller/DishReviewApiController.php[m
+[1mdeleted file mode 100644[m
+[1mindex 1947197..0000000[m
+[1m--- a/src/Controller/DishReviewApiController.php[m
+[1m+++ /dev/null[m
+[36m@@ -1,225 +0,0 @@[m
+[31m-<?php[m
+[31m-[m
+[31m-namespace App\Controller;[m
+[31m-[m
+[31m-use App\Entity\MenuItem;[m
+[31m-use App\Repository\MenuItemRepository;[m
+[31m-use App\Entity\Review;[m
+[31m-use App\Repository\ReviewRepository;[m
+[31m-use App\Service\ValidationHelper;[m
+[31m-use Doctrine\ORM\EntityManagerInterface;[m
+[31m-use OpenApi\Attributes as OA;[m
+[31m-use Symfony\Component\HttpFoundation\JsonResponse;[m
+[31m-use Symfony\Component\HttpFoundation\Request;[m
+[31m-use Symfony\Component\Routing\Annotation\Route;[m
+[31m-use Symfony\Component\Validator\Validator\ValidatorInterface;[m
+[31m-[m
+[31m-/**[m
+[31m- * Dish Review API Controller[m
+[31m- * [m
+[31m- * RESTful API endpoints for dish-specific reviews:[m
+[31m- * - List approved reviews for a dish by ID[m
+[31m- * - Create new reviews for a dish (pending moderation)[m
+[31m- * [m
+[31m- * Architecture:[m
+[31m- * - Extends AbstractApiController for common API functionality (JSON parsing, DTO validation, responses)[m
+[31m- * - Uses ReviewService for business logic (review creation, persistence)[m
+[31m- * - This follows Single Responsibility Principle: controllers don't call persist()/flush() directly[m
+[31m- * [m
+[31m- * This is an alternative API endpoint to DishReviewController, following REST conventions.[m
+[31m- * Uses OpenAPI documentation for API specification.[m
+[31m- */[m
+[31m-#[Route('/api/dishes')][m
+[31m-#[OA\Tag(name: 'Reviews')][m
+[31m-class DishReviewApiController extends AbstractApiController[m
+[31m-{[m
+[31m-    /**[m
+[31m-     * Constructor for DishReviewApiController[m
+[31m-     *[m
+[31m-     * Injects dependencies required for dish review API operations:[m
+[31m-     * - ValidatorInterface and ValidationHelper: Passed to parent for DTO validation[m
+[31m-     * - ReviewService: Encapsulates review creation and persistence (business logic)[m
+[31m-     * - MenuItemRepository: For finding menu items by ID[m
+[31m-     *[m
+[31m-     * @param ValidatorInterface $validator Symfony validator for DTO validation[m
+[31m-     * @param ValidationHelper $validationHelper Helper for validation operations[m
+[31m-     * @param \App\Service\ReviewService $reviewService Service for creating reviews[m
+[31m-     * @param MenuItemRepository $menuItemRepository Repository for menu item queries[m
+[31m-     */[m
+[31m-    public function __construct([m
+[31m-        ValidatorInterface $validator,[m
+[31m-        ValidationHelper $validationHelper,[m
+[31m-        private \App\Service\ReviewService $reviewService,[m
+[31m-        private MenuItemRepository $menuItemRepository[m
+[31m-    ) {[m
+[31m-        parent::__construct($validator, $validationHelper);[m
+[31m-    }[m
+[31m-    /**[m
+[31m-     * List approved reviews for a specific dish by ID[m
+[31m-     * [m
+[31m-     * Returns approved reviews associated with the dish identified by the ID parameter.[m
+[31m-     * Reviews are ordered by creation date (newest first) and limited to 100 results.[m
+[31m-     * [m
+[31m-     * @param int $id Dish ID from route parameter[m
+[31m-     * @param ReviewRepository $repo Review repository for database queries[m
+[31m-     * @param EntityManagerInterface $em Entity manager for finding menu item[m
+[31m-     * @return JsonResponse List of approved dish reviews or 404 if dish not found[m
+[31m-     */[m
+[31m-    #[Route('/{id}/reviews', name: 'api_dish_reviews_list', methods: ['GET'])][m
+[31m-    #[OA\Get(path: '/api/dishes/{id}/reviews', summary: 'List approved reviews for a dish', tags: ['Reviews'])][m
+[31m-    #[OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))][m
+[31m-    #[OA\Parameter(name: 'page', in: 'query', required: false, description: 'Page number (default: 1)', schema: new OA\Schema(type: 'integer', minimum: 1))][m
+[31m-    #[OA\Parameter(name: 'limit', in: 'query', required: false, description: 'Items per page (default: 100, max: 100)', schema: new OA\Schema(type: 'integer', minimum: 1, maximum: 100))][m
+[31m-    #[OA\Response(response: 200, description: 'OK', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'data', type: 'object')]))][m
+[31m-    #[OA\Response(response: 404, description: 'Dish not found', content: new OA\JsonContent(type: 'object', properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string')]))][m
+[31m-    /**[m
+[31m-     * Use MenuItemRepository instead of EntityManager to reduce coupling and make[m
+[31m-     * the action easier to unit test (repository can be mocked directly).[m
+[31m-     */[m
+[31m-    public function list(int $id, ReviewRepository $repo): JsonResponse[m
+[31m-    {[m
+[31m-        // Verify that the dish exists[m
+[31m-        $menuItem = $this->menuItemRepository->find($id);[m
+[31m-        if (!$menuItem) {[m
+[31m-            // Uses base class method from AbstractApiController[m
+[31m-            return $this->errorResponse('Plat introuvable', 404);[m
+[31m-        }[m
+[31m-[m
+[31m-        // Query approved reviews for this specific dish via repository[m
+[31m-        $reviews = $repo->findApprovedForDish((int) $menuItem->getId(), 100, 0);[m
+[31m-[m
+[31m-        // Transform Review entities to array format for JSON response[m
+[31m-        $data = array_map(static function (Review $r) {[m
+[31m-            return [[m
+[31m-                'id' => $r->getId(),[m
+[31m-                'name' => $r->getName(),[m
+[31m-                'rating' => $r->getRating(),[m
+[31m-                'comment' => $r->getComment(),[m
+[31m-                'createdAt' => $r->getCreatedAt()->format('Y-m-d H:i'),[m
+[31m-            ];[m
+[31m-        }, $reviews);[m
+[31m-[m
+[31m-        // Uses base class method from AbstractApiController[m
+[31m-        return $this->successResponse(['reviews' => $data], null, 200);[m
+[31m-    }[m
+[31m-[m
+[31m-    /**[m
+[31m-     * Create a new review for a specific dish[m
+[31m-     * [m
+[31m-     * Accepts JSON review submission for a menu item identified by ID.[m
+[31m-     * All new reviews are set to isApproved=false and require admin moderation.[m
+[31m-     * Includes comprehensive validation of all fields.[m
+[31m-     * [m
+[31m-     * @param int $id Dish ID from route parameter[m
+[31m-     * @param Request $request HTTP request containing JSON review data[m
+[31m-     * @param EntityManagerInterface $em Entity manager for database operations[m
+[31m-     * @return JsonResponse Success/error response with validation errors if any[m
+[31m-     */[m
+[31m-    #[Route('/{id}/review', name: 'api_dish_reviews_add', methods: ['POST'])][m
+[31m-    #[OA\Post(path: '/api/dishes/{id}/review', summary: 'Submit a review for a dish (pending moderation)', tags: ['Reviews'])][m
+[31m-    #[OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))][m
+[31m-    #[OA\RequestBody(required: true, content: new OA\JsonContent([m
+[31m-        type: 'object',[m
+[31m-        properties: [[m
+[31m-            new OA\Property(property: 'name', type: 'string'),[m
+[31m-            new OA\Property(property: 'email', type: 'string', nullable: true),[m
+[31m-            new OA\Property(property: 'rating', type: 'integer', minimum: 1, maximum: 5),[m
+[31m-            new OA\Property(property: 'comment', type: 'string')[m
+[31m-        ],[m
+[31m-        example: [[m
+[31m-            'name' => 'Alice',[m
+[31m-            'email' => 'alice@example.com',[m
+[31m-            'rating' => 5,[m
+[31m-            'comment' => 'The dish was delicious and perfectly cooked.'[m
+[31m-        ][m
+[31m-    ))][m
+[31m-    #[OA\Response([m
+[31m-        response: 200,[m
+[31m-        description: 'Accepted',[m
+[31m-        content: new OA\JsonContent([m
+[31m-            type: 'object',[m
+[31m-            properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string')],[m
+[31m-            example: ['success' => true, 'message' => 'Avis soumis. En attente de validation.'][m
+[31m-        )[m
+[31m-    )][m
+[31m-    #[OA\Response([m
+[31m-        response: 400,[m
+[31m-        description: 'Invalid JSON',[m
+[31m-        content: new OA\JsonContent([m
+[31m-            type: 'object',[m
+[31m-            properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string')],[m
+[31m-            example: ['success' => false, 'message' => 'JSON invalide'][m
+[31m-        )[m
+[31m-    )][m
+[31m-    #[OA\Response([m
+[31m-        response: 422,[m
+[31m-        description: 'Validation error',[m
+[31m-        content: new OA\JsonContent([m
+[31m-            type: 'object',[m
+[31m-            properties: [[m
+[31m-                new OA\Property(property: 'success', type: 'boolean'),[m
+[31m-                new OA\Property(property: 'message', type: 'string'),[m
+[31m-                new OA\Property(property: 'errors', type: 'array', items: new OA\Items(type: 'string'))[m
+[31m-            ],[m
+[31m-            example: [[m
+[31m-                'success' => false,[m
+[31m-                'message' => 'Erreur de validation',[m
+[31m-                'errors' => ['Le nom est requis', 'La note doit être entre 1 et 5'][m
+[31m-            ][m
+[31m-        )[m
+[31m-    )][m
+[31m-    #[OA\Response([m
+[31m-        response: 404,[m
+[31m-        description: 'Dish not found',[m
+[31m-        content: new OA\JsonContent([m
+[31m-            type: 'object',[m
+[31m-            properties: [new OA\Property(property: 'success', type: 'boolean'), new OA\Property(property: 'message', type: 'string')],[m
+[31m-            example: ['success' => false, 'message' => 'Plat introuvable'][m
+[31m-        )[m
+[31m-    )][m
+[31m-    /**[m
+[31m-     * Use MenuItemRepository instead of EntityManager to reduce coupling and make[m
+[31m-     * the action easier to unit test (repository can be mocked directly).[m
+[31m-     */[m
+[31m-    public function add(int $id, Request $request): JsonResponse[m
+[31m-    {[m
+[31m-        // Get JSON data from request[m
+[31m-        // Uses base class method from AbstractApiController[m
+[31m-        // Returns array or JsonResponse (error if JSON invalid)[m
+[31m-        $jsonResult = $this->getJsonDataFromRequest($request);[m
+[31m-        if ($jsonResult instanceof JsonResponse) {[m
+[31m-            // JSON parsing failed, return error response[m
+[31m-            return $jsonResult;[m
+[31m-        }[m
+[31m-        $data = $jsonResult;[m
+[31m-[m
+[31m-        // Verify that the dish exists[m
+[31m-        $menuItem = $this->menuItemRepository->find($id);[m
+[31m-        if (!$menuItem) {[m
+[31m-            // Uses base class method from AbstractApiController[m
+[31m-            return $this->errorResponse('Plat introuvable', 404);[m
+[31m-        }[m
+[31m-[m
+[31m-        // Map JSON payload to DTO and validate[m
+[31m-        // Uses base class method from AbstractApiController[m
+[31m-        // Returns DTO or JsonResponse (error if validation fails)[m
+[31m-        $validationResult = $this->validateDto($data, \App\DTO\ReviewCreateRequest::class);[m
+[31m-        if ($validationResult instanceof JsonResponse) {[m
+[31m-            // Validation failed, return error response[m
+[31m-            return $validationResult;[m
+[31m-        }[m
+[31m-        $dto = $validationResult;[m
+[31m-[m
+[31m-        // Delegate creation to ReviewService (no direct persist/flush in controller)[m
+[31m-        // This follows Single Responsibility Principle: controller handles HTTP, service handles domain logic[m
+[31m-        // The service encapsulates entity creation, approval flag initialization (false), and persistence[m
+[31m-        // This makes the code more testable (can mock service) and reusable (service can be called from elsewhere)[m
+[31m-        // Pass menuItem to associate the review with the specific dish[m
+[31m-        $review = $this->reviewService->createReview($dto, $menuItem);[m
+[31m-[m
+[31m-        // Uses base class method from AbstractApiController[m
+[31m-        return $this->successResponse(null, 'Avis soumis. En attente de validation.', 201);[m
+[31m-    }[m
+[31m-}[m
+[31m-[m
+[31m-[m

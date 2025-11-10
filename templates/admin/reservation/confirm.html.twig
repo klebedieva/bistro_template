@@ -42,6 +42,7 @@
                 </div>
                 <div class="card-body">
                     <form method="post" action="{{ ea_url().setAction('confirm').set('entityId', reservation.id) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('reservation_confirm_' ~ reservation.id) }}">
                         <div class="mb-3">
                             <label for="confirmationMessage" class="form-label">Message de confirmation</label>
                             <textarea class="form-control" id="confirmationMessage" name="confirmationMessage" rows="8" required 

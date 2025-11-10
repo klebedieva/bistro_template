@@ -427,6 +427,11 @@ class OrderCrudController extends AbstractCrudController
         }
 
         if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('order_confirm_'.$order->getId(), $request->request->get('_token'))) {
+                $this->addFlash('error', 'Token CSRF invalide.');
+                return $this->redirect($this->adminUrlGenerator->setController(OrderCrudController::class)->setAction('index')->generateUrl());
+            }
+
             $confirmationMessage = $request->request->get('confirmationMessage', 'Votre commande est confirmée et sera préparée rapidement.');
 
             try {

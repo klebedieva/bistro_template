@@ -114,6 +114,7 @@
                     {% endif %}
                     
                     <form method="post" action="{{ ea_url().setAction('confirmOrder').set('entityId', order.id) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('order_confirm_' ~ order.id) }}">
                         <div class="mb-3">
                             <label for="confirmationMessage" class="form-label">Message de confirmation</label>
                             <textarea class="form-control" id="confirmationMessage" name="confirmationMessage" rows="8" required 
