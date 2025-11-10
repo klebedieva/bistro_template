@@ -1,0 +1,35 @@
+<!-- Cart Sidebar -->
+<div class="cart-sidebar" id="cartSidebar" role="dialog" aria-modal="true" aria-labelledby="cartSidebar-title" aria-hidden="true">
+    <div class="cart-header">
+        <h3 id="cartSidebar-title">
+            <i class="bi bi-basket me-2" aria-hidden="true"></i>Votre Commande
+        </h3>
+        <button class="cart-close" id="closeCart" aria-label="Fermer le panier">
+            <i class="bi bi-x" aria-hidden="true"></i>
+            <span class="visually-hidden">Fermer</span>
+        </button>
+    </div>
+    <div class="cart-content" role="region" aria-labelledby="cartSidebar-title">
+        <div id="cartItems" role="list" aria-label="Articles dans le panier">
+            <div class="cart-empty" role="status" aria-live="polite">
+                <i class="bi bi-basket" aria-hidden="true"></i>
+                <h4>Votre panier est vide</h4>
+                <p>Ajoutez des plats depuis le menu</p>
+            </div>
+        </div>
+    </div>
+    <div class="cart-footer" role="region" aria-label="Actions du panier">
+        <div class="cart-total" role="group" aria-label="Total de la commande">
+            <span>Total:</span>
+            <span id="cartTotal" aria-live="polite" aria-atomic="true">0€</span>
+        </div>
+        <div class="cart-actions">
+            <button class="btn btn-primary w-100" id="orderBtn" aria-label="Passer la commande">
+                <i class="bi bi-check-circle me-2" aria-hidden="true"></i>Commander
+            </button>
+            <button class="btn btn-outline-secondary w-100" id="clearCart" aria-label="Vider complètement le panier">
+                <i class="bi bi-trash me-2" aria-hidden="true"></i>Vider le panier
+            </button>
+        </div>
+    </div>
+</div>

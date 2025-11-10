@@ -1,0 +1,242 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {# Use base layout includes to avoid duplicate CSS/JS. Keep only page-specific needs. #}
+    {{ parent() }}
+    <!-- Page-specific styles for the homepage gallery -->
+    <link rel="stylesheet" href="{{ asset('static/css/gallery.css') }}?v={{ 'now'|date('YmdHis') }}">
+{% endblock %}
+
+{% block hero %}
+    {% include 'partials/hero-home.html.twig' %}
+{% endblock %}
+
+{% block extra_head %}
+    {{ parent() }}
+    {% if reviewStats.cnt > 0 %}
+        <script type="application/ld+json">
+            {{ {
+                '@context': 'https://schema.org',
+                '@type': 'Restaurant',
+                'name': 'Le Trois Quarts',
+                'aggregateRating': {
+                    '@type': 'AggregateRating',
+                    'ratingValue': reviewStats.avg|number_format(1, '.', ''),
+                    'ratingCount': reviewStats.cnt
+                }
+            }|json_encode(constant('JSON_UNESCAPED_SLASHES'))|raw }}
+        </script>
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+    <!-- Success Message -->
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show alert-fixed-center" id="successMessage">
+            <i class="bi bi-check-circle me-2"></i>{{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+    
+    
+    <!-- About Section -->
+    <section id="about" class="py-5 bg-light">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="about-content py-4 text-center text-lg-start">
+                        <h2 class="section-title mb-4 display-4 display-md-5 display-lg-4">Bienvenue au Trois Quarts</h2>
+                        <p class="lead mb-4 fs-5 fs-md-6 fs-lg-5">Votre brasserie conviviale au cœur du quartier du Camas, sur le boulevard Chave.</p>
+                        <p class="fs-6 fs-md-5 fs-lg-6 mb-3">Installez-vous en terrasse et profitez d'un moment gourmand dans une ambiance chaleureuse. Que ce soit pour un café, un déjeuner entre amis ou un verre en soirée, notre équipe vous accueille avec le sourire.</p>
+                        <p class="fs-6 fs-md-5 fs-lg-6">Venez découvrir notre carte alliant tradition et créativité ! Situé sur le boulevard Chave, en plein cœur du Camas, Le Trois Quarts est une brasserie où il fait bon se retrouver. Terrasse ensoleillée, ambiance décontractée et une cuisine généreuse : tout est réuni pour un moment agréable. Nos plats sont préparés avec des produits frais et de saison, dans le respect des saveurs authentiques de la cuisine méditerranéenne.</p>
+                        
+                        <div class="features mt-4">
+                            <div class="row justify-content-center">
+                                <div class="col-md-6 mb-3">
+                                    <div class="feature-item text-center p-3">
+                                        <i class="bi bi-sun feature-icon mb-3 fs-1"></i>
+                                        <h5 class="fs-5 fs-md-4">Terrasse ensoleillée</h5>
+                                        <p class="fs-6 fs-md-5">Profitez du soleil de Marseille sur notre belle terrasse</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="feature-item text-center p-3">
+                                        <i class="bi bi-heart feature-icon mb-3 fs-1"></i>
+                                        <h5 class="fs-5 fs-md-4">Ambiance conviviale</h5>
+                                        <p class="fs-6 fs-md-5">Un cadre chaleureux pour tous vos moments de partage</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="about-image text-center">
+                        <img src="{{ asset('static/img/restaurant_1.jpg') }}" alt="À propos du restaurant" class="img-fluid rounded shadow about-photo">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Avis Clients Section -->
+    <section id="avis" class="py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title text-center mb-4 display-4 display-md-5 display-lg-4">Avis de nos clients</h2>
+                <p class="section-subtitle text-center mb-0 fs-5 fs-md-6 fs-lg-5">Ce que pensent nos clients de leur expérience au Trois Quarts</p>
+            </div>
+            
+            <div class="row" id="reviewsContainer">
+                {% if reviews is empty %}
+                    <div class="col-12 text-center">
+                        <div class="py-5">
+                            <i class="bi bi-chat-dots icon-large"></i>
+                            <h4 class="mt-3">Aucun avis trouvé</h4>
+                            <p class="text-muted">Aucun avis disponible pour le moment.</p>
+                        </div>
+                    </div>
+                {% else %}
+                    {% for review in reviews %}
+                        <div class="col-lg-4 mb-4">
+                            <div class="review-card p-4">
+                                <div class="review-stars mb-3">
+                                    {% for i in 1..5 %}
+                                        {% if i <= review.rating %}
+                                            <i class="bi bi-star-fill text-warning"></i>
+                                        {% else %}
+                                            <i class="bi bi-star text-warning"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <p class="review-text mb-3 fs-6 fs-md-5">"{{ review.comment }}"</p>
+                                <div class="review-author d-flex align-items-center justify-content-between">
+                                    <strong class="fs-6 fs-md-5">{{ review.name }}</strong>
+                                    <small class="text-muted fs-7">{{ review.createdAt|date('d/m/Y') }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            
+            <div class="text-center mt-4">
+                <div class="d-flex flex-column flex-sm-row justify-content-center align-items-center gap-3">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addReviewModal">
+                        <i class="bi bi-chat-dots me-2"></i>Ajouter un avis
+                    </button>
+                    <a href="{{ path('app_reviews') }}" class="btn btn-custom-outline">
+                        <i class="bi bi-eye me-2"></i>Voir tous les avis
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section id="gallery" class="py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title text-center mb-4 display-4 display-md-5 display-lg-4">Galerie</h2>
+                <p class="section-subtitle text-center mb-0 fs-5 fs-md-6 fs-lg-5">Découvrez l'ambiance du Trois Quarts</p>
+            </div>
+            
+            <div class="row g-3">
+                {% if galleryImages is empty %}
+                    <div class="col-12 text-center">
+                        <div class="py-5">
+                            <i class="bi bi-images icon-large"></i>
+                            <h4 class="mt-3">Aucune image disponible</h4>
+                            <p class="text-muted">La galerie sera bientôt mise à jour.</p>
+                        </div>
+                    </div>
+                {% else %}
+                    {% for image in galleryImages %}
+                        <div class="col-lg-4 col-md-6">
+                            <div class="gallery-item rounded-2" data-bs-toggle="modal" data-bs-target="#galleryModal" data-image="{{ asset(image.fullImagePath) }}" data-title="{{ image.title }}" data-description="{{ image.description }}">
+                                <img src="{{ asset(image.fullImagePath) }}" alt="{{ image.title }}" class="img-fluid">
+                                <div class="gallery-overlay">
+                                    <i class="bi bi-zoom-in"></i>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            
+            <div class="text-center mt-5">
+                <a href="{{ path('app_gallery') }}" class="btn btn-primary">
+                    <i class="bi bi-images me-2"></i>Voir toute la galerie
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reservation Section -->
+    <section id="reservation" class="py-5 bg-primary text-white">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 text-center text-lg-start">
+                    <h2 class="section-title text-white text-center text-lg-start mb-4 display-4 display-md-5 display-lg-4">Réservez votre table</h2>
+                    <p class="lead text-center text-lg-start mb-4 fs-5 fs-md-6 fs-lg-5">Garantissez-vous une place sur notre terrasse ensoleillée ou dans notre salle chaleureuse.</p>
+                    <div class="reservation-info">
+                        <div class="info-item mb-3 d-flex align-items-center justify-content-center justify-content-lg-start">
+                            <i class="bi bi-clock me-2 fs-5"></i>
+                            <span class="fs-6 fs-md-5">Ouvert tous les jours de 8h à 23h</span>
+                        </div>
+                        <div class="info-item mb-3 d-flex align-items-center justify-content-center justify-content-lg-start">
+                            <i class="bi bi-people me-2 fs-5"></i>
+                            <span class="fs-6 fs-md-5">Groupes jusqu'à 20 personnes</span>
+                        </div>
+                        <div class="info-item d-flex align-items-center justify-content-center justify-content-lg-start">
+                            <i class="bi bi-telephone me-2 fs-5"></i>
+                            <a href="tel:0491929616" class="fs-6 fs-md-5 text-decoration-none phone-link">04 91 92 96 16</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="reservation-form bg-white p-4 rounded shadow">
+                        <div class="text-center">
+                            <h4 class="text-dark mb-3 fs-5 fs-md-4">Réservation rapide</h4>
+                            <p class="text-muted mb-4 fs-6 fs-md-5">Réservez votre table en quelques clics</p>
+                            <a href="{{ path('app_reservation') }}" class="btn btn-custom-secondary btn-lg w-100">
+                                <i class="bi bi-calendar-check me-2"></i>Réserver une table
+                            </a>
+                            <div class="mt-3">
+                                <small class="text-muted fs-7">Ou appelez-nous au <a href="tel:0491929616" class="text-muted text-decoration-none">04 91 92 96 16</a></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Gallery Modal -->
+    {% include 'partials/gallery-modal.html.twig' %}
+
+    <!-- Add Review Modal -->
+    {% include 'components/review_modal.html.twig' with {
+        'modal_id': 'addReviewModal',
+        'title': 'Ajouter votre avis',
+        'submit_text': 'Envoyer l\'avis',
+        'review_type': 'restaurant'
+    } %}
+
+    <!-- Cart sidebar is now included in base template -->
+
+{% endblock %}
+
+
+{% block javascripts %}
+    {{ parent() }}
+    <!-- Custom JS -->
+    <script>
+        window.REVIEWS_ENDPOINT = '/api/review';
+    </script>
+    <script src="{{ asset('static/js/utils/form-validation.js') }}?v=1"></script>
+    <script src="{{ asset('static/js/reviews.js') }}"></script>
+    
+    
+{% endblock %}

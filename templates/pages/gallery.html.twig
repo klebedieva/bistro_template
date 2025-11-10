@@ -1,0 +1,80 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <!-- Page-specific styles for the gallery page -->
+    <link rel="stylesheet" href="{{ asset('static/css/gallery.css') }}?v={{ 'now'|date('YmdHis') }}">
+{% endblock %}
+
+{% block body %}
+    <!-- Gallery Header -->
+    <section class="gallery-header">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto text-center text-white">
+                    <h1 class="display-4 mb-4">Galerie Photos</h1>
+                    <p class="lead">Découvrez l'ambiance chaleureuse du Trois Quarts</p>
+                    <div class="gallery-header-divider"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Filters -->
+    <section class="gallery-filters py-4 bg-light">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="filter-buttons text-center">
+                        <button class="filter-btn active" data-filter="all">Tout</button>
+                        <button class="filter-btn" data-filter="terrasse">Terrasse</button>
+                        <button class="filter-btn" data-filter="interieur">Intérieur</button>
+                        <button class="filter-btn" data-filter="plats">Plats</button>
+                        <button class="filter-btn" data-filter="ambiance">Ambiance</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Grid -->
+    <section class="gallery-grid py-5 bg-white">
+        <div class="container">
+            <div class="row g-3" id="galleryContainer">
+                {% for image in images %}
+                <div class="col-lg-4 col-md-6 gallery-item{% if loop.index > 12 %} gallery-item-hidden{% endif %}" data-category="{{ image.category }}">
+                    <div class="gallery-card" 
+                         data-image="{{ asset('static/img/' ~ image.imagePath) }}" 
+                         data-title="{{ image.title }}" 
+                         data-description="{{ image.description }}">
+                        <img src="{{ asset('static/img/' ~ image.imagePath) }}" alt="{{ image.title }}" class="img-fluid">
+                        <div class="gallery-overlay">
+                            <div class="gallery-content">
+                                <h5>{{ image.title }}</h5>
+                                <p>{{ image.description }}</p>
+                                <i class="bi bi-zoom-in"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="text-center mt-5">
+                <button class="btn btn-primary" id="loadMoreBtn">
+                    <i class="bi bi-plus-circle me-2"></i>Voir plus de photos
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Modal -->
+    {% include 'partials/gallery-modal.html.twig' %}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('static/js/gallery.js') }}"></script>
+{% endblock %}
+
+

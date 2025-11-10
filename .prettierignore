@@ -1,0 +1,10 @@
+node_modules/
+vendor/
+var/
+public/assets/
+public/build/
+public/static/vendor/
+public/bundles/
+public/uploads/
+assets/vendor/
+

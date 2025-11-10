@@ -1,0 +1,198 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <!-- Page-specific styles for the dish detail page -->
+    <link rel="stylesheet" href="{{ asset('static/css/dish-detail.css') }}">
+{% endblock %}
+
+{% block extra_head %}
+    {{ parent() }}
+    <script type="application/ld+json">
+        {{ {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            'itemListElement': [
+                {
+                    '@type': 'ListItem',
+                    'position': 1,
+                    'name': 'Accueil',
+                    'item': absolute_url(path('app_home'))
+                },
+                {
+                    '@type': 'ListItem',
+                    'position': 2,
+                    'name': 'Menu',
+                    'item': absolute_url(path('app_menu'))
+                },
+                {
+                    '@type': 'ListItem',
+                    'position': 3,
+                    'name': item.name,
+                    'item': app.request.uri
+                }
+            ]
+        }|json_encode(constant('JSON_UNESCAPED_SLASHES'))|raw }}
+    </script>
+{% endblock %}
+
+{% block body %}
+<section class="dish-detail-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <div class="dish-image-container">
+                    <img src="{{ image }}" alt="{{ item.name }}" class="img-fluid rounded shadow">
+                    <div class="dish-badges">
+                        {% for b in badges %}<span class="badge bg-warning text-dark">{{ b }}</span>{% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="dish-info">
+                    <nav aria-label="breadcrumb" class="mb-3">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{{ path('app_home') }}">Accueil</a></li>
+                            <li class="breadcrumb-item"><a href="{{ path('app_menu') }}">Menu</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">{{ item.name }}</li>
+                        </ol>
+                    </nav>
+                    
+                    <h1 id="dishTitle" class="dish-title">{{ item.name }}</h1>
+                    <p id="dishDescription" class="dish-description">{{ item.description }}</p>
+                    
+                    <div class="dish-price-section">
+                        <span id="dishPrice" class="dish-price">{{ item.price|number_format(0, '.', ' ') }}€</span>
+                        <div class="dish-rating">
+                            {# Render average rating stars based on real data #}
+                            {% set full = ratingAvg|default(0)|round(0, 'floor') %}
+                            {% set half = (ratingAvg - full) >= 0.25 and (ratingAvg - full) < 0.75 %}
+                            {% set extra = (ratingAvg - full) >= 0.75 %}
+                            {% for i in 1..5 %}
+                                {% if i <= full %}
+                                    <i class="bi bi-star-fill text-warning"></i>
+                                {% elseif i == full + 1 and half %}
+                                    <i class="bi bi-star-half text-warning"></i>
+                                {% elseif i == full + 1 and extra %}
+                                    <i class="bi bi-star-fill text-warning"></i>
+                                {% else %}
+                                    <i class="bi bi-star text-warning"></i>
+                                {% endif %}
+                            {% endfor %}
+                            <span class="rating-text">({{ ratingAvg|number_format(1, '.', ' ') }}/5 - {{ ratingCount }} avis)</span>
+                        </div>
+                    </div>
+
+            <div class="dish-ingredients">
+                <h3>Ingrédients</h3>
+                <ul id="dishIngredients">
+                    {% for ing in ingredients %}<li>{{ ing }}</li>{% endfor %}
+                </ul>
+            </div>
+
+            <div class="dish-allergens">
+                <h4>Allergènes</h4>
+                <div class="allergen-badges">
+                            {% for al in allergens %}<span class="badge">{{ al }}</span>{% endfor %}
+                </div>
+            </div>
+
+            <div class="dish-actions">
+                <div class="menu-card-actions">
+                    <div class="quantity-controls">
+                                <button class="add-to-cart-btn" id="decreaseQty"><i class="bi bi-dash"></i></button>
+                        <span class="quantity-display" id="quantityDisplay">0</span>
+                                <button class="add-to-cart-btn" id="increaseQty"><i class="bi bi-plus"></i></button>
+                    </div>
+                </div>
+            </div>
+
+                    <div class="dish-info-tabs mt-4">
+                        <ul class="nav nav-tabs" id="dishTabs">
+                            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#preparation">Préparation</a></li>
+                            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#nutrition">Nutrition</a></li>
+                            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#reviews">Avis</a></li>
+                        </ul>
+                        <div class="tab-content mt-3">
+                            <div class="tab-pane fade show active" id="preparation">{% if item.preparation %}<p>{{ item.preparation }}</p>{% endif %}{% if prepTimeDisplay %}<p><strong>Temps de préparation :</strong> {{ prepTimeDisplay }} minutes</p>{% endif %}{% if item.chefTip %}<p><strong>Conseil du chef :</strong> {{ item.chefTip }}</p>{% endif %}</div>
+                            <div class="tab-pane fade" id="nutrition"><div class="nutrition-info"><div class="row"><div class="col-6"><p><strong>Calories :</strong> {{ item.nutrition.caloriesKcal ?? '-' }} kcal</p><p><strong>Protéines :</strong> {{ item.nutrition.proteinsG ?? '-' }} g</p><p><strong>Glucides :</strong> {{ item.nutrition.carbsG ?? '-' }} g</p></div><div class="col-6"><p><strong>Lipides :</strong> {{ item.nutrition.fatsG ?? '-' }} g</p><p><strong>Fibres :</strong> {{ item.nutrition.fiberG ?? '-' }} g</p><p><strong>Sodium :</strong> {{ item.nutrition.sodiumMg ?? '-' }} mg</p></div></div></div></div>
+                            <div class="tab-pane fade" id="reviews">
+                                <div class="reviews-list" id="dishReviewsList"></div>
+                                <div class="add-review-section mt-4">
+                                    <div class="text-center">
+                                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#dishReviewModal">
+                                            <i class="bi bi-chat-dots me-2"></i>Ajouter un avis
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="related-dishes py-5 bg-light">
+    <div class="container">
+        <h3 class="text-center mb-4">Plats similaires</h3>
+        <div class="row">
+            {% for r in related %}
+                <div class="col-lg-4 mb-4">
+                    <div class="dish-card">
+                        <img src="{{ r.image }}" alt="{{ r.name }}" class="img-fluid">
+                        <div class="dish-card-content">
+                            <h5>{{ r.name }}</h5>
+                            <p>{{ r.description }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="price">{{ r.price|number_format(0, '.', ' ') }}€</span>
+                                <a href="{{ path('app_dish_detail', {id: r.id}) }}" class="quick-view-btn">Voir détails</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Dish Review Modal -->
+{% include 'components/review_modal.html.twig' with {
+    'modal_id': 'dishReviewModal',
+    'title': 'Ajouter votre avis sur ce plat',
+    'submit_text': 'Envoyer l\'avis',
+    'review_type': 'dish',
+    'dish_id': item.id
+} %}
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Endpoint override so reviews.js posts to dish-specific API URL
+        window.REVIEWS_ENDPOINT = '/api/dishes/{{ item.id }}/review';
+    </script>
+    <script src="{{ asset('static/js/utils/form-validation.js') }}?v=1"></script>
+    <script src="{{ asset('static/js/reviews.js') }}"></script>
+    <script src="{{ asset('static/js/dish-detail.js') }}"></script>
+    <script>
+        // Initialize dish data for JavaScript
+        window.dishData = {
+            id: {{ item.id }},
+            name: '{{ item.name|e('js') }}',
+            price: {{ item.price }},
+            image: '{{ image }}',
+            category: '{{ item.category }}'
+        };
+        
+        // Also add to menuItems array for compatibility
+        if (!window.menuItems) {
+            window.menuItems = [];
+        }
+        window.menuItems.push(window.dishData);
+    </script>
+{% endblock %}
+
+

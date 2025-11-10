@@ -1,0 +1,194 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block content_title %}
+    <i class="fas fa-tachometer-alt me-2"></i>Tableau de bord
+{% endblock %}
+
+{% block main %}
+    {# Responsive column sizes: admins see 4 cards per row (col-lg-3), moderators see 3 per row (col-lg-4) #}
+    {% set dashCol = is_granted('ROLE_ADMIN') ? 'col-lg-3 col-md-4 mb-4' : 'col-lg-4 col-md-6 mb-4' %}
+    <!-- Tâches prioritaires -->
+    <div class="row mb-4">
+        <div class="{{ dashCol }}">
+            <div class="card text-white shadow-sm gradient-orange">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock fa-2x mb-2 opacity-75"></i>
+                    <h3 class="card-title mb-1">{{ pendingReservations|default(0) }}</h3>
+                    <p class="card-text mb-0">Réservations en attente</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="{{ dashCol }}">
+            <div class="card text-white shadow-sm gradient-blue">
+                <div class="card-body text-center">
+                    <i class="fas fa-envelope fa-2x mb-2 opacity-75"></i>
+                    <h3 class="card-title mb-1">{{ pendingMessages|default(0) }}</h3>
+                    <p class="card-text mb-0">Messages en attente</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="{{ dashCol }}">
+            <div class="card text-white shadow-sm gradient-grey">
+                <div class="card-body text-center">
+                    <i class="fas fa-comments fa-2x mb-2 opacity-75"></i>
+                    <h3 class="card-title mb-1">{{ pendingReviews|default(0) }}</h3>
+                    <p class="card-text mb-0">Avis en attente</p>
+                </div>
+            </div>
+        </div>
+
+        {% if is_granted('ROLE_ADMIN') %}
+        <div class="{{ dashCol }}">
+            <div class="card text-white shadow-sm gradient-red">
+                <div class="card-body text-center">
+                    <i class="fas fa-shopping-cart fa-2x mb-2 opacity-75"></i>
+                    <h3 class="card-title mb-1">{{ pendingOrders|default(0) }}</h3>
+                    <p class="card-text mb-0">Commandes en attente</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Statistiques générales -->
+    <div class="row mb-4">
+        <div class="{{ dashCol }}">
+            <div class="card text-white shadow-sm gradient-indigo">
+                <div class="card-body text-center">
+                    <i class="fas fa-calendar-check fa-2x mb-2 opacity-75"></i>
+                    <h3 class="card-title mb-1">{{ totalReservations|default(0) }}</h3>
+                    <p class="card-text mb-0">Total réservations</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="{{ dashCol }}">
+            <div class="card text-white shadow-sm gradient-violet">
+                <div class="card-body text-center">
+                    <i class="fas fa-comments fa-2x mb-2 opacity-75"></i>
+                    <h3 class="card-title mb-1">{{ totalReviews|default(0) }}</h3>
+                    <p class="card-text mb-0">Total avis</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="{{ dashCol }}">
+            <div class="card text-white shadow-sm gradient-green">
+                <div class="card-body text-center">
+                    <i class="fas fa-star fa-2x mb-2 opacity-75"></i>
+                    <h3 class="card-title mb-1">{{ avgRating|default(0) }}/5</h3>
+                    <p class="card-text mb-0">Note moyenne</p>
+                </div>
+            </div>
+        </div>
+
+        {% if is_granted('ROLE_ADMIN') %}
+        <div class="{{ dashCol }}">
+            <div class="card text-white shadow-sm gradient-purple">
+                <div class="card-body text-center">
+                    <i class="fas fa-receipt fa-2x mb-2 opacity-75"></i>
+                    <h3 class="card-title mb-1">{{ totalOrders|default(0) }}</h3>
+                    <p class="card-text mb-0">Total commandes</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="{{ dashCol }}">
+            <div class="card text-white shadow-sm gradient-gold">
+                <div class="card-body text-center">
+                    <i class="fas fa-euro-sign fa-2x mb-2 opacity-75"></i>
+                    <h3 class="card-title mb-1">{{ totalRevenue|number_format(2, ',', ' ') }}€</h3>
+                    <p class="card-text mb-0">Chiffre d'affaires</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bolt me-2 text-primary"></i>Actions rapides
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <a href="{{ ea_url().setController('App\\Controller\\Admin\\ReservationCrudController').setAction('index').set('filters[status][comparison]', '=').set('filters[status][value]', 'pending') }}" 
+                               class="btn btn-warning w-100 btn-lg">
+                                <i class="fas fa-clock me-2"></i>Réservations en attente
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <a href="{{ ea_url().setController('App\\Controller\\Admin\\ContactMessageCrudController').setAction('index').set('filters[isReplied][value]', false) }}" 
+                               class="btn btn-info w-100 btn-lg">
+                                <i class="fas fa-envelope me-2"></i>Messages en attente
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <a href="{{ ea_url().setController('App\\Controller\\Admin\\ReviewCrudController').setAction('index').set('filters[isApproved][value]', false) }}" 
+                               class="btn btn-reviews-pending w-100 btn-lg">
+                                <i class="fas fa-comments me-2"></i>Avis en attente
+                            </a>
+                        </div>
+                        {% if is_granted('ROLE_ADMIN') %}
+                        <div class="col-lg-3 col-md-6 mb-3">
+                            <a href="{{ ea_url().setController('App\\Controller\\Admin\\OrderCrudController').setAction('index').set('filters[status][comparison]', '=').set('filters[status][value]', 'pending') }}" 
+                               class="btn btn-danger w-100 btn-lg">
+                                <i class="fas fa-shopping-cart me-2"></i>Commandes en attente
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Derniers avis approuvés -->
+    {% if recentReviews|default([]) is not empty %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-star me-2 text-warning"></i>Derniers avis approuvés
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for review in recentReviews %}
+                                <div class="col-lg-6 mb-3">
+                                    <div class="border rounded p-3 bg-light">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <strong class="text-primary">{{ review.name }}</strong>
+                                                <small class="text-muted d-block">{{ review.createdAt|date('d/m/Y à H:i') }}</small>
+                                            </div>
+                                            <div>
+                                                {% for i in 1..5 %}
+                                                    {% if i <= review.rating %}
+                                                        <i class="fas fa-star text-warning"></i>
+                                                    {% else %}
+                                                        <i class="far fa-star text-warning"></i>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        <p class="mb-0 text-dark">"{{ review.comment|length > 100 ? review.comment|slice(0, 100) ~ '...' : review.comment }}"</p>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+{% endblock %}

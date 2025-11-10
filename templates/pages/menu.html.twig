@@ -1,0 +1,104 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('static/css/menu.css') }}?v={{ 'now'|date('YmdHis') }}">
+{% endblock %}
+
+{% block body %}
+    {# Section héro comme dans Restaurant #}
+    <section class="menu-hero py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto text-center">
+                    <h1 class="display-4 mb-4">Notre Carte</h1>
+                    <p class="lead">Une cuisine généreuse alliant tradition et créativité</p>
+                    <div class="menu-hero-divider"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {# Filtres du menu (structure identique Restaurant) #}
+    <section class="menu-filters-section py-3" role="search" aria-label="Filtres du menu">
+        <div class="container">
+            <div class="menu-filters">
+                <div class="filter-categories" role="group" aria-label="Filtrer par catégorie">
+                    <button class="filter-category active" data-category="all" aria-pressed="true" aria-label="Afficher tous les plats">
+                        <span class="emoji" aria-hidden="true">🍽️</span><span>Tout</span>
+                    </button>
+                    <button class="filter-category" data-category="entrees" aria-pressed="false" aria-label="Afficher uniquement les entrées">
+                        <span class="emoji" aria-hidden="true">🥗</span><span>Entrées</span>
+                    </button>
+                    <button class="filter-category" data-category="plats" aria-pressed="false" aria-label="Afficher uniquement les plats">
+                        <span class="emoji" aria-hidden="true">🍖</span><span>Plats</span>
+                    </button>
+                    <button class="filter-category" data-category="desserts" aria-pressed="false" aria-label="Afficher uniquement les desserts">
+                        <span class="emoji" aria-hidden="true">🍰</span><span>Desserts</span>
+                    </button>
+                    <button class="filter-category" data-category="boissons" aria-pressed="false" aria-label="Afficher uniquement les boissons">
+                        <span class="emoji" aria-hidden="true">🍷</span><span>Boissons</span>
+                    </button>
+                </div>
+
+                <div class="search-filter-row">
+                    <div class="search-price-row">
+                        <div class="menu-search">
+                            <label for="menuSearch" class="visually-hidden">Rechercher un plat</label>
+                            <i class="bi bi-search search-icon" aria-hidden="true"></i>
+                            <input type="text" class="form-control" id="menuSearch" placeholder="Rechercher un plat..." aria-label="Rechercher un plat dans le menu">
+                        </div>
+                        <div class="price-filter">
+                            <label for="priceFilter" class="visually-hidden">Filtrer par prix</label>
+                            <select class="form-select" id="priceFilter" aria-label="Filtrer les plats par prix">
+                                <option value="">Tous les prix</option>
+                                <option value="under-15">Moins de 15€</option>
+                                <option value="15-25">15€ - 25€</option>
+                                <option value="over-25">Plus de 25€</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="dietary-filters" role="group" aria-label="Filtres diététiques">
+                        <div class="dietary-filter-item">
+                            <input type="checkbox" id="vegetarian" class="dietary-filter" aria-label="Afficher uniquement les plats végétariens">
+                            <label for="vegetarian"><span aria-hidden="true">🌱</span> Végétarien</label>
+                        </div>
+                        <div class="dietary-filter-item">
+                            <input type="checkbox" id="vegan" class="dietary-filter" aria-label="Afficher uniquement les plats végans">
+                            <label for="vegan"><span aria-hidden="true">🌿</span> Végan</label>
+                        </div>
+                        <div class="dietary-filter-item">
+                            <input type="checkbox" id="glutenFree" class="dietary-filter" aria-label="Afficher uniquement les plats sans gluten">
+                            <label for="glutenFree"><span aria-hidden="true">🌾</span> Sans gluten</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {# Contenu du menu #}
+    <section class="menu-content py-5" role="main" aria-label="Liste des plats du menu">
+        <div class="container">
+            <div id="menuGrid" role="list" aria-label="Plats disponibles"><!-- rempli par JS --></div>
+            <div id="noResults" class="no-results d-none" role="status" aria-live="polite" aria-atomic="true">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <h3>Aucun résultat trouvé</h3>
+                <p>Essayez de modifier vos critères de recherche</p>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Exposer les données du back au script front
+        window.menuItems = {{ menuItemsJson|default('[]')|raw }};
+        window.drinksData = {{ drinksJson|default('{}')|raw }};
+    </script>
+    <script src="{{ asset('static/js/menu.js') }}"></script>
+{% endblock %}
+
+

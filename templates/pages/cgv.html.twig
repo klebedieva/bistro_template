@@ -1,0 +1,320 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <meta name="description" content="Conditions Générales de Vente du restaurant Le Trois Quarts à Marseille.">
+    <!-- Page-specific styles for the CGV page -->
+    <link rel="stylesheet" href="{{ asset('static/css/cgv.css') }}?v={{ 'now'|date('YmdHis') }}">
+{% endblock %}
+
+{% block body %}
+<body class="cgv-page">
+    <!-- CGV Header -->
+    <section class="cgv-header d-flex align-items-center justify-content-center">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10 text-center">
+                    <h1 class="display-4 mb-3">Conditions Générales de Vente</h1>
+                    <p class="lead">Le Trois Quarts - Brasserie</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CGV Content -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-10 mx-auto">
+                    
+                    <!-- Section 1: Informations légales -->
+                    <div class="mb-5">
+                        <h2>1. Informations légales</h2>
+                        
+                        <div class="info-box">
+                            <p><strong>Raison sociale :</strong> Le Trois Quarts SARL</p>
+                            <p><strong>Forme juridique :</strong> Société à Responsabilité Limitée</p>
+                            <p><strong>Capital social :</strong> 50 000 €</p>
+                            <p><strong>Siège social :</strong> 139 Boulevard Chave, 13005 Marseille, France</p>
+                            <p><strong>SIRET :</strong> 123 456 789 00012</p>
+                            <p><strong>SIREN :</strong> 123 456 789</p>
+                            <p><strong>N° TVA intracommunautaire :</strong> FR 12 123456789</p>
+                            <p><strong>RCS :</strong> Marseille B 123 456 789</p>
+                            <p><strong>Code APE/NAF :</strong> 5610A (Restauration traditionnelle)</p>
+                            <p><strong>Directeur de publication :</strong> Jean Dupont</p>
+                            <p><strong>Téléphone :</strong> +33 4 91 92 96 16</p>
+                            <p><strong>Email :</strong> letroisquarts@gmail.com</p>
+                            <p><strong>Site web :</strong> www.letroisquarts.com</p>
+                        </div>
+                        
+                        <p><strong>Hébergeur du site :</strong><br>
+                        OVH SAS<br>
+                        2 rue Kellermann<br>
+                        59100 Roubaix, France<br>
+                        Tél. : +33 9 72 10 10 07</p>
+                    </div>
+
+                    <!-- Section 2: Objet et champ d'application -->
+                    <div class="mb-5">
+                        <h2>2. Objet et champ d'application</h2>
+                        <p>Les présentes Conditions Générales de Vente (CGV) régissent les relations contractuelles entre Le Trois Quarts et ses clients dans le cadre de :</p>
+                        <ul>
+                            <li>La restauration sur place</li>
+                            <li>La vente à emporter</li>
+                            <li>Le service de livraison à domicile</li>
+                            <li>Les réservations de tables</li>
+                        </ul>
+                        <p>Toute commande implique l'acceptation sans réserve des présentes CGV par le client. Ces conditions prévalent sur tout autre document, sauf dérogation préalable, expresse et écrite.</p>
+                    </div>
+
+                    <!-- Section 3: Commandes -->
+                    <div class="mb-5">
+                        <h2>3. Commandes</h2>
+                        
+                        <h3>3.1 Modalités de commande</h3>
+                        <p>Les commandes peuvent être passées :</p>
+                        <ul>
+                            <li>En ligne via notre site internet</li>
+                            <li>Par téléphone au +33 4 91 92 96 16</li>
+                            <li>Sur place au restaurant</li>
+                        </ul>
+                        
+                        <h3>3.2 Confirmation de commande</h3>
+                        <p>Toute commande passée en ligne fait l'objet d'une confirmation par email. Cette confirmation récapitule les produits commandés, le montant total, l'adresse de livraison (le cas échéant) et les coordonnées du client.</p>
+                        
+                        <h3>3.3 Modifications et annulations</h3>
+                        <p>Pour toute demande de modification ou d'annulation de commande, veuillez nous contacter dans les meilleurs délais :</p>
+                        <ul>
+                            <li>Par téléphone : +33 4 91 92 96 16</li>
+                            <li>Par email : letroisquarts@gmail.com</li>
+                        </ul>
+                        <p>Les modifications et annulations ne peuvent être garanties qu'avant le début de la préparation de votre commande.</p>
+                        
+                        <h3>3.4 Horaires</h3>
+                        <p>Les commandes sont acceptées pendant nos heures d'ouverture :</p>
+                        <ul>
+                            <li>Du lundi au dimanche : 8h00 - 23h00</li>
+                        </ul>
+                        <p>Service continu toute la journée.</p>
+                    </div>
+
+                    <!-- Section 4: Prix et paiement -->
+                    <div class="mb-5">
+                        <h2>4. Prix et paiement</h2>
+                        
+                        <h3>4.1 Prix</h3>
+                        <p>Les prix de nos produits sont indiqués en euros (€), toutes taxes comprises (TTC).</p>
+                        <p>Les prix affichés sur notre site internet et sur place sont susceptibles d'être modifiés à tout moment, mais les produits seront facturés sur la base des tarifs en vigueur au moment de la validation de la commande.</p>
+                        
+                        <h3>4.2 Modes de paiement</h3>
+                        <p>Nous acceptons les modes de paiement suivants :</p>
+                        <ul>
+                            <li>Espèces</li>
+                            <li>Carte bancaire (Visa, Mastercard, American Express)</li>
+                            <li>Titres restaurant (sur place uniquement)</li>
+                            <li>Paiement en ligne sécurisé pour les commandes internet</li>
+                        </ul>
+                        
+                        <h3>4.3 Frais de livraison</h3>
+                        <p>Des frais de livraison peuvent s'appliquer en fonction de la distance et de la zone de livraison. Ces frais sont clairement indiqués lors de la validation de votre commande en ligne ou communiqués par téléphone.</p>
+                        
+                        <h3>4.4 Facturation</h3>
+                        <p>Une facture peut être fournie sur demande pour toute commande. Merci de nous en faire la demande lors de votre commande.</p>
+                    </div>
+
+                    <!-- Section 5: Livraison -->
+                    <div class="mb-5">
+                        <h2>5. Livraison</h2>
+                        
+                        <h3>5.1 Zone de livraison</h3>
+                        <p>Nous livrons dans un rayon défini autour de notre établissement à Marseille. La zone de livraison exacte peut être vérifiée lors de votre commande en ligne en saisissant votre code postal.</p>
+                        
+                        <h3>5.2 Délais de livraison</h3>
+                        <p>Les délais de livraison sont communiqués à titre indicatif lors de la commande. Nous mettons tout en œuvre pour respecter ces délais, mais ils peuvent varier en fonction de l'affluence et des conditions de circulation.</p>
+                        <p>Un délai moyen de préparation et livraison est généralement de 30 à 60 minutes.</p>
+                        
+                        <h3>5.3 Conditions de réception</h3>
+                        <p>Il est impératif qu'une personne soit présente à l'adresse de livraison indiquée pour réceptionner la commande. Notre coursier vous contactera à son arrivée.</p>
+                        <p>En cas d'absence ou d'impossibilité de livrer la commande (adresse incorrecte, accès impossible, etc.), des frais supplémentaires pourront être facturés pour une nouvelle tentative de livraison.</p>
+                        
+                        <h3>5.4 Vérification à la réception</h3>
+                        <p>Nous vous recommandons de vérifier votre commande dès sa réception. En cas d'anomalie (produit manquant, produit non conforme, etc.), veuillez nous contacter immédiatement au +33 4 91 92 96 16.</p>
+                    </div>
+
+                    <!-- Section 6: Produits alimentaires -->
+                    <div class="mb-5">
+                        <h2>6. Produits alimentaires</h2>
+                        
+                        <h3>6.1 Description des plats</h3>
+                        <p>Les photographies et descriptifs des plats figurant sur notre site et notre carte sont présentés à titre indicatif et n'ont pas de valeur contractuelle.</p>
+                        
+                        <h3>6.2 Allergènes</h3>
+                        <p>Les informations concernant les allergènes sont disponibles sur demande. Si vous avez des allergies ou intolérances alimentaires, merci de nous en informer lors de votre commande.</p>
+                        <p>Notre établissement manipule et transforme des produits contenant notamment : gluten, crustacés, œufs, poissons, arachides, soja, lait, fruits à coque, céleri, moutarde, sésame, sulfites, lupin et mollusques.</p>
+                        
+                        <h3>6.3 Conservation et consommation</h3>
+                        <p>Nos plats sont préparés le jour même avec des produits frais. Pour une dégustation optimale, nous vous recommandons de consommer vos plats rapidement après réception.</p>
+                        <p>Les plats livrés ou à emporter doivent être conservés au frais et consommés dans les 24 heures.</p>
+                        
+                        <h3>6.4 Hygiène et sécurité alimentaire</h3>
+                        <p>Le Trois Quarts respecte l'ensemble des normes d'hygiène et de sécurité alimentaire en vigueur (Règlement CE n°852/2004). Nos équipes sont formées aux bonnes pratiques d'hygiène.</p>
+                    </div>
+
+                    <!-- Section 7: Droit de rétractation -->
+                    <div class="mb-5">
+                        <h2>7. Droit de rétractation</h2>
+                        <p>Conformément à l'article L221-28 du Code de la consommation, le droit de rétractation ne peut être exercé pour les contrats :</p>
+                        <ul>
+                            <li>De fourniture de biens susceptibles de se détériorer ou de se périmer rapidement</li>
+                            <li>De fourniture de biens confectionnés selon les spécifications du consommateur ou nettement personnalisés</li>
+                        </ul>
+                        <p><strong>Les produits alimentaires périssables que nous proposons ne sont donc pas soumis au droit de rétractation.</strong></p>
+                        <p>Toutefois, en cas de problème avec votre commande (produit non conforme, défaut de qualité, etc.), nous nous engageons à trouver une solution satisfaisante dans les meilleurs délais.</p>
+                    </div>
+
+                    <!-- Section 8: Réclamations -->
+                    <div class="mb-5">
+                        <h2>8. Réclamations</h2>
+                        
+                        <h3>8.1 Procédure</h3>
+                        <p>Pour toute réclamation concernant votre commande, veuillez nous contacter :</p>
+                        <ul>
+                            <li>Par téléphone : +33 4 91 92 96 16</li>
+                            <li>Par email : letroisquarts@gmail.com</li>
+                            <li>Par courrier : Le Trois Quarts, 139 Boulevard Chave, 13005 Marseille</li>
+                        </ul>
+                        
+                        <h3>8.2 Délais</h3>
+                        <p>Les réclamations doivent être formulées dans les meilleurs délais et au plus tard dans les 24 heures suivant la livraison ou le retrait de votre commande.</p>
+                        
+                        <h3>8.3 Traitement</h3>
+                        <p>Nous nous engageons à traiter toute réclamation avec sérieux et à vous apporter une réponse dans les meilleurs délais, généralement sous 48 heures ouvrées.</p>
+                    </div>
+
+                    <!-- Section 9: Responsabilité -->
+                    <div class="mb-5">
+                        <h2>9. Responsabilité</h2>
+                        <p>Le Trois Quarts s'engage à fournir des produits et services conformes aux normes en vigueur.</p>
+                        <p>Notre responsabilité ne saurait être engagée en cas de :</p>
+                        <ul>
+                            <li>Mauvaise utilisation des produits par le client</li>
+                            <li>Non-respect des conditions de conservation communiquées</li>
+                            <li>Force majeure ou événement indépendant de notre volonté (intempéries exceptionnelles, grève, panne, etc.)</li>
+                            <li>Fourniture d'informations erronées par le client (adresse de livraison incorrecte, numéro de téléphone erroné, etc.)</li>
+                        </ul>
+                    </div>
+
+                    <!-- Section 10: Protection des données personnelles -->
+                    <div class="mb-5">
+                        <h2>10. Protection des données personnelles (RGPD)</h2>
+                        
+                        <h3>10.1 Collecte des données</h3>
+                        <p>Dans le cadre de nos services, nous collectons et traitons les données personnelles suivantes :</p>
+                        <ul>
+                            <li>Nom et prénom</li>
+                            <li>Adresse email</li>
+                            <li>Numéro de téléphone</li>
+                            <li>Adresse de livraison</li>
+                            <li>Historique des commandes</li>
+                        </ul>
+                        
+                        <h3>10.2 Utilisation des données</h3>
+                        <p>Vos données personnelles sont utilisées uniquement pour :</p>
+                        <ul>
+                            <li>La gestion et le traitement de vos commandes</li>
+                            <li>La communication relative à vos commandes</li>
+                            <li>L'amélioration de nos services</li>
+                            <li>L'envoi d'informations commerciales (avec votre consentement préalable)</li>
+                        </ul>
+                        
+                        <h3>10.3 Conservation des données</h3>
+                        <p>Vos données personnelles sont conservées pendant la durée nécessaire à la gestion de votre commande et conformément aux obligations légales en vigueur (généralement 3 ans pour les données de facturation).</p>
+                        
+                        <h3>10.4 Vos droits</h3>
+                        <p>Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez des droits suivants :</p>
+                        <ul>
+                            <li>Droit d'accès : obtenir la confirmation que vos données sont traitées et accéder à ces données</li>
+                            <li>Droit de rectification : corriger vos données inexactes ou incomplètes</li>
+                            <li>Droit à l'effacement : demander la suppression de vos données</li>
+                            <li>Droit à la limitation du traitement : demander la limitation du traitement de vos données</li>
+                            <li>Droit à la portabilité : recevoir vos données dans un format structuré</li>
+                            <li>Droit d'opposition : vous opposer au traitement de vos données</li>
+                        </ul>
+                        <p>Pour exercer ces droits, contactez-nous par email à : letroisquarts@gmail.com</p>
+                        
+                        <h3>10.5 Sécurité des données</h3>
+                        <p>Nous mettons en œuvre toutes les mesures techniques et organisationnelles appropriées pour assurer la sécurité et la confidentialité de vos données personnelles.</p>
+                    </div>
+
+                    <!-- Section 11: Propriété intellectuelle -->
+                    <div class="mb-5">
+                        <h2>11. Propriété intellectuelle</h2>
+                        <p>L'ensemble des éléments du site internet www.letroisquarts.com (textes, images, graphismes, logo, icônes, etc.) sont la propriété exclusive du Trois Quarts ou de ses partenaires.</p>
+                        <p>Toute reproduction, représentation, modification, publication ou adaptation de tout ou partie des éléments du site, quel que soit le moyen ou le procédé utilisé, est interdite, sauf autorisation écrite préalable.</p>
+                    </div>
+
+                    <!-- Section 12: Droit applicable et juridiction -->
+                    <div class="mb-5">
+                        <h2>12. Droit applicable et juridiction</h2>
+                        <p>Les présentes Conditions Générales de Vente sont soumises au droit français.</p>
+                        <p>En cas de litige, une solution amiable sera recherchée avant toute action judiciaire. À défaut d'accord amiable, le litige sera porté devant les tribunaux compétents de Marseille, France.</p>
+                    </div>
+
+                    <!-- Section 13: Médiation -->
+                    <div class="mb-5">
+                        <h2>13. Médiation de la consommation</h2>
+                        <p>Conformément à l'article L612-1 du Code de la consommation, nous proposons un dispositif de médiation de la consommation.</p>
+                        <p>En cas de litige, vous pouvez déposer votre réclamation sur la plateforme de Règlement en Ligne des Litiges (RLL) : <a href="https://ec.europa.eu/consumers/odr" target="_blank">https://ec.europa.eu/consumers/odr</a></p>
+                        <p><strong>Médiateur de la consommation :</strong><br>
+                        CNPM - MÉDIATION DE LA CONSOMMATION<br>
+                        27 avenue de la Libération<br>
+                        42400 SAINT-CHAMOND<br>
+                        <a href="https://www.cnpm-mediation-consommation.eu" target="_blank">www.cnpm-mediation-consommation.eu</a></p>
+                    </div>
+
+                    <!-- Section 14: Réservations -->
+                    <div class="mb-5">
+                        <h2>14. Réservations de table</h2>
+                        <p>Les réservations de table peuvent être effectuées :</p>
+                        <ul>
+                            <li>En ligne via notre site internet</li>
+                            <li>Par téléphone au +33 4 91 92 96 16</li>
+                        </ul>
+                        <p>Toute réservation fait l'objet d'une confirmation par email ou par téléphone.</p>
+                        <p>En cas d'annulation ou de modification, merci de nous prévenir au moins 24 heures à l'avance.</p>
+                        <p>Les tables sont réservées pour une durée maximum de 2 heures. En cas de retard supérieur à 15 minutes sans nous en avoir informés, votre réservation pourra être annulée.</p>
+                    </div>
+
+                    <!-- Section 15: Dispositions finales -->
+                    <div class="mb-5">
+                        <h2>15. Dispositions finales</h2>
+                        <p>Le Trois Quarts se réserve le droit de modifier les présentes Conditions Générales de Vente à tout moment. Les modifications seront applicables dès leur mise en ligne sur notre site internet.</p>
+                        <p>Si une disposition des présentes CGV est jugée illégale, nulle ou pour toute autre raison inapplicable, cette disposition sera réputée divisible des présentes conditions et n'affectera pas la validité et l'applicabilité des dispositions restantes.</p>
+                    </div>
+
+                    <!-- Contact -->
+                    <div class="mb-5">
+                        <h2>Contact</h2>
+                        <p>Pour toute question concernant ces Conditions Générales de Vente, vous pouvez nous contacter :</p>
+                        <div class="info-box">
+                            <p><strong>Le Trois Quarts</strong></p>
+                            <p>139 Boulevard Chave<br>13005 Marseille, France</p>
+                            <p><strong>Téléphone :</strong> +33 4 91 92 96 16</p>
+                            <p><strong>Email :</strong> letroisquarts@gmail.com</p>
+                            <p><strong>Site web :</strong> www.letroisquarts.com</p>
+                            <p><strong>Horaires :</strong> Lundi - Dimanche, 8h00 - 23h00</p>
+                        </div>
+                    </div>
+
+                    <p class="last-updated">Dernière mise à jour : Octobre 2025</p>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+{% endblock %}
+

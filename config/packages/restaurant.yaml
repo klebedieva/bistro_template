@@ -1,0 +1,22 @@
+parameters:
+    # Restaurant settings
+    restaurant:
+        delivery:
+            fee: 5.00
+            free_delivery_threshold: 50.00
+            radius_km: 5
+        # Exact restaurant coordinates (used for distance calculations)
+        coords:
+            lat: 43.2958784824937   # Exact latitude of the restaurant
+            lng: 5.395759357443253  # Exact longitude of the restaurant
+        contact:
+            phone: '+33 4 91 XX XX XX'
+            email: 'contact@letroisquarts.fr'
+            address: 'Marseille, France'
+        business_hours:
+            # Working hours: 7 days a week from 7:00 to 23:00
+            daily:
+                start: '07:00'
+                end: '23:00'
+        tax:
+            vat_rate: 0.10  # 10% TVA

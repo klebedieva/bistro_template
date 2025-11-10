@@ -1,0 +1,28 @@
+{# Clickable status badge: cycles status via controller route #}
+{# Convert enum to string value for array access (ReservationStatus enum -> string) #}
+{# field.value is now a ReservationStatus enum object, so we need to access its .value property #}
+{% set statusValue = field.value.value ?? 'pending' %}
+{# Use EasyAdmin-like badge colors (filled), closer to renderAsBadges output #}
+{% set badgeClasses = {
+    'pending': 'badge badge-warning',
+    'confirmed': 'badge badge-success',
+    'cancelled': 'badge badge-danger',
+    'completed': 'badge badge-info',
+    'no_show': 'badge badge-secondary'
+} %}
+
+{% set labels = {
+    'pending': 'En attente',
+    'confirmed': 'Confirmée',
+    'cancelled': 'Annulée',
+    'completed': 'Réalisée',
+    'no_show': 'Non venu'
+} %}
+
+{% set url = path('admin_reservation_change_status', { entityId: entity.primaryKeyValue }) %}
+
+<a href="{{ url }}" class="{{ badgeClasses[statusValue] ?? 'badge bg-secondary' }}" title="Changer le statut">
+    {{ labels[statusValue] ?? statusValue }}
+</a>
+
+

@@ -1,0 +1,67 @@
+/* CGV Page Styles */
+.cgv-header {
+    background: linear-gradient(135deg, #8b4513 0%, #654321 100%);
+    color: white;
+    min-height: 45vh;
+}
+
+body.cgv-page {
+    background-color: #f8f9fa !important;
+}
+
+.mb-5 h2 {
+    font-family: 'Playfair Display', serif;
+    color: #8b4513;
+    font-size: 28px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f0e6d2;
+}
+
+.mb-5 h3 {
+    font-family: 'Playfair Display', serif;
+    color: #654321;
+    font-size: 22px;
+    margin-top: 25px;
+    margin-bottom: 15px;
+}
+
+.mb-5 p, .mb-5 li {
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    line-height: 1.8;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.mb-5 ul {
+    padding-left: 25px;
+}
+
+.mb-5 li {
+    margin-bottom: 10px;
+}
+
+.info-box {
+    background: #f8f9fa;
+    border-left: 4px solid #8b4513;
+    padding: 20px;
+    margin: 30px 0;
+    border-radius: 4px;
+}
+
+.info-box p {
+    margin-bottom: 5px;
+}
+
+.info-box strong {
+    color: #8b4513;
+}
+
+.last-updated {
+    font-style: italic;
+    color: #666;
+    font-size: 14px;
+    margin-top: 40px;
+    text-align: center;
+}

@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Block admin and technical endpoints
+Disallow: /admin
+Disallow: /login
+
+Sitemap: https://le-trois-quarts.fr/sitemap.xml
+
