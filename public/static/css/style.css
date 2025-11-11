@@ -660,6 +660,21 @@ footer a.text-white:hover {
   .d-flex.flex-column.flex-sm-row.justify-content-center.align-items-center.gap-3 .btn {
     font-size: 1.5rem !important;
   }
+  .reservation-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+  }
+  .reservation-stats .col-md-4 {
+    flex: 0 0 45%;
+    max-width: 45%;
+    margin-bottom: 0.5rem;
+  }
+  .reservation-stats .stat-item {
+    width: 100%;
+    padding: 0.5rem !important;
+  }
 }
 
 /* Tablet and mobile styles - replaced with Bootstrap classes */
@@ -908,6 +923,13 @@ footer a[href^="mailto:"] {
     margin-top: 2rem;
   }
   
+  .alert-fixed-center {
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    max-width: 90%;
+    width: auto;
+  }
+
   /* Responsive styles for mobile devices */
   
 }
@@ -1945,7 +1967,9 @@ footer a[href^="mailto:"] {
     }
     /* Spacing between stacked cards */
     .reservation-stats .col-md-4 {
-        margin-bottom: 0.75rem;
+        margin-bottom: 1rem;
+        width: 50%;
+        flex: 0 0 50%;
     }
 }
 

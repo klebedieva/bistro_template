@@ -113,7 +113,7 @@
     padding: 0.75rem 1.5rem;
     border-radius: 25px;
     font-weight: 600;
-    font-size: 1.3rem;
+    font-size: 1rem;
     transition: all 0.3s ease;
     cursor: pointer;
     text-transform: uppercase;
@@ -318,7 +318,7 @@
     padding: 1rem 2.5rem;
     border-radius: 25px;
     font-weight: 600;
-    font-size: 1.5rem;
+    font-size: 1.2rem !important;
     transition: all 0.3s ease;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -470,7 +470,7 @@
     .gallery-filters { padding-top: 0; padding-bottom: 0.5rem; margin-top: 0 !important; }
     
     .filter-buttons {
-        gap: 0.4rem;
+        gap: 0.75rem;
         padding: 0.5rem 0.75rem;
         justify-content: center;
         overflow-x: auto;
@@ -480,11 +480,11 @@
     }
     
     .filter-btn {
-        padding: 0.5rem 1rem;
-        font-size: 0.6rem;
+        padding: 0.55rem 1.1rem;
+        font-size: 1.2rem;
         white-space: nowrap;
         flex-shrink: 0;
-        border-radius: 20px;
+        border-radius: 24px;
         font-weight: 500;
         letter-spacing: 0.3px;
     }
@@ -529,8 +529,8 @@
     .filter-buttons {
         justify-content: center;
         overflow-x: auto;
-        padding: 0.4rem 0.5rem;
-        gap: 0.3rem;
+        padding: 0.5rem 0.6rem;
+        gap: 0.6rem;
         flex-wrap: wrap;
         margin-top: 0.5rem;
     }
@@ -538,9 +538,9 @@
     .filter-btn {
         white-space: nowrap;
         flex-shrink: 0;
-        padding: 0.4rem 0.7rem;
-        font-size: 0.55rem;
-        border-radius: 18px;
+        padding: 0.45rem 0.8rem;
+        font-size: 1.2rem;
+        border-radius: 22px;
         font-weight: 500;
         letter-spacing: 0.2px;
     }
@@ -587,16 +587,16 @@
     .filter-buttons {
         justify-content: center;
         overflow-x: auto;
-        padding: 0.3rem 0.4rem;
-        gap: 0.25rem;
+        padding: 0.4rem 0.5rem;
+        gap: 0.5rem;
         flex-wrap: wrap;
         margin-top: 0.4rem;
     }
     
     .filter-btn {
-        padding: 0.35rem 0.6rem;
-        font-size: 0.5rem;
-        border-radius: 16px;
+        padding: 0.4rem 0.7rem;
+        font-size: 1.2rem;
+        border-radius: 20px;
         font-weight: 500;
         letter-spacing: 0.15px;
     }
