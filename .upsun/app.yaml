@@ -26,6 +26,7 @@ applications:
                 display_startup_errors: '0'
                 max_execution_time: '30'
                 zend.assertions: '-1'
+                assert.active: '0'
             env:
                 APP_ENV: "prod"
                 APP_DEBUG: "0"
