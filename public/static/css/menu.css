@@ -195,6 +195,24 @@
             padding: 1rem 2rem 1.5rem 2rem;
         }
 
+    .menu-filters-section .toggle-filters-btn,
+    .menu-filters-section .toggle-filters-btn:focus,
+    .menu-filters-section .toggle-filters-btn:active {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        border: none;
+        color: #2c1810;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 8px 20px rgba(212, 165, 116, 0.25);
+    }
+
+    .menu-filters-section .toggle-filters-btn:hover {
+        background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+        color: #2c1810;
+        box-shadow: 0 12px 28px rgba(212, 165, 116, 0.35);
+    }
+
         /* JS fallback: force fixed positioning */
         /* Fixed fallback when sticky misbehaves (normally unused) */
         .menu-filters-section.js-fixed { position: fixed; top: var(--menu-sticky-top, 70px); left: 0; right: 0; width: 100%; margin: 0; z-index: 1020; }

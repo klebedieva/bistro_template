@@ -84,13 +84,13 @@
                         {{ form_start(contactForm, {'attr': {'class': 'contact-form', 'novalidate': 'novalidate', 'aria-labelledby': 'contact-form-title'}}) }}
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    {{ form_label(contactForm.firstName, null, {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_label(contactForm.firstName, null, {'label_attr': {'class': 'form-label'}}) }} <span class="text-danger">*</span>
                                     {{ form_widget(contactForm.firstName, {'attr': {'class': 'form-control'}}) }}
                                     <div class="invalid-feedback" id="firstNameError"></div>
                                     {{ form_errors(contactForm.firstName) }}
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    {{ form_label(contactForm.lastName, null, {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_label(contactForm.lastName, null, {'label_attr': {'class': 'form-label'}}) }} <span class="text-danger">*</span>
                                     {{ form_widget(contactForm.lastName, {'attr': {'class': 'form-control'}}) }}
                                     <div class="invalid-feedback" id="lastNameError"></div>
                                     {{ form_errors(contactForm.lastName) }}
@@ -98,7 +98,7 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    {{ form_label(contactForm.email, null, {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_label(contactForm.email, null, {'label_attr': {'class': 'form-label'}}) }} <span class="text-danger">*</span>
                                     {{ form_widget(contactForm.email, {'attr': {'class': 'form-control'}}) }}
                                     <div class="invalid-feedback" id="emailError"></div>
                                     {{ form_errors(contactForm.email) }}
@@ -111,20 +111,20 @@
                                 </div>
                             </div>
                             <div class="mb-3">
-                                {{ form_label(contactForm.subject, null, {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_label(contactForm.subject, null, {'label_attr': {'class': 'form-label'}}) }} <span class="text-danger">*</span>
                                 {{ form_widget(contactForm.subject, {'attr': {'class': 'form-select'}}) }}
                                 <div class="invalid-feedback" id="subjectError"></div>
                                 {{ form_errors(contactForm.subject) }}
                             </div>
                             <div class="mb-3">
-                                {{ form_label(contactForm.message, null, {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_label(contactForm.message, null, {'label_attr': {'class': 'form-label'}}) }} <span class="text-danger">*</span>
                                 {{ form_widget(contactForm.message, {'attr': {'class': 'form-control', 'rows': 5, 'placeholder': 'Votre message...'}}) }}
                                 <div class="invalid-feedback" id="messageError"></div>
                                 {{ form_errors(contactForm.message) }}
                             </div>
                             <div class="mb-3 form-check">
                                 {{ form_widget(contactForm.consent, {'attr': {'class': 'form-check-input'}}) }}
-                                {{ form_label(contactForm.consent, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                                {{ form_label(contactForm.consent, null, {'label_attr': {'class': 'form-check-label'}}) }} <span class="text-danger">*</span>
                                 <div class="invalid-feedback" id="consentError"></div>
                                 {{ form_errors(contactForm.consent) }}
                             </div>

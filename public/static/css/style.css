@@ -384,6 +384,8 @@ section .text-center.mb-5 {
 /* Reservation Section */
 .reservation-form {
     border-radius: 15px;
+    max-width: 650px;
+    margin: 0 auto;
 }
 
 .reservation-info .info-item {
@@ -650,6 +652,25 @@ footer a.text-white:hover {
   .d-flex.flex-column.flex-sm-row.justify-content-center.align-items-center.gap-3 {
     gap: 0.75rem !important;
   }
+
+  .reservation-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+  }
+
+  .reservation-stats .col-md-4 {
+    flex: 0 0 45%;
+    max-width: 45%;
+    margin-bottom: 0.5rem;
+  }
+
+  .reservation-stats .stat-item {
+    width: 100%;
+    padding: 0.75rem !important;
+    text-align: center;
+  }
 }
 
 @media (max-width: 576px) {
@@ -660,19 +681,17 @@ footer a.text-white:hover {
     font-size: 1.5rem !important;
   }
   .reservation-stats {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    justify-content: center;
+    gap: 1rem;
   }
   .reservation-stats .col-md-4 {
-    flex: 0 0 45%;
-    max-width: 45%;
-    margin-bottom: 0.5rem;
+    flex: 0 0 100%;
+    max-width: 100%;
+    display: flex;
+    justify-content: center;
   }
   .reservation-stats .stat-item {
-    width: 100%;
-    padding: 0.5rem !important;
+    width: auto;
+    min-width: 230px;
   }
 }
 
@@ -2063,6 +2082,6 @@ footer .footer-logo-row {
 @media (max-width: 576px) {
     .btn,
     button {
-        font-size: 1.2rem !important;
+        font-size: 1.2grem !important;
     }
 }

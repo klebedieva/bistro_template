@@ -25,7 +25,13 @@
     {# Filtres du menu (structure identique Restaurant) #}
     <section class="menu-filters-section py-3" role="search" aria-label="Filtres du menu">
         <div class="container">
-            <div class="menu-filters">
+            <button class="btn toggle-filters-btn w-100 d-md-none mb-3" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#menuFiltersCollapse"
+                    aria-expanded="false" aria-controls="menuFiltersCollapse">
+                <i class="bi bi-funnel me-2" aria-hidden="true"></i>Filtres du menu
+            </button>
+            <div id="menuFiltersCollapse" class="collapse d-md-block">
+                <div class="menu-filters">
                 <div class="filter-categories" role="group" aria-label="Filtrer par catégorie">
                     <button class="filter-category active" data-category="all" aria-pressed="true" aria-label="Afficher tous les plats">
                         <span class="emoji" aria-hidden="true">🍽️</span><span>Tout</span>

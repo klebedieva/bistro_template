@@ -59,7 +59,7 @@
     <section id="reservation" class="py-5">
         <div class="container">
             <div class="row">
-                <div class="col-lg-6">
+                <div class="col-lg-6 col-xl-5">
                     <h2 class="section-title text-center text-lg-start mb-4">Informations pratiques</h2>
                     <p class="lead text-center text-lg-start mb-4">Découvrez nos services et réservez votre table en quelques clics.</p>
                     <div class="reservation-info">
@@ -77,20 +77,20 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-6">
+                <div class="col-lg-6 col-xl-7">
                     <div class="reservation-form p-4 rounded shadow reservation-form-bg">
                         <h3 class="text-center mb-4 mt-4">Réservez votre table</h3>
                         
                         {{ form_start(reservationForm, {'attr': {'id': 'reservationForm', 'class': 'contact-form', 'novalidate': 'novalidate'}}) }}
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    {{ form_label(reservationForm.firstName, null, {'label_attr': {'class': 'form-label text-dark'}}) }}
+                                    {{ form_label(reservationForm.firstName, null, {'label_attr': {'class': 'form-label text-dark'}}) }} <span class="text-danger">*</span>
                                     {{ form_widget(reservationForm.firstName, {'attr': {'class': 'form-control form-control-custom'}}) }}
                                     <div class="invalid-feedback" id="reservation_firstNameError"></div>
                                     {{ form_errors(reservationForm.firstName) }}
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    {{ form_label(reservationForm.lastName, null, {'label_attr': {'class': 'form-label text-dark'}}) }}
+                                    {{ form_label(reservationForm.lastName, null, {'label_attr': {'class': 'form-label text-dark'}}) }} <span class="text-danger">*</span>
                                     {{ form_widget(reservationForm.lastName, {'attr': {'class': 'form-control form-control-custom'}}) }}
                                     <div class="invalid-feedback" id="reservation_lastNameError"></div>
                                     {{ form_errors(reservationForm.lastName) }}
@@ -98,7 +98,7 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    {{ form_label(reservationForm.email, null, {'label_attr': {'class': 'form-label text-dark'}}) }}
+                                    {{ form_label(reservationForm.email, null, {'label_attr': {'class': 'form-label text-dark'}}) }} <span class="text-danger">*</span>
                                     {{ form_widget(reservationForm.email, {'attr': {'class': 'form-control form-control-custom'}}) }}
                                     <div class="invalid-feedback" id="reservation_emailError"></div>
                                     {{ form_errors(reservationForm.email) }}
@@ -112,19 +112,19 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-4 mb-3">
-                                    {{ form_label(reservationForm.date, null, {'label_attr': {'class': 'form-label text-dark'}}) }}
+                                    {{ form_label(reservationForm.date, null, {'label_attr': {'class': 'form-label text-dark'}}) }} <span class="text-danger">*</span>
                                     {{ form_widget(reservationForm.date, {'attr': {'class': 'form-control form-control-custom'}}) }}
                                     <div class="invalid-feedback" id="reservation_dateError"></div>
                                     {{ form_errors(reservationForm.date) }}
                                 </div>
                                 <div class="col-md-4 mb-3">
-                                    {{ form_label(reservationForm.time, null, {'label_attr': {'class': 'form-label text-dark'}}) }}
+                                    {{ form_label(reservationForm.time, null, {'label_attr': {'class': 'form-label text-dark'}}) }} <span class="text-danger">*</span>
                                     {{ form_widget(reservationForm.time, {'attr': {'class': 'form-select form-select-custom'}}) }}
                                     <div class="invalid-feedback" id="reservation_timeError"></div>
                                     {{ form_errors(reservationForm.time) }}
                                 </div>
                                 <div class="col-md-4 mb-3">
-                                    {{ form_label(reservationForm.guests, null, {'label_attr': {'class': 'form-label text-dark'}}) }}
+                                    {{ form_label(reservationForm.guests, null, {'label_attr': {'class': 'form-label text-dark'}}) }} <span class="text-danger">*</span>
                                     {{ form_widget(reservationForm.guests, {'attr': {'class': 'form-select form-select-custom'}}) }}
                                     <div class="invalid-feedback" id="reservation_guestsError"></div>
                                     {{ form_errors(reservationForm.guests) }}
