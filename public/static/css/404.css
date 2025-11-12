@@ -64,6 +64,10 @@ body {
     margin-bottom: 4rem;
 }
 
+.error-actions .btn {
+    min-width: 200px;
+}
+
 .error-suggestions h4 {
     font-family: 'Playfair Display', serif;
     color: var(--dark-color);
@@ -169,10 +173,14 @@ body {
     }
     
     .error-actions .btn {
-        display: block;
-        margin: 0.5rem auto;
-        width: 100%;
+        display: inline-block;
+        margin: 0.5rem;
+        width: auto;
         max-width: 300px;
+    }
+    
+    .error-actions {
+        text-align: center;
     }
     
     .suggestion-card {
@@ -201,6 +209,19 @@ body {
     .error-message {
         font-size: 1rem;
         margin-bottom: 2rem;
+    }
+    
+    .error-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .error-actions .btn {
+        width: 100%;
+        max-width: 260px;
+        margin: 0;
     }
     
     .error-suggestions h4 {

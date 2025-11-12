@@ -477,7 +477,7 @@
     .order-step-content { padding: 1.5rem; }
     .delivery-options, .payment-options { grid-template-columns: 1fr; }
     .cart-section .cart-actions, .step-actions { flex-direction: row; gap: 1rem; flex-wrap: wrap; justify-content: center !important; align-items: center !important; text-align: center; }
-    .cart-section .cart-actions .btn, .step-actions .btn { min-width: 140px; justify-content: center; font-size: 0.9rem; padding: 10px 16px; text-align: center; }
+    .cart-section .cart-actions .btn, .step-actions .btn { min-width: 140px; justify-content: center; font-size: 1.2rem !important; padding: 10px 16px; text-align: center; }
     .order-summary-sidebar { position: static; margin-top: 2rem; }
     .cart-items .cart-item { flex-direction: column; align-items: flex-start; gap: 1rem; padding: 1rem; width: 100%; background: var(--accent-color); border-radius: 10px; margin-bottom: 1rem; }
     .cart-items .cart-item-info { margin-right: 0; width: 100%; min-width: 0; overflow: visible; max-width: 100%; }
@@ -509,7 +509,6 @@
     .cart-items .quantity-display { font-size: 0.8rem; }
     .cart-items .quantity-controls { gap: 0.5rem; }
     .cart-section .cart-actions, .step-actions { gap: 0.5rem; flex-direction: row; flex-wrap: wrap; justify-content: center !important; align-items: center !important; text-align: center; }
-    .cart-section .cart-actions .btn, .step-actions .btn { font-size: 0.85rem; padding: 8px 12px; min-width: 120px; text-align: center; }
     .order-summary-sidebar { padding: 1.5rem; }
     .summary-item { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
     .summary-item-price { align-self: flex-end; }

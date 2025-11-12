@@ -156,6 +156,22 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+.cart-notification.position-fixed {
+    right: 20px;
+    max-width: 380px;
+}
+
+@media (max-width: 768px) {
+    .cart-notification.position-fixed {
+        left: 50% !important;
+        right: auto !important;
+        transform: translateX(-50%) !important;
+        width: calc(100% - 40px) !important;
+        max-width: 360px !important;
+        text-align: center;
+    }
+}
+
 .rating-stars {
     display: flex;
     gap: 0.5rem;
@@ -213,6 +229,7 @@
 .contact-form-card .btn,
 .review-form .btn {
     font-weight: 600;
+    
 }
 
 .reservation-form .form-control.is-invalid,

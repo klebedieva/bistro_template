@@ -781,6 +781,26 @@
             /* cart styles are centralized in global.css */
             .menu-section-title { font-size: 2.5rem; }
             .menu-card-content { padding: 1.5rem; }
+
+            .menu-filters-section {
+                border-bottom: none;
+                box-shadow: none;
+                background: transparent;
+                padding-top: 0.75rem;
+                padding-bottom: 0.75rem;
+            }
+
+            .menu-filters-section.is-sticky {
+                background: transparent;
+                box-shadow: none;
+                border-bottom: none;
+                padding-top: 0.75rem;
+                padding-bottom: 0.75rem;
+            }
+
+            .menu-filters-section.is-sticky .menu-filters {
+                padding: 1.25rem;
+            }
         }
 
         @media (max-width: 576px) {

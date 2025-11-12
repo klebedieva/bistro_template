@@ -1838,13 +1838,7 @@ picture.hero-media img {
 
     /* Slightly smaller button text on mobile for reservation form */
     .reservation-form .btn {
-        font-size: 0.95rem !important;
-        padding: 0.65rem 1rem !important;
-    }
-
-    /* Make large buttons smaller on all pages for mobile */
-    .btn.btn-lg {
-        font-size: 0.95rem !important;
+        font-size: 1.2rem !important;
         padding: 0.65rem 1rem !important;
     }
 }
