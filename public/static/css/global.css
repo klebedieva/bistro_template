@@ -238,9 +238,12 @@ input.btn-primary:focus {
 .cart-sidebar {
     position: fixed;
     top: 0;
+    bottom: 0;
     right: -450px;
     width: 450px;
     height: 100vh;
+    min-height: 100vh;
+    max-height: 100vh;
     background: white;
     box-shadow: -10px 0 30px rgba(0, 0, 0, 0.2);
     z-index: 9999;

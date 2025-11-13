@@ -55,6 +55,7 @@ let dietaryFilters = {
  */
 let menuGrid;
 let noResults;
+let menuGridClickListenerAttached = false;
 
 // ============================================================================
 // DEBOUNCE HELPERS
@@ -814,7 +815,7 @@ function addMenuItemEventListeners() {
      * Event delegation for all clickable elements in menu grid
      * Single listener handles all clicks, prevents memory leaks
      */
-    if (menuGrid) {
+    if (menuGrid && !menuGridClickListenerAttached) {
         menuGrid.addEventListener('click', async function (e) {
             /**
              * Handle quick view buttons
@@ -851,6 +852,7 @@ function addMenuItemEventListeners() {
                 console.error('Cart action failed:', err);
             }
         });
+        menuGridClickListenerAttached = true;
     }
 }
 
