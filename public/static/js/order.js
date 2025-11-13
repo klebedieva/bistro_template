@@ -66,6 +66,16 @@ window.orderData = orderData;
  */
 document.addEventListener('DOMContentLoaded', function () {
     initOrderPage();
+
+    const confirmBtn = document.getElementById('confirmOrderBtn');
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', async () => {
+            const data = window.orderData || {};
+            if (window.OrderSubmission?.confirmOrder) {
+                await window.OrderSubmission.confirmOrder(data);
+            }
+        });
+    }
 });
 
 /**

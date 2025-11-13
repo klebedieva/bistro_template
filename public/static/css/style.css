@@ -1780,19 +1780,14 @@ footer a[href^="mailto:"] {
 /* Responsive navigation - replaced with Bootstrap classes */
 
 /* Carousel Background Images */
-picture.hero-media {
+img.hero-media {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
+    object-fit: cover;
     z-index: 0;
     overflow: hidden;
-}
-
-picture.hero-media img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
 }
 
 .hero-overlay {

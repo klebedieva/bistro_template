@@ -41,7 +41,7 @@
      */
     function unhideCartCount() {
         // Find the cart count badge in the navbar
-        var el = document.getElementById('cartNavCount');
+        const el = document.getElementById('cartNavCount');
         // If element exists, remove 'hidden' class to make it visible
         if (el) {
             el.classList.remove('hidden');
@@ -116,7 +116,7 @@ window.showConfirmDialog = function (title, message, onConfirm) {
          * Remove existing modal if present
          * Prevents duplicate modals if function is called multiple times
          */
-        var existing = document.getElementById('confirmModal');
+        const existing = document.getElementById('confirmModal');
         if (existing) {
             existing.remove();
         }
@@ -131,7 +131,7 @@ window.showConfirmDialog = function (title, message, onConfirm) {
          * - Body with confirmation message
          * - Footer with Cancel and Confirm buttons
          */
-        var html =
+        const html =
             '' +
             '<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">' +
             '  <div class="modal-dialog modal-dialog-centered">' +
@@ -157,15 +157,15 @@ window.showConfirmDialog = function (title, message, onConfirm) {
         document.body.insertAdjacentHTML('beforeend', html);
 
         // Get references to modal elements
-        var modalEl = document.getElementById('confirmModal');
-        var confirmBtn = document.getElementById('confirmModalConfirmBtn');
+        const modalEl = document.getElementById('confirmModal');
+        const confirmBtn = document.getElementById('confirmModalConfirmBtn');
 
         /**
          * Create Bootstrap modal instance
          * Check if Bootstrap is available (window.bootstrap might not exist)
          * If Bootstrap not available, bsModal will be null and we'll use fallback
          */
-        var bsModal =
+        const bsModal =
             window.bootstrap && window.bootstrap.Modal ? new window.bootstrap.Modal(modalEl) : null;
 
         // Show the modal if Bootstrap is available

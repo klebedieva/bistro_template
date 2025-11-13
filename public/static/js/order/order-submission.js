@@ -108,7 +108,7 @@ function collectOrderFormData(orderData) {
  * @param {Object} orderData - Current order data state (passed by reference)
  * @returns {Promise<void>}
  */
-async function confirmOrder(orderData) {
+async function confirmOrderInternal(orderData) {
     // Prevent double submission
     if (window.isSubmittingOrder) {
         return;
@@ -219,99 +219,8 @@ function showOrderConfirmation(orderNo, orderId, total) {
 // Export submission functions to global scope
 window.OrderSubmission = {
     collectOrderFormData,
-    confirmOrder,
+    confirmOrder: confirmOrderInternal,
     showOrderConfirmation,
 };
 
 // Export to window for inline onclick handlers
-// IMPORTANT: Use different implementation to avoid conflicts with local function
-window.confirmOrder = async orderData => {
-    // Get orderData from global scope if not provided
-    const data = orderData || window.orderData || {};
-
-    // Prevent double submission
-    if (window.isSubmittingOrder) {
-        return;
-    }
-    window.isSubmittingOrder = true;
-
-    // Disable confirm button if present
-    const confirmBtn = document.querySelector('#step4 .btn.btn-success');
-    const oldText = confirmBtn ? confirmBtn.innerHTML : null;
-    if (confirmBtn) {
-        confirmBtn.disabled = true;
-        confirmBtn.innerHTML =
-            '<span class="spinner-border spinner-border-sm me-2"></span>Traitement...';
-    }
-
-    const getElement = window.OrderUtils?.getElement || (id => document.getElementById(id));
-    const accept = getElement('acceptTerms')?.checked;
-    if (!accept) {
-        if (window.OrderUtils) {
-            window.OrderUtils.showOrderNotification(
-                'Veuillez accepter les conditions générales',
-                'error'
-            );
-        }
-        window.isSubmittingOrder = false;
-        if (confirmBtn) {
-            confirmBtn.disabled = false;
-            if (oldText !== null) confirmBtn.innerHTML = oldText;
-        }
-        return;
-    }
-
-    // Build payload using centralized form data collection
-    const payload = collectOrderFormData(data);
-
-    // Add coupon data if applied
-    if (data.coupon && data.coupon.couponId) {
-        payload.couponId = data.coupon.couponId;
-        payload.discountAmount = data.discount;
-    }
-
-    try {
-        const result = await window.orderAPI.createOrder(payload);
-        const created = result.order; // OrderResponse
-
-        // Apply coupon usage increment if coupon was used
-        if (data.coupon && data.coupon.couponId) {
-            try {
-                await window.couponAPI.applyCoupon(data.coupon.couponId);
-            } catch (e) {
-                console.error('Error incrementing coupon usage:', e);
-            }
-        }
-
-        // Backend already clears cart, update UI
-        if (window.updateCartSidebar) {
-            try {
-                window.updateCartSidebar();
-            } catch (error) {
-                console.error('Error updating cart sidebar after order:', error);
-            }
-        }
-        if (window.updateCartNavigation) {
-            try {
-                window.updateCartNavigation();
-            } catch (error) {
-                console.error('Error updating cart navigation after order:', error);
-            }
-        }
-        showOrderConfirmation(created.no, created.id, created.total);
-    } catch (e) {
-        if (window.OrderUtils) {
-            window.OrderUtils.showOrderNotification(
-                e.message || 'Erreur lors de la création de la commande',
-                'error'
-            );
-        }
-    } finally {
-        // Re-enable button only if confirmation screen not rendered
-        if (confirmBtn && document.body.contains(confirmBtn)) {
-            confirmBtn.disabled = false;
-            if (oldText !== null) confirmBtn.innerHTML = oldText;
-        }
-        window.isSubmittingOrder = false;
-    }
-};
