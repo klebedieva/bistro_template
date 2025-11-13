@@ -79,8 +79,11 @@ class DishReviewController extends AbstractApiController
             ];
         }, $reviews);
 
-        // Uses base class method from AbstractApiController
-        return $this->successResponse(['reviews' => $data], null, 200);
+        // Return flat structure expected by frontend: { success: true, reviews: [...] }
+        return $this->json([
+            'success' => true,
+            'reviews' => $data,
+        ], 200);
     }
 
     /**
