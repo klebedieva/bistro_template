@@ -62,7 +62,9 @@ window.apiRequest = function (url, options = {}) {
         headers: {
             'Content-Type': 'application/json', // Tell server we're sending JSON
             'X-CSRF-Token': csrfToken, // Security token
+            'X-Requested-With': 'XMLHttpRequest',
         },
+        credentials: 'same-origin',
     };
 
     // Merge headers: user-provided headers override defaults
@@ -77,6 +79,7 @@ window.apiRequest = function (url, options = {}) {
         ...defaultOptions, // Spread default options
         ...options, // Override with user options
         headers: finalHeaders, // Use merged headers
+        credentials: options.credentials || defaultOptions.credentials,
     });
 };
 
