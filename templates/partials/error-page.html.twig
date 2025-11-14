@@ -1,0 +1,81 @@
+{% set code = code|default(500) %}
+{% set title = title|default("Oups ! Une erreur s'est produite") %}
+{% set message = message|default("Une erreur inattendue est survenue. Revenez à l'accueil ou contactez-nous si le problème persiste.") %}
+{% set actions = actions|default([
+    {
+        href: path('app_home'),
+        label: "Retour à l'accueil",
+        class: 'btn btn-gold',
+        icon_html: '<span class="me-2">🏠</span>'
+    }
+]) %}
+{% set icon_html = icon_html|default('<i class="bi bi-cup-hot"></i>') %}
+{% set show_suggestions = suggestions is defined ? suggestions : true %}
+
+<section class="error-section">
+    <div class="container">
+        <div class="row justify-content-center pt-5">
+            <div class="col-lg-8">
+                <div class="error-content text-center">
+                    <div class="error-illustration">
+                        <div class="error-number">{{ code }}</div>
+                        <div class="error-icon">
+                            {{ icon_html|raw }}
+                        </div>
+                    </div>
+
+                    <h1 class="error-title">{{ title }}</h1>
+                    <p class="error-message">
+                        {{ message|raw }}
+                    </p>
+
+                    {% if actions|length > 0 %}
+                        <div class="error-actions d-flex justify-content-center gap-3 flex-wrap">
+                            {% for action in actions %}
+                                <a href="{{ action.href }}" class="{{ action.class|default('btn btn-gold') }}">
+                                    {% if action.icon_html is defined %}
+                                        {{ action.icon_html|raw }}
+                                    {% endif %}
+                                    {{ action.label }}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {% if show_suggestions %}
+            <div class="error-suggestions mt-5">
+                <h4 class="mb-4 text-center">Peut-être cherchez-vous :</h4>
+                <div class="row g-4">
+                    <div class="col-md-4 d-flex">
+                        <div class="suggestion-card flex-fill text-center">
+                            <i aria-hidden="true">🗓️</i>
+                            <h5>Réserver une table</h5>
+                            <p>Planifiez votre visite et profitez d'une expérience gourmande.</p>
+                            <a href="{{ path('app_reservation') }}" class="btn btn-gold">Réserver</a>
+                        </div>
+                    </div>
+                    <div class="col-md-4 d-flex">
+                        <div class="suggestion-card flex-fill text-center">
+                            <i aria-hidden="true">🛍️</i>
+                            <h5>Voir le menu</h5>
+                            <p>Parcourez notre carte et trouvez votre prochain coup de cœur.</p>
+                            <a href="{{ path('app_menu') }}" class="btn btn-gold">Voir le menu</a>
+                        </div>
+                    </div>
+                    <div class="col-md-4 d-flex">
+                        <div class="suggestion-card flex-fill text-center">
+                            <i aria-hidden="true">📞</i>
+                            <h5>Nous contacter</h5>
+                            <p>Besoin d'aide ? Nous sommes là pour répondre à vos questions.</p>
+                            <a href="{{ path('app_contact') }}" class="btn btn-gold">Contact</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</section>
+

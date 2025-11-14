@@ -822,8 +822,9 @@
 
             .menu-filters-section .toggle-filters-btn,
             .menu-filters-section .toggle-filters-btn:focus,
-            .menu-filters-section .toggle-filters-btn:active {
-                color: #fff;
+            .menu-filters-section .toggle-filters-btn:active,
+            .menu-filters-section .toggle-filters-btn:hover {
+                color: #fff !important;
             }
 
             .menu-filters-section .toggle-filters-btn i {

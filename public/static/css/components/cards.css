@@ -128,6 +128,11 @@
     z-index: 2;
 }
 
+.gallery-overlay i {
+    font-size: 2rem;
+    color: #ffffff;
+}
+
 .gallery-item:hover .gallery-overlay {
     opacity: 1;
 }
@@ -163,7 +168,8 @@
     font-style: italic;
     color: var(--text-dark);
     line-height: 1.6;
-    margin: 0;
+    margin-bottom: 1rem;
+    flex-grow: 1;
 }
 
 .review-author {

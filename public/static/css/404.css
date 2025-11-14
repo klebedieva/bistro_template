@@ -1,21 +1,20 @@
-/* 404 page styles */
+/* Error pages (404 / 500 / generic) */
+
 body {
     background: linear-gradient(135deg, rgba(212, 165, 116, 0.1), rgba(139, 69, 19, 0.1)) !important;
 }
+
 .error-section {
     background: transparent;
-}
-.error-section {
-    min-height: 100vh; /* revert to full viewport height */
+    min-height: 100vh;
     display: flex;
-    align-items: center; /* vertical centering of single-line content */
-    justify-content: center; /* center content block vertically within flex */
-    padding: 0; /* spacing handled by row pt-5 */
+    align-items: flex-start;
+    justify-content: center;
+    padding: 120px 0 60px;
 }
 
-.error-content {
-    text-align: center;
-}
+
+/* Illustration & main number */
 
 .error-illustration {
     position: relative;
@@ -42,6 +41,8 @@ body {
     animation: bounce 2s infinite;
 }
 
+/* Text */
+
 .error-title {
     font-family: 'Playfair Display', serif;
     font-size: 3rem;
@@ -53,12 +54,12 @@ body {
 .error-message {
     font-size: 1.2rem;
     color: var(--text-light);
-    margin-bottom: 3rem;
     line-height: 1.6;
     max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
+    margin: 0 auto 3rem;
 }
+
+/* Actions */
 
 .error-actions {
     margin-bottom: 4rem;
@@ -66,6 +67,40 @@ body {
 
 .error-actions .btn {
     min-width: 200px;
+}
+
+/* Buttons */
+
+.btn-gold {
+    background: var(--primary-color);
+    color: #2c1810;
+    border: none;
+    transition: background 0.2s, color 0.2s;
+}
+
+.btn-gold:hover,
+.btn-gold:focus {
+    background: #b88b4a;
+    color: #fff;
+}
+
+.btn-outline-gold {
+    background: transparent;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+    transition: background 0.2s, color 0.2s;
+}
+
+.btn-outline-gold:hover,
+.btn-outline-gold:focus {
+    background: var(--primary-color);
+    color: #fff;
+}
+
+/* Suggestions grid */
+
+.error-suggestions {
+    margin-top: 3rem;
 }
 
 .error-suggestions h4 {
@@ -77,8 +112,8 @@ body {
 
 .suggestion-card {
     background: white;
-    border-radius: 15px;
-    padding: 2rem;
+    border-radius: 18px;
+    padding: 2rem 1.5rem;
     box-shadow: var(--shadow);
     transition: var(--transition);
     height: 100%;
@@ -86,28 +121,29 @@ body {
     flex-direction: column;
     align-items: center;
     text-align: center;
+    border: 1px solid rgba(212, 165, 116, 0.15);
 }
 
 .suggestion-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-6px);
     box-shadow: var(--shadow-lg);
 }
 
 .suggestion-card i {
-    font-size: 3rem;
-    color: var(--primary-color);
+    font-size: 2.8rem;
     margin-bottom: 1rem;
+    display: block;
 }
 
 .suggestion-card h5 {
     color: var(--dark-color);
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
     font-weight: 600;
 }
 
 .suggestion-card p {
     color: var(--text-light);
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
     flex-grow: 1;
 }
 
@@ -115,29 +151,8 @@ body {
     margin-top: auto;
 }
 
-.btn-gold {
-    background: var(--primary-color);
-    color: #2c1810;
-    border: none;
-    transition: background 0.2s, color 0.2s;
-}
-.btn-gold:hover, .btn-gold:focus {
-    background: #b88b4a;
-    color: #fff;
-}
-
-.btn-outline-gold {
-    background: transparent;
-    color: var(--primary-color);
-    border: 2px solid var(--primary-color);
-    transition: background 0.2s, color 0.2s;
-}
-.btn-outline-gold:hover, .btn-outline-gold:focus {
-    background: var(--primary-color);
-    color: #fff;
-}
-
 /* Animations */
+
 @keyframes bounce {
     0%, 20%, 50%, 80%, 100% {
         transform: translate(-50%, -50%) translateY(0);
@@ -151,45 +166,37 @@ body {
 }
 
 /* Responsive Design */
+
 @media (max-width: 768px) {
     .error-section {
         padding: 100px 0 60px;
     }
-    
+
     .error-number {
         font-size: 6rem;
     }
-    
+
     .error-icon {
         font-size: 3rem;
     }
-    
+
     .error-title {
         font-size: 2.5rem;
     }
-    
+
     .error-message {
         font-size: 1.1rem;
     }
-    
+
     .error-actions .btn {
         display: inline-block;
         margin: 0.5rem;
         width: auto;
         max-width: 300px;
     }
-    
+
     .error-actions {
         text-align: center;
-    }
-    
-    .suggestion-card {
-        padding: 1.5rem;
-        margin-bottom: 1rem;
-    }
-    
-    .suggestion-card i {
-        font-size: 2.5rem;
     }
 }
 
@@ -197,42 +204,30 @@ body {
     .error-number {
         font-size: 4rem;
     }
-    
+
     .error-icon {
         font-size: 2rem;
     }
-    
+
     .error-title {
         font-size: 2rem;
     }
-    
+
     .error-message {
         font-size: 1rem;
         margin-bottom: 2rem;
     }
-    
+
     .error-actions {
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 0.75rem;
     }
-    
+
     .error-actions .btn {
         width: 100%;
-        max-width: 260px;
+        max-width: 300px;
         margin: 0;
-    }
-    
-    .error-suggestions h4 {
-        font-size: 1.5rem;
-    }
-    
-    .suggestion-card {
-        padding: 1rem;
-    }
-    
-    .suggestion-card i {
-        font-size: 2rem;
     }
 }

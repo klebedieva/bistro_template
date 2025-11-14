@@ -37,6 +37,21 @@ let currentImageIndex = 0;
 let galleryImages = [];
 
 /**
+ * Maximum number of gallery cards that should be visible at any time.
+ * Once this limit is reached, the remaining cards receive the
+ * `gallery-item-hidden` class and wait for the "load more" interaction.
+ * Keeping the limit relatively small helps performance on mobile devices.
+ */
+const MAX_VISIBLE_ITEMS = 15;
+
+/**
+ * Number of cards to reveal when the visitor clicks the "load more" button.
+ * Choosing a modest batch keeps the transition smooth and avoids sudden
+ * layout jumps while still giving a feeling of progress.
+ */
+const LOAD_MORE_BATCH_SIZE = 6;
+
+/**
  * Current filter category
  * 'all' means show all images, otherwise shows only images from specific category
  */
@@ -146,6 +161,12 @@ function initGalleryPage() {
     initLoadMore();
     collectGalleryImages();
     initImageErrorHandling();
+    /**
+     * Ensure we start with a clean slate: all cards are evaluated
+     * against the limit right after the DOM is ready so we never
+     * momentarily flash all images before hiding the excess ones.
+     */
+    applyVisibilityLimit();
 }
 
 // ============================================================================
@@ -231,12 +252,23 @@ function initImageErrorHandling() {
  * @param {number} delay - Delay before starting animation (default: 0)
  */
 function animateItemIn(item, delay = 0) {
-    setTimeout(() => {
-        // Show element immediately
-        item.style.display = 'block';
+    /**
+     * Cards flagged with `gallery-item-hidden` are either outside the current
+     * filter or beyond the pagination limit. Matching the inline display
+     * state prevents a brief flash before CSS hides them.
+     */
+    if (item.classList.contains('gallery-item-hidden')) {
+        item.style.display = 'none';
+        return;
+    }
 
-        // Start animation after short delay
+    setTimeout(() => {
+        item.style.display = 'block';
         setTimeout(() => {
+            if (item.classList.contains('gallery-item-hidden')) {
+                item.style.display = 'none';
+                return;
+            }
             item.classList.remove('hidden');
             item.style.opacity = '1';
             item.style.transform = 'scale(1)';
@@ -312,16 +344,10 @@ function initGalleryFilters() {
                 const category = item.getAttribute('data-category');
 
                 if (filter === 'all' || category === filter) {
-                    /**
-                     * Show item using animation helper
-                     * Ensures consistent animation behavior
-                     */
+                    item.classList.remove('gallery-item-hidden');
                     animateItemIn(item);
                 } else {
-                    /**
-                     * Hide item using animation helper
-                     * Ensures consistent animation behavior
-                     */
+                    item.classList.add('gallery-item-hidden');
                     animateItemOut(item);
                 }
             });
@@ -333,13 +359,11 @@ function initGalleryFilters() {
             galleryCache = null;
 
             /**
-             * Update gallery images array for modal navigation
-             * Wait for animation to complete before collecting images
-             * Use debounced version to prevent rapid calls
+             * Enforce the pagination limit immediately so that returning to "all"
+             * does not flash every single card. Any cards that exceed the limit
+             * get the hidden class again right away.
              */
-            setTimeout(() => {
-                debouncedCollectGalleryImages(350);
-            }, 0);
+            applyVisibilityLimit();
         });
     });
 }
@@ -905,10 +929,10 @@ function initLoadMore() {
  * - Staggered timing (100ms between items) for smooth effect
  */
 function showMoreImages() {
-    // Get all hidden gallery items
-    const hiddenItems = document.querySelectorAll('.gallery-item-hidden');
-    // Show only first 6 items
-    const itemsToShow = Array.from(hiddenItems).slice(0, 6);
+    // Retrieve only those hidden cards that belong to the current filter.
+    const hiddenItems = getHiddenItemsForFilter();
+    // Reveal the next batch, leaving the rest for future clicks.
+    const itemsToShow = hiddenItems.slice(0, LOAD_MORE_BATCH_SIZE);
 
     /**
      * Show items with staggered animation
@@ -949,8 +973,8 @@ function updateLoadMoreButton() {
     const loadMoreBtn = document.getElementById('loadMoreBtn');
     if (!loadMoreBtn) return;
 
-    // Count remaining hidden items
-    const hiddenItems = document.querySelectorAll('.gallery-item-hidden');
+    // Count remaining hidden items for the current filter
+    const hiddenItems = getHiddenItemsForFilter();
 
     if (hiddenItems.length === 0) {
         // No more images - hide button
@@ -959,6 +983,64 @@ function updateLoadMoreButton() {
         // More images available - show button
         loadMoreBtn.style.display = 'inline-block';
     }
+}
+
+/**
+ * Get hidden gallery items for the current filter context
+ *
+ * @param {string} filter
+ * @returns {HTMLElement[]}
+ */
+function getHiddenItemsForFilter(filter = currentFilter) {
+    const hiddenItems = Array.from(document.querySelectorAll('.gallery-item.gallery-item-hidden'));
+
+    /**
+     * Even though hidden items all carry the same class, we still need to
+     * check their category because filters do not re-render the DOM. Cards
+     * belonging to inactive categories remain hidden until the visitor picks
+     * the matching category again.
+     */
+    return hiddenItems.filter(item => {
+        if (filter !== 'all' && item.getAttribute('data-category') !== filter) {
+            return false;
+        }
+        return true;
+    });
+}
+
+/**
+ * Apply pagination limit for the current filter
+ *
+ * Shows only the first MAX_VISIBLE_ITEMS that match the current filter
+ * and hides the rest behind the load-more button.
+ */
+function applyVisibilityLimit() {
+    const galleryItems = document.querySelectorAll('.gallery-item');
+    let visibleCount = 0;
+
+    galleryItems.forEach(item => {
+        const matchesFilter = currentFilter === 'all' || item.getAttribute('data-category') === currentFilter;
+
+        if (!matchesFilter) {
+            /**
+             * Items outside of the current filter stay hidden no matter what.
+             * They will be reconsidered when the visitor switches categories.
+             */
+            item.classList.add('gallery-item-hidden');
+            return;
+        }
+
+        if (visibleCount < MAX_VISIBLE_ITEMS) {
+            item.classList.remove('gallery-item-hidden');
+            visibleCount++;
+        } else {
+            // Any extra matching items are postponed until the visitor clicks “load more”.
+            item.classList.add('gallery-item-hidden');
+        }
+    });
+
+    updateLoadMoreButton();
+    debouncedCollectGalleryImages(350);
 }
 
 // ============================================================================

@@ -171,16 +171,6 @@ section.contact-section .contact-info {
 }
 
 /* Section Contact Form — séparation visuelle */
-.contact-form-card {
-    background: #fefcf8;
-    border-radius: 1rem;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-    padding: 2.5rem;
-    border: 1px solid rgba(212, 165, 116, 0.1);
-    position: relative;
-    overflow: hidden;
-}
-
 
 
 /* Amélioration des champs de formulaire */

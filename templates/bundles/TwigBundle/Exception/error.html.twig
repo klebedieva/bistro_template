@@ -1,63 +1,44 @@
 {% extends 'base.html.twig' %}
 
-{% set seo_title = 'Erreur ' ~ (status_code|default(500)) ~ ' | Le Trois Quarts' %}
+{% set error_code = status_code|default(500) %}
+{% set seo_title = 'Erreur ' ~ error_code ~ ' | Le Trois Quarts' %}
 {% set seo_description = "Une erreur est survenue. Retournez à l'accueil du Trois Quarts ou contactez-nous pour obtenir de l'aide." %}
 {% set seo_robots = 'noindex,follow' %}
 
 {% block stylesheets %}
     {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('static/css/404.css') }}?v=4">
+    <link rel="stylesheet" href="{{ asset('static/css/404.css') }}?v=8">
 {% endblock %}
 
 {% block body %}
-    <section class="error-section">
-        <div class="container">
-            <div class="error-content">
-                <div class="error-illustration">
-                    <div class="error-number">{{ status_code|default(404) }}</div>
-                    <div class="error-icon">☕</div>
-                </div>
+    {% if error_code == 404 %}
+        {% set default_title = "Oups ! Page non trouvée" %}
+        {% set default_message = "Il semblerait que cette page ait disparu comme un bon plat qui se termine trop vite !<br>Mais ne vous inquiétez pas, nous avons plein d'autres délices à vous proposer." %}
+    {% elseif error_code >= 500 %}
+        {% set default_title = "Oups ! Une erreur s'est produite" %}
+        {% set default_message = "Notre brigade technique est sur le coup. Réessayez dans quelques instants ou contactez-nous si le problème persiste." %}
+    {% else %}
+        {% set default_title = "Quelque chose ne s'est pas passé comme prévu" %}
+        {% set default_message = "Un problème est survenu. Essayez à nouveau ou explorez les autres pages du site." %}
+    {% endif %}
 
-                <h1 class="error-title">Oups ! Page non trouvée</h1>
-                <p class="error-message">Il semblerait que cette page ait disparu comme un bon plat qui se termine trop vite !<br>Mais ne vous inquiétez pas, nous avons plein d'autres délices à vous proposer.</p>
-
-                <div class="error-actions d-flex justify-content-center gap-3 flex-wrap">
-                    <a href="{{ path('app_home') }}" class="btn btn-gold"><span class="me-2">🏠</span>RETOUR À L'ACCUEIL</a>
-                    <a href="{{ path('app_menu') }}" class="btn btn-outline-gold"><span class="me-2">📜</span>VOIR LE MENU</a>
-                </div>
-
-                <div class="error-suggestions">
-                    <h4 class="mb-4">Peut-être cherchez-vous :</h4>
-                    <div class="row g-4">
-                        <div class="col-md-4">
-                            <div class="suggestion-card">
-                                <i>🗓️</i>
-                                <h5>Réserver une table</h5>
-                                <p>Planifiez votre visite et profitez d'une expérience gourmande.</p>
-                                <a href="{{ path('app_reservation') }}" class="btn btn-gold">Réserver</a>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="suggestion-card">
-                                <i>🛍️</i>
-                                <h5>Voir le menu</h5>
-                                <p>Parcourez notre carte et trouvez votre prochain coup de cœur.</p>
-                                <a href="{{ path('app_menu') }}" class="btn btn-gold">Voir le menu</a>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="suggestion-card">
-                                <i>📞</i>
-                                <h5>Nous contacter</h5>
-                                <p>Besoin d'aide ? Nous sommes là pour répondre à vos questions.</p>
-                                <a href="{{ path('app_contact') }}" class="btn btn-gold">Contact</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+    {% include 'partials/error-page.html.twig' with {
+        code: error_code,
+        title: default_title,
+        message: default_message,
+        actions: [
+            {
+                href: path('app_home'),
+                label: "Retour à l'accueil",
+                class: 'btn btn-gold btn-lg',
+                icon_html: '<i class="bi bi-house me-2"></i>'
+            },
+            {
+                href: path('app_menu'),
+                label: "Voir le menu",
+                class: 'btn btn-outline-gold btn-lg',
+                icon_html: '<i class="bi bi-book me-2"></i>'
+            }
+        ]
+    } %}
 {% endblock %}
-
-

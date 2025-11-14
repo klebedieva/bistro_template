@@ -233,13 +233,32 @@
 .contact-form-card,
 .login-form-container {
     background: #ffffff;
-.reservation-form-bg {
-    background-color: #fefcf8;
-}
-
     border-radius: 20px;
     box-shadow: var(--shadow);
     padding: 2rem;
+    max-width: 650px;
+    margin: 0 auto;
+}
+
+.contact-form-card {
+    background: #fefcf8;
+    border-radius: 1rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    padding: 2.5rem;
+    border: 1px solid rgba(212, 165, 116, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+@media (max-width: 576px) {
+    .reservation-form {
+        margin-top: 1.5rem;
+    }
+
+    .reservation-form .btn {
+        font-size: 1.2rem;
+        padding: 0.65rem 1rem;
+    }
 }
 
 .reservation-form .btn,

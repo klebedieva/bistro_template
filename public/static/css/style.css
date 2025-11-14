@@ -335,59 +335,6 @@ section .text-center.mb-5 {
 }
 /* Removed legacy menu list/button sizing rules in favor of Bootstrap utilities on markup */
 
-/* Gallery Section */
-.gallery-item {
-    position: relative;
-    overflow: hidden;
-    cursor: pointer;
-    height: 250px;
-}
-
-.gallery-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: var(--transition);
-    display: block;
-    border-radius: inherit;
-}
-
-.gallery-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(212, 165, 116, 0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: var(--transition);
-    border-radius: inherit;
-    z-index: 2;
-}
-
-.gallery-overlay i {
-    font-size: 2rem;
-    color: white;
-}
-
-.gallery-item:hover .gallery-overlay {
-    opacity: 1;
-}
-
-.gallery-item:hover img {
-    transform: scale(1.1);
-}
-
-/* Reservation Section */
-.reservation-form {
-    border-radius: 15px;
-    max-width: 650px;
-    margin: 0 auto;
-}
-
 .reservation-info .info-item {
     display: flex;
     align-items: center;
@@ -543,46 +490,6 @@ footer a.text-white:hover {
 }
 
 /* Responsive Design */
-
-/* Review Cards */
-.review-card {
-    background: white;
-    border-radius: 15px;
-    padding: 2rem;
-    box-shadow: var(--shadow);
-    transition: var(--transition);
-    height: 100%;
-    border: 1px solid var(--border-color);
-    display: flex;
-    flex-direction: column;
-}
-
-.review-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-lg);
-}
-
-.review-stars {
-    font-size: 1.2rem;
-}
-
-.review-text {
-    font-style: italic;
-    color: var(--text-dark);
-    line-height: 1.6;
-    margin-bottom: 1rem;
-    flex-grow: 1;
-}
-
-.review-author {
-    border-top: 1px solid var(--border-color);
-    padding-top: 1rem;
-    margin-top: auto;
-}
-
-.review-author strong {
-    color: var(--primary-color);
-}
 
 /* Carousel Banner Styles */
 .carousel-banner {
@@ -784,20 +691,6 @@ footer a.text-white:hover {
     color: white !important;
   }
   
-  .d-flex.flex-column.flex-sm-row.justify-content-center.align-items-center.gap-3 .btn-custom-outline {
-    background: transparent !important;
-    border: 2px solid var(--primary-color) !important;
-    color: var(--primary-color) !important;
-  }
-  
-  .d-flex.flex-column.flex-sm-row.justify-content-center.align-items-center.gap-3 .btn-custom-outline:hover {
-    background: var(--primary-color) !important;
-    border-color: var(--primary-color) !important;
-    transform: translateY(-2px) !important;
-    box-shadow: var(--shadow-lg) !important;
-    color: white !important;
-  }
-  
   /* Slightly smaller hero text on mobile */
   .hero-title {
     font-size: 3.5rem !important;
@@ -944,50 +837,6 @@ footer a[href^="mailto:"] {
 
 @media (max-width: 991px) and (min-width: 577px) {
   /* Tablet styles */
-}
-
-.alert-fixed-center {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: flex-start !important;
-  gap: 1rem !important;
-  width: fit-content !important;
-  max-width: min(90vw, 600px) !important;
-  min-width: min(420px, 90vw) !important;
-  padding: 0.75rem 1.75rem !important;
-  text-align: left !important;
-}
-
-.alert-fixed-center .btn-close {
-  margin-left: auto !important;
-  flex-shrink: 0 !important;
-  position: static !important;
-  top: auto !important;
-  right: auto !important;
-  padding: 0 !important;
-}
-
-.alert-fixed-center .notification-content {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex: 1 1 auto;
-}
-
-@media (max-width: 576px) {
-  .reservation-form {
-    margin-top: 2rem;
-  }
-  
-  .alert-fixed-center {
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    max-width: min(90vw, 600px) !important;
-    min-width: min(320px, 90vw) !important;
-  }
-
-  /* Responsive styles for mobile devices */
-  
 }
 
 /* Reservation Section Styles */
@@ -1476,147 +1325,6 @@ footer a[href^="mailto:"] {
 }
 
 
-/* Custom Button Styles */
-.btn-custom-outline {
-    background: transparent;
-    border: 2px solid var(--primary-color);
-    color: var(--primary-color);
-    border-radius: 50px;
-    padding: 12px 30px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    transition: var(--transition);
-}
-
-.btn-custom-outline:hover {
-    background: var(--primary-color);
-    border-color: var(--primary-color);
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-}
-
-.btn-custom-outline:focus {
-    background: var(--primary-color);
-    border-color: var(--primary-color);
-    color: white;
-    box-shadow: 0 0 0 0.2rem rgba(212, 165, 116, 0.25);
-}
-
-/* Custom Menu Button - Bright and Distinctive */
-.btn-custom-menu {
-    background: linear-gradient(135deg, var(--primary-color), #e6c8a0);
-    border: none;
-    color: #2c1810;
-    border-radius: 50px;
-    padding: 12px 30px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(212, 165, 116, 0.3);
-}
-
-/* Custom Gallery Button - Similar to Menu Button */
-.btn-custom-gallery {
-    background: linear-gradient(135deg, var(--primary-color), #e6c8a0);
-    border: none;
-    color: #2c1810;
-    border-radius: 50px;
-    padding: 12px 30px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(212, 165, 116, 0.3);
-}
-
-.btn-custom-menu::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    transition: left 0.5s ease;
-}
-
-.btn-custom-menu:hover {
-    background: linear-gradient(135deg, #e6c8a0, var(--primary-color));
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(212, 165, 116, 0.4);
-    color: #2c1810;
-}
-
-.btn-custom-menu:hover::before {
-    left: 100%;
-}
-
-.btn-custom-menu:focus {
-    background: linear-gradient(135deg, var(--primary-color), #e6c8a0);
-    box-shadow: 0 0 0 0.2rem rgba(212, 165, 116, 0.25);
-    color: #2c1810;
-}
-
-.btn-custom-menu:active {
-    transform: translateY(-1px) scale(0.98);
-}
-
-.btn-custom-menu i {
-    transition: transform 0.3s ease;
-}
-
-.btn-custom-menu:hover i {
-    transform: scale(1.1);
-}
-
-/* Gallery Button Pseudo-elements and Effects */
-.btn-custom-gallery::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    transition: left 0.5s ease;
-}
-
-.btn-custom-gallery:hover {
-    background: linear-gradient(135deg, #e6c8a0, var(--primary-color));
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(212, 165, 116, 0.4);
-    color: #2c1810;
-}
-
-.btn-custom-gallery:hover::before {
-    left: 100%;
-}
-
-.btn-custom-gallery:focus {
-    background: linear-gradient(135deg, var(--primary-color), #e6c8a0);
-    box-shadow: 0 0 0 0.2rem rgba(212, 165, 116, 0.25);
-    color: #2c1810;
-}
-
-.btn-custom-gallery:active {
-    transform: translateY(-1px) scale(0.98);
-}
-
-.btn-custom-gallery i {
-    transition: transform 0.3s ease;
-}
-
-.btn-custom-gallery:hover i {
-    transform: scale(1.1);
-}
-
 /* Custom Secondary Button */
 .btn-custom-secondary {
     background: linear-gradient(135deg, var(--secondary-color), #a0522d);
@@ -1875,17 +1583,6 @@ img.hero-media {
     }
     .reservation-info .info-item {
         justify-content: center !important;
-    }
-
-    /* Add top spacing above reservation form on mobile */
-    .reservation-form {
-        margin-top: 1.5rem !important;
-    }
-
-    /* Slightly smaller button text on mobile for reservation form */
-    .reservation-form .btn {
-        font-size: 1.2rem !important;
-        padding: 0.65rem 1rem !important;
     }
 }
 

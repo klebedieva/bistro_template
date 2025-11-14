@@ -56,6 +56,7 @@ let dietaryFilters = {
 let menuGrid;
 let noResults;
 let menuGridClickListenerAttached = false;
+let mobileFilterAutoCloseInitialized = false;
 
 // ============================================================================
 // DEBOUNCE HELPERS
@@ -143,6 +144,7 @@ function initMenu() {
      * Handles category, search, price, and dietary filter changes
      */
     setupMenuEventListeners();
+    setupMobileFilterAutoClose();
 
     /**
      * Update cart display on initialization
@@ -286,6 +288,46 @@ function setupMenuEventListeners() {
             await renderMenu();
         });
     });
+}
+
+/**
+ * Auto-close mobile filter collapse when tapping outside
+ *
+ * Closes the Bootstrap collapse when viewport < 768px and user taps outside
+ * the filters. Restores open state when returning to desktop viewport.
+ */
+function setupMobileFilterAutoClose() {
+    if (mobileFilterAutoCloseInitialized) return;
+
+    const collapseEl = document.getElementById('menuFiltersCollapse');
+    const toggleBtn = document.querySelector('.toggle-filters-btn');
+
+    if (!collapseEl || !toggleBtn || typeof bootstrap === 'undefined') {
+        return;
+    }
+
+    const collapseInstance = bootstrap.Collapse.getOrCreateInstance(collapseEl, { toggle: false });
+    const shouldAutoClose = () => window.innerWidth < 768;
+
+    document.addEventListener('click', (event) => {
+        if (!shouldAutoClose() || !collapseEl.classList.contains('show')) {
+            return;
+        }
+
+        if (collapseEl.contains(event.target) || toggleBtn.contains(event.target)) {
+            return;
+        }
+
+        collapseInstance.hide();
+    });
+
+    window.addEventListener('resize', () => {
+        if (!shouldAutoClose() && !collapseEl.classList.contains('show')) {
+            collapseInstance.show();
+        }
+    });
+
+    mobileFilterAutoCloseInitialized = true;
 }
 
 /**

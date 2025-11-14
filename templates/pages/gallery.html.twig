@@ -45,7 +45,7 @@
             <div class="row g-3" id="galleryContainer">
                 {% for image in images %}
                 {% set imagePath = 'static/img/' ~ image.imagePath %}
-                <div class="col-lg-4 col-md-6 gallery-item{% if loop.index > 12 %} gallery-item-hidden{% endif %}" data-category="{{ image.category }}">
+                <div class="col-lg-4 col-md-6 gallery-item{% if loop.index > 15 %} gallery-item-hidden{% endif %}" data-category="{{ image.category }}">
                     <div class="gallery-card" 
                          data-image="{{ asset(imagePath)|imagine_filter('hero_jpeg') }}" 
                          data-fallback-image="{{ asset(imagePath) }}" 
