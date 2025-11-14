@@ -21,6 +21,14 @@ nelmio_api_doc:
                 name: 'Le Trois Quarts'
                 url: '%app.base_url%'
                 email: 'contact@letroisquarts.com'
+        components:
+            securitySchemes:
+                SwaggerBypass:
+                    type: apiKey
+                    in: header
+                    name: X-Swagger-Bypass
+        security:
+            - SwaggerBypass: []
         servers:
             - url: '%app.base_url%'
               description: 'Production server'
