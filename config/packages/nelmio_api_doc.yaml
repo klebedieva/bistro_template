@@ -19,10 +19,10 @@ nelmio_api_doc:
             version: '1.0.0'
             contact:
                 name: 'Le Trois Quarts'
-                url: 'https://main-bvxea6i-uwqgxvmilyfs6.fr-3.platformsh.site/'
+                url: '%app.base_url%'
                 email: 'contact@letroisquarts.com'
         servers:
-            - url: 'https://main-bvxea6i-uwqgxvmilyfs6.fr-3.platformsh.site'
+            - url: '%app.base_url%'
               description: 'Production server'
             - url: 'https://127.0.0.1:8000'
               description: 'Development server (HTTPS)'
