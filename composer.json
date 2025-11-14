@@ -77,10 +77,12 @@
     "scripts": {
         "auto-scripts": {},
         "post-install-cmd": [
-            "@php bin/console asset-map:compile --env=prod --no-interaction"
+            "@php bin/console asset-map:compile --env=prod --no-interaction",
+            "@php bin/console assets:install --relative public --env=prod --no-interaction"
         ],
         "post-update-cmd": [
-            "@php bin/console asset-map:compile --env=prod --no-interaction"
+            "@php bin/console asset-map:compile --env=prod --no-interaction",
+            "@php bin/console assets:install --relative public --env=prod --no-interaction"
         ]
     },
     "conflict": {
