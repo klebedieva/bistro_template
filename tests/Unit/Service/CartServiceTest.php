@@ -359,19 +359,11 @@ class CartServiceTest extends TestCase
      */
     public function testUpdateQuantity(): void
     {
-        // ARRANGE: Add item to cart first
         $menuItem = $this->createMockMenuItem(1, 'Pasta', '15.50', 'plats', 'pasta.jpg');
         $this->menuItemRepository->method('find')->willReturn($menuItem);
-        
-        $this->cartService->add(1, 1);  // Start with quantity 1
-
-        // ACT: Update quantity to 3
+        $this->cartService->add(1, 1);  
         $result = $this->cartService->updateQuantity(1, 3);
-
-        // ASSERT: Quantity should be updated to 3
         $this->assertEquals(3, $result['items'][0]['quantity']);
-
-        // ASSERT: Total should be €46.50 (15.50 × 3)
         $this->assertEquals(46.50, $result['total']);
         $this->assertEquals(3, $result['itemCount']);
     }

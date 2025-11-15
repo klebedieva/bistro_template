@@ -124,16 +124,7 @@ function initPaymentOptions() {
  * @param {Object} orderData - Current order data state (passed by reference)
  */
 function updateDeliveryFee(fee, orderData) {
-    /**
-     * Update orderData state
-     * Used for order summary calculations
-     */
     orderData.deliveryFee = fee;
-
-    /**
-     * Update UI display
-     * Shows fee amount in order summary
-     */
     const getElement = window.OrderUtils?.getElement || (id => document.getElementById(id));
     const el = getElement('deliveryFee');
     if (el) el.textContent = fee + '€';
