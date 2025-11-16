@@ -10,6 +10,12 @@
 
 'use strict';
 
+/**
+ * Escape HTML special characters to prevent XSS when inserting text.
+ *
+ * @param {string} value - Raw string value (can be null/undefined)
+ * @returns {string} Escaped string safe for HTML output
+ */
 function escapeHtml(value) {
     return String(value ?? '')
         .replace(/&/g, '&amp;')
@@ -17,6 +23,17 @@ function escapeHtml(value) {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
+}
+
+/**
+ * Simple helper to get an element by ID.
+ * Keeps code shorter and centralizes the DOM API call in one place.
+ *
+ * @param {string} id - Element ID (without #)
+ * @returns {HTMLElement|null} DOM element or null if not found
+ */
+function getElementById(id) {
+    return document.getElementById(id);
 }
 
 // ============================================================================
@@ -103,8 +120,8 @@ function initMenu() {
      * Cache DOM elements for reuse
      * These elements are used throughout the menu functionality
      */
-    menuGrid = document.getElementById('menuGrid');
-    noResults = document.getElementById('noResults');
+    menuGrid = getElementById('menuGrid');
+    noResults = getElementById('noResults');
 
     /**
      * Exit early if not on menu page
@@ -232,7 +249,7 @@ function setupMenuEventListeners() {
      * Filters menu items by name or description
      * Uses debouncing to prevent excessive re-renders during typing
      */
-    const menuSearch = document.getElementById('menuSearch');
+    const menuSearch = getElementById('menuSearch');
     if (menuSearch) {
         menuSearch.addEventListener('input', function () {
             /**
@@ -254,7 +271,7 @@ function setupMenuEventListeners() {
      * Price filter dropdown
      * Filters menu items by price range
      */
-    const priceFilterSelect = document.getElementById('priceFilter');
+    const priceFilterSelect = getElementById('priceFilter');
     if (priceFilterSelect) {
         priceFilterSelect.addEventListener('change', async function () {
             /**
@@ -299,7 +316,7 @@ function setupMenuEventListeners() {
 function setupMobileFilterAutoClose() {
     if (mobileFilterAutoCloseInitialized) return;
 
-    const collapseEl = document.getElementById('menuFiltersCollapse');
+    const collapseEl = getElementById('menuFiltersCollapse');
     const toggleBtn = document.querySelector('.toggle-filters-btn');
 
     if (!collapseEl || !toggleBtn || typeof bootstrap === 'undefined') {
@@ -446,7 +463,7 @@ async function renderMenu() {
 
 // Same approach as gallery page: expose --nav-offset (distance from viewport top)
 function setupNavOffset() {
-    const navbar = document.getElementById('mainNav');
+    const navbar = getElementById('mainNav');
     const root = document.documentElement;
     const compute = () => {
         const navH = navbar ? navbar.getBoundingClientRect().height : 64;
@@ -517,7 +534,7 @@ function initMenuStickyFallback() {
     }
 
     function getNavOffset() {
-        const navbar = document.getElementById('mainNav');
+        const navbar = getElementById('mainNav');
         const navH = navbar ? navbar.getBoundingClientRect().height : 72;
         const gap = 0; // no gap between navbar and filters
         return navH + gap;
@@ -1053,18 +1070,6 @@ async function removeFromCart(itemId) {
     }
 }
 
-// Helper to read quantity of a single item from cart
-async function getItemQuantity(itemId) {
-    try {
-        const cart = await window.cartAPI.getCart();
-        const item = cart.items.find(i => i.id === itemId);
-        return item ? item.quantity : 0;
-    } catch (error) {
-        console.error('Error getting item quantity:', error);
-        return 0;
-    }
-}
-
 // Update the small cart count in header and the cart sidebar (if present)
 async function updateCartDisplay() {
     const cartNavCount = document.getElementById('cartNavCount');
@@ -1092,7 +1097,6 @@ window.renderMenu = renderMenu;
 // Override cart functions from main.js for the menu page
 window.addToCart = addToCart;
 window.removeFromCart = removeFromCart;
-window.getItemQuantity = getItemQuantity;
 window.updateCartDisplay = updateCartDisplay;
 
 // Also override global cart functions

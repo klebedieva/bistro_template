@@ -1,32 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-        <loc>https://le-trois-quarts.fr/</loc>
+        <loc>https://letroisquarts.online/</loc>
         <changefreq>weekly</changefreq>
         <priority>1.0</priority>
     </url>
     <url>
-        <loc>https://le-trois-quarts.fr/menu</loc>
+        <loc>https://letroisquarts.online/menu</loc>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
-        <loc>https://le-trois-quarts.fr/gallery</loc>
+        <loc>https://letroisquarts.online/gallery</loc>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
     </url>
     <url>
-        <loc>https://le-trois-quarts.fr/reservation</loc>
+        <loc>https://letroisquarts.online/reservation</loc>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
-        <loc>https://le-trois-quarts.fr/reviews</loc>
+        <loc>https://letroisquarts.online/reviews</loc>
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
     </url>
     <url>
-        <loc>https://le-trois-quarts.fr/contact</loc>
+        <loc>https://letroisquarts.online/contact</loc>
         <changefreq>monthly</changefreq>
         <priority>0.6</priority>
     </url>

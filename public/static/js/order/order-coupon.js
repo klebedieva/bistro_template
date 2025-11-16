@@ -182,18 +182,18 @@ function removeCoupon(orderData) {
     const promoButton = document.querySelector('.promo-code button');
     const removeBtn = getElement('removeCouponBtn');
 
-    // Reset coupon data
+    // Reset coupon data in shared order state
     orderData.coupon = null;
     orderData.discount = 0;
 
-    // Update summary
+    // Update financial summary to reflect removed discount
     if (window.OrderCart && window.OrderCart.updateOrderSummary) {
         window.OrderCart.updateOrderSummary(orderData);
     } else {
         console.warn('OrderCart.updateOrderSummary not available');
     }
 
-    // Reset UI
+    // Reset promo code UI controls
     if (promoInput) {
         promoInput.disabled = false;
         promoInput.value = '';
@@ -209,6 +209,7 @@ function removeCoupon(orderData) {
         removeBtn.remove();
     }
 
+    // Inform the user that the coupon has been removed
     if (window.OrderUtils) {
         window.OrderUtils.showOrderNotification('Code promo retiré', 'info');
     }
@@ -260,44 +261,12 @@ window.OrderCoupon = {
 };
 
 // Export to window for inline onclick handlers
-// IMPORTANT: Use direct implementation to avoid potential conflicts
 window.removeCoupon = orderData => {
-    // Get orderData from global scope if not provided
+    // Use shared orderData when not explicitly provided
     const data = orderData || window.orderData || {};
 
-    const getElement = window.OrderUtils?.getElement || (id => document.getElementById(id));
-    const promoInput = getElement('promoCode');
-    const promoButton = document.querySelector('.promo-code button');
-    const removeBtn = getElement('removeCouponBtn');
-
-    // Reset coupon data
-    data.coupon = null;
-    data.discount = 0;
-
-    // Update summary
-    if (window.OrderCart && window.OrderCart.updateOrderSummary) {
-        window.OrderCart.updateOrderSummary(data);
-    } else {
-        console.warn('OrderCart.updateOrderSummary not available');
-    }
-
-    // Reset UI
-    if (promoInput) {
-        promoInput.disabled = false;
-        promoInput.value = '';
-    }
-
-    if (promoButton) {
-        promoButton.textContent = 'Appliquer';
-        promoButton.classList.remove('btn-success');
-        promoButton.classList.add('btn-outline-secondary');
-    }
-
-    if (removeBtn) {
-        removeBtn.remove();
-    }
-
-    if (window.OrderUtils) {
-        window.OrderUtils.showOrderNotification('Code promo retiré', 'info');
+    // Delegate to the main implementation to avoid duplicated logic
+    if (window.OrderCoupon && typeof window.OrderCoupon.removeCoupon === 'function') {
+        window.OrderCoupon.removeCoupon(data);
     }
 };

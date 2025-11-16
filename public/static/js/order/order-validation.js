@@ -94,6 +94,9 @@ async function validateDeliveryStep(orderData) {
      * Validate delivery-specific fields if delivery mode is selected
      * Use cached getElement for better performance
      */
+    // Reuse shared XSS checker once for all fields in this step
+    const containsXssAttempt = window.OrderUtils?.containsXssAttempt || (() => false);
+
     if (mode === 'delivery') {
         const addressInput = getElement('deliveryAddress');
         const zipInput = getElement('deliveryZip');
@@ -106,7 +109,6 @@ async function validateDeliveryStep(orderData) {
          * XSS check for address
          * Prevents malicious code injection
          */
-        const containsXssAttempt = window.OrderUtils?.containsXssAttempt || (() => false);
         if (address && containsXssAttempt(address)) {
             if (window.OrderUtils) {
                 window.OrderUtils.showOrderNotification(
@@ -200,7 +202,6 @@ async function validateDeliveryStep(orderData) {
      * XSS checks for all contact information fields
      * Prevents malicious code injection in user data
      */
-    const containsXssAttempt = window.OrderUtils?.containsXssAttempt || (() => false);
     if (firstName && containsXssAttempt(firstName)) {
         if (window.OrderUtils) {
             window.OrderUtils.showOrderNotification(

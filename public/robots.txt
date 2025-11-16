@@ -5,5 +5,5 @@ Allow: /
 Disallow: /admin
 Disallow: /login
 
-Sitemap: https://le-trois-quarts.fr/sitemap.xml
+Sitemap: https://letroisquarts.online/sitemap.xml
 
