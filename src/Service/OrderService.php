@@ -117,14 +117,16 @@ class OrderService
             // Step 3: Create order items from cart items (ensures totals operate on real line items)
             $this->createOrderItemsFromCart($order, $cart['items']);
 
-            // Step 4: Hydrate monetary totals prior to applying coupons/discounts.
-            $this->taxCalculationService->applyOrderTotals($order);
-
-            // Step 5: Apply discount if coupon or discount amount is provided.
-            $this->applyDiscountToOrder($order, $dto);
-
-            // Step 6: Re-run totals so coupons/manual discounts are reflected in persisted values.
-            $this->taxCalculationService->applyOrderTotals($order);
+            // Step 4-6: Single-pass totals calculation (HT/TVA/Total) + discount/coupon
+            $coupon = null;
+            if (isset($dto->couponId)) {
+                $found = $this->couponRepository->find($dto->couponId);
+                if ($found) {
+                    $coupon = $found;
+                }
+            }
+            $manualDiscount = isset($dto->discountAmount) ? (float) $dto->discountAmount : null;
+            $this->taxCalculationService->recalculateTotals($order, $coupon, $manualDiscount);
 
             // Step 7: Persist order and clear cart
             $this->persistOrderAndClearCart($order);
@@ -530,39 +532,5 @@ class OrderService
      * @param Order $order Order entity to populate (will be modified in place)
      * @param float $cartTotal Cart total including taxes (TTC - toutes taxes comprises)
      */
-    /**
-     * Apply discount to order (coupon or direct discount)
-     *
-     * The method resets any previous discount state, then attempts to bind a coupon
-     * or manual discount based on the DTO. Actual monetary adjustments are handled
-     * after this method via TaxCalculationService::applyOrderTotals().
-     *
-     * @param Order $order Order entity to apply discount to (will be modified in place)
-     * @param OrderCreateRequest $dto Order creation DTO with coupon/discount data
-     */
-    private function applyDiscountToOrder(Order $order, OrderCreateRequest $dto): void
-    {
-        // Reset stale state so repeated calls don't accumulate obsolete discounts.
-        $order->setCoupon(null);
-        $order->setDiscountAmount('0.00');
-
-        if (isset($dto->couponId)) {
-            $coupon = $this->couponRepository->find($dto->couponId);
-
-            if ($coupon) {
-                $orderAmount = (float) $order->getTotal();
-                if ($coupon->canBeAppliedToAmount($orderAmount)) {
-                    $order->setCoupon($coupon);
-                    return;
-                }
-            }
-        }
-
-        if (isset($dto->discountAmount)) {
-            $discount = max(0, (float) $dto->discountAmount);
-            $discount = min($discount, (float) $order->getTotal());
-            $order->setDiscountAmount(number_format($discount, 2, '.', ''));
-        }
-    }
 }
 

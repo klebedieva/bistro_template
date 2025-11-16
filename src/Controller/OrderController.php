@@ -10,7 +10,7 @@ use App\Service\InputSanitizer;
 use App\Service\ValidationHelper;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Contracts\Cache\CacheInterface;
+use Psr\Cache\CacheItemPoolInterface;
 use App\Service\OrderService;
 use App\Service\SymfonyEmailService;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -49,7 +49,7 @@ class OrderController extends AbstractApiController
      * @param OrderService $orderService Service for order operations
      * @param SymfonyEmailService $emailService Email service for notifications
      * @param LoggerInterface $logger Logger for error tracking
-     * @param CacheInterface $cache Cache for idempotency
+     * @param CacheItemPoolInterface $cache Cache pool for idempotency (PSR-6)
      * @param ValidatorInterface $validator Symfony validator for DTO validation
      * @param ValidationHelper $validationHelper Helper for validation operations
      */
@@ -57,7 +57,7 @@ class OrderController extends AbstractApiController
         private OrderService $orderService,
         private SymfonyEmailService $emailService,
         private LoggerInterface $logger,
-        private CacheInterface $cache,
+        private CacheItemPoolInterface $cache,
         ValidatorInterface $validator,
         ValidationHelper $validationHelper
     ) {
@@ -167,112 +167,61 @@ class OrderController extends AbstractApiController
     #[OA\Tag(name: 'Order')]
     public function createOrder(Request $request, CsrfTokenManagerInterface $csrfTokenManager): JsonResponse
     {
-        try {
-            // Step 1: Validate request size (protect against excessively large payloads)
-            $payloadSizeError = $this->validatePayloadSize($request);
-            if ($payloadSizeError !== null) {
-                return $payloadSizeError;
-            }
-
-            // Step 2: Validate CSRF token (protect against CSRF attacks)
-            // Uses base class method from AbstractApiController
-            $csrfError = $this->validateCsrfToken($request, $csrfTokenManager);
-            if ($csrfError !== null) {
-                return $csrfError;
-            }
-
-            // Step 3: Check idempotency (return cached response if request was already processed)
-            $idempotencyKey = (string)($request->headers->get('Idempotency-Key') ?? '');
-            $idempotencyResponse = $this->checkIdempotency($idempotencyKey);
-            if ($idempotencyResponse !== null) {
-                return $idempotencyResponse;
-            }
-
-            // Step 4: Get and validate JSON data
-            // Uses base class method from AbstractApiController
-            // Returns array or JsonResponse (error if JSON invalid)
-            $jsonResult = $this->getJsonDataFromRequest($request);
-            if ($jsonResult instanceof JsonResponse) {
-                // JSON parsing failed, return error response
-                return $jsonResult;
-            }
-            $data = $jsonResult;
-
-            // Step 5: Map to DTO and validate (DTO validation)
-            // Uses base class method from AbstractApiController
-            // Returns DTO or JsonResponse (error if validation fails)
-            $validationResult = $this->validateDto($data, OrderCreateRequest::class);
-            if ($validationResult instanceof JsonResponse) {
-                // Validation failed, return error response
-                return $validationResult;
-            }
-            
-            // Validation passed, get the validated DTO
-            $dto = $validationResult;
-            
-            // Step 5b: Additional XSS check (defense in depth)
-            // Even though DTO validation passed, we perform additional XSS validation
-            // This ensures no malicious content passes through, providing multiple layers of security
-            // Uses base class method from AbstractApiController
-            $xssError = $this->validateXss(
-                $dto,
-                ['deliveryAddress', 'deliveryInstructions', 'clientFirstName', 'clientLastName', 'clientPhone', 'clientEmail']
-            );
-            
-            if ($xssError !== null) {
-                // XSS detected, return error response
-                return $xssError;
-            }
-
-            // Step 6: Create the order using domain service
-            $order = $this->orderService->createOrder($dto);
-
-            // Step 7: Notify admin about new order (non-blocking, doesn't break order creation if fails)
-            $this->notifyAdminAboutNewOrder($order);
-
-            // Step 8: Build success response
-            $responseArray = $this->buildOrderResponse($order);
-
-            // Step 9: Store idempotent response if key provided (for duplicate request prevention)
-            $this->storeIdempotentResponse($idempotencyKey, $responseArray);
-
-            // Return success response using base class method
-            // Note: We return the array directly here because buildOrderResponse() already creates ApiResponseDTO
-            // and converts it to array. We could refactor this to use successResponse() in the future.
-            return $this->json($responseArray, 201);
-
-        } catch (\InvalidArgumentException $e) {
-            // Handle validation/business logic errors (expected from OrderService)
-            // OrderService throws InvalidArgumentException for business rule violations
-            // (e.g., empty cart, invalid address, invalid coupon)
-            // 
-            // WHY WE CATCH THIS HERE:
-            // We catch InvalidArgumentException specifically because we want to use the exact
-            // error message from the service (it's user-friendly and specific).
-            // 
-            // WHAT HAPPENS TO OTHER EXCEPTIONS:
-            // All other exceptions (TypeError, ValueError, Exception, etc.) are NOT caught here.
-            // They automatically go to ApiExceptionSubscriber, which:
-            // 1. Logs full error details for developers
-            // 2. Returns safe generic message to client
-            // 3. Ensures consistent error format across all API endpoints
-            //
-            // This is called "hybrid approach": specific handling here, general handling in subscriber
-            // Uses base class method from AbstractApiController
-            return $this->errorResponse($e->getMessage(), 422);
+        // Step 1: Validate request size (protect against excessively large payloads)
+        $payloadSizeError = $this->validatePayloadSize($request);
+        if ($payloadSizeError !== null) {
+            return $payloadSizeError;
         }
-        // 
-        // IMPORTANT FOR BEGINNERS:
-        // Notice there's NO catch (\Exception) block here. This is intentional!
-        // 
-        // If any other exception occurs (database error, network error, etc.),
-        // it will be automatically caught by ApiExceptionSubscriber.
-        // 
-        // You don't need to write try-catch for every possible error - the subscriber
-        // handles it automatically. This makes code cleaner and ensures consistent
-        // error handling across all API endpoints.
-        //
-        // See: src/EventSubscriber/ApiExceptionSubscriber.php for details
+
+        // Step 2: Validate CSRF token (protect against CSRF attacks)
+        $csrfError = $this->validateCsrfToken($request, $csrfTokenManager);
+        if ($csrfError !== null) {
+            return $csrfError;
+        }
+
+        // Step 3: Check idempotency (return cached response if request was already processed)
+        $idempotencyKey = (string)($request->headers->get('Idempotency-Key') ?? '');
+        $idempotencyResponse = $this->checkIdempotency($idempotencyKey);
+        if ($idempotencyResponse !== null) {
+            return $idempotencyResponse;
+        }
+
+        // Step 4: Get and validate JSON data
+        $jsonResult = $this->getJsonDataFromRequest($request);
+        if ($jsonResult instanceof JsonResponse) {
+            return $jsonResult;
+        }
+        $data = $jsonResult;
+
+        // Step 5: Map to DTO and validate
+        $validationResult = $this->validateDto($data, OrderCreateRequest::class);
+        if ($validationResult instanceof JsonResponse) {
+            return $validationResult;
+        }
+        $dto = $validationResult;
+        
+        // Step 5b: Additional XSS check
+        $xssError = $this->validateXss(
+            $dto,
+            ['deliveryAddress', 'deliveryInstructions', 'clientFirstName', 'clientLastName', 'clientPhone', 'clientEmail']
+        );
+        if ($xssError !== null) {
+            return $xssError;
+        }
+
+        // Step 6: Create the order
+        $order = $this->orderService->createOrder($dto);
+
+        // Step 7: Notify admin (non-blocking)
+        $this->notifyAdminAboutNewOrder($order);
+
+        // Step 8: Build success response
+        $responseArray = $this->buildOrderResponse($order);
+
+        // Step 9: Store idempotent response if key provided
+        $this->storeIdempotentResponse($idempotencyKey, $responseArray);
+
+        return $this->json($responseArray, 201);
     }
 
     /**
@@ -492,61 +441,47 @@ class OrderController extends AbstractApiController
     #[\Symfony\Component\Security\Http\Attribute\IsGranted('ROLE_ADMIN')]
     public function getOrder(int $id): JsonResponse
     {
-        try {
-            $order = $this->orderService->getOrder($id);
-            
-            if (!$order) {
-                // Uses base class method from AbstractApiController
-                return $this->errorResponse('Commande introuvable', 404);
-            }
-
-            // Convert items to response DTOs
-            $orderItems = [];
-            foreach ($order->getItems() as $item) {
-                $orderItems[] = new OrderItemDTO(
-                    id: $item->getId(),
-                    productId: $item->getProductId(),
-                    productName: $item->getProductName(),
-                    unitPrice: (float) $item->getUnitPrice(),
-                    quantity: $item->getQuantity(),
-                    total: (float) $item->getTotal()
-                );
-            }
-
-            $orderResponse = new OrderResponseDTO(
-                id: $order->getId(),
-                no: $order->getNo(),
-                status: $order->getStatus()->value,
-                deliveryMode: $order->getDeliveryMode()->value,
-                deliveryAddress: $order->getDeliveryAddress(),
-                deliveryZip: $order->getDeliveryZip(),
-                deliveryInstructions: $order->getDeliveryInstructions(),
-                deliveryFee: (float) $order->getDeliveryFee(),
-                paymentMode: $order->getPaymentMode()->value,
-                clientFirstName: $order->getClientFirstName(),
-                clientLastName: $order->getClientLastName(),
-                clientPhone: $order->getClientPhone(),
-                clientEmail: $order->getClientEmail(),
-                subtotal: (float) $order->getSubtotal(),
-                taxAmount: (float) $order->getTaxAmount(),
-                total: (float) $order->getTotal(),
-                createdAt: $order->getCreatedAt()->format(\DateTime::ATOM),
-                items: $orderItems
-            );
-
-            // Uses base class method from AbstractApiController
-            return $this->successResponse(['order' => $orderResponse], null, 200);
-
-        } catch (\InvalidArgumentException $e) {
-            // Handle validation errors (e.g., invalid order ID format)
-            // InvalidArgumentException is thrown when order ID is invalid or order not found
-            // We catch this specifically to provide custom error message from service
-            // Other exceptions are handled by ApiExceptionSubscriber
-            // Uses base class method from AbstractApiController
-            return $this->errorResponse($e->getMessage(), 422);
+        $order = $this->orderService->getOrder($id);
+        
+        if (!$order) {
+            return $this->errorResponse('Commande introuvable', 404);
         }
-        // Note: All other exceptions are automatically handled by ApiExceptionSubscriber,
-        // which provides centralized error handling and consistent error response format
+
+        // Convert items to response DTOs
+        $orderItems = [];
+        foreach ($order->getItems() as $item) {
+            $orderItems[] = new OrderItemDTO(
+                id: $item->getId(),
+                productId: $item->getProductId(),
+                productName: $item->getProductName(),
+                unitPrice: (float) $item->getUnitPrice(),
+                quantity: $item->getQuantity(),
+                total: (float) $item->getTotal()
+            );
+        }
+
+        $orderResponse = new OrderResponseDTO(
+            id: $order->getId(),
+            no: $order->getNo(),
+            status: $order->getStatus()->value,
+            deliveryMode: $order->getDeliveryMode()->value,
+            deliveryAddress: $order->getDeliveryAddress(),
+            deliveryZip: $order->getDeliveryZip(),
+            deliveryInstructions: $order->getDeliveryInstructions(),
+            deliveryFee: (float) $order->getDeliveryFee(),
+            paymentMode: $order->getPaymentMode()->value,
+            clientFirstName: $order->getClientFirstName(),
+            clientLastName: $order->getClientLastName(),
+            clientPhone: $order->getClientPhone(),
+            clientEmail: $order->getClientEmail(),
+            subtotal: (float) $order->getSubtotal(),
+            taxAmount: (float) $order->getTaxAmount(),
+            total: (float) $order->getTotal(),
+            createdAt: $order->getCreatedAt()->format(\DateTime::ATOM),
+            items: $orderItems
+        );
+
+        return $this->successResponse(['order' => $orderResponse], null, 200);
     }
 }
 

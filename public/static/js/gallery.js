@@ -24,6 +24,45 @@
 // ============================================================================
 
 /**
+ * Centralized configuration for easy tweaking by beginners.
+ * You can change numbers here without touching the logic below.
+ */
+const CONFIG = {
+    maxVisibleItems: 15,
+    loadMoreBatchSize: 6,
+    cacheDurationMs: 90 * 1000, // 90 seconds
+};
+
+/**
+ * Common selectors and small helpers kept in one place
+ * to avoid duplication and make the code easier to follow.
+ * Using a single selector constant prevents typos and drift.
+ */
+const VISIBLE_CARD_SELECTOR = '.gallery-item:not(.hidden):not(.gallery-item-hidden) .gallery-card';
+
+/**
+ * Helper to toggle element display in a consistent way.
+ * Avoids scattering 'flex'/'none' strings across the file.
+ */
+function setDisplay(element, shouldShow, displayValue = 'flex') {
+    if (!element) return;
+    element.style.display = shouldShow ? displayValue : 'none';
+}
+
+/**
+ * Small debounce utility - beginner friendly.
+ * Ensures a function runs only after the user stops triggering it
+ * for a short period (e.g. after animations complete).
+ */
+function debounce(fn, delay = 300) {
+    let timerId;
+    return (...args) => {
+        clearTimeout(timerId);
+        timerId = setTimeout(() => fn(...args), delay);
+    };
+}
+
+/**
  * Current image index in modal gallery
  * Tracks which image is currently displayed in the modal
  */
@@ -42,14 +81,14 @@ let galleryImages = [];
  * `gallery-item-hidden` class and wait for the "load more" interaction.
  * Keeping the limit relatively small helps performance on mobile devices.
  */
-const MAX_VISIBLE_ITEMS = 15;
+const MAX_VISIBLE_ITEMS = CONFIG.maxVisibleItems;
 
 /**
  * Number of cards to reveal when the visitor clicks the "load more" button.
  * Choosing a modest batch keeps the transition smooth and avoids sudden
  * layout jumps while still giving a feeling of progress.
  */
-const LOAD_MORE_BATCH_SIZE = 6;
+const LOAD_MORE_BATCH_SIZE = CONFIG.loadMoreBatchSize;
 
 /**
  * Current filter category
@@ -73,7 +112,7 @@ let cacheTimestamp = 0;
  * Cache duration in milliseconds
  * Gallery images are cached for 90 seconds to reduce API calls
  */
-const CACHE_DURATION = 90 * 1000; // 90 seconds
+const CACHE_DURATION = CONFIG.cacheDurationMs; // 90 seconds
 
 /**
  * Incremental request identifier for modal image loading
@@ -417,28 +456,18 @@ function initGalleryModal() {
 
             e.preventDefault();
 
-            // Get image data from card's data attributes
-            const fallbackImage = card.getAttribute('data-fallback-image') || card.getAttribute('data-image');
-            const imageSrc = card.getAttribute('data-image') || fallbackImage;
-            const imageTitle = card.getAttribute('data-title');
-            const imageDescription = card.getAttribute('data-description');
+            // Get image data from card's data attributes (dataset is simpler to read)
+            const fallbackImage = card.dataset.fallbackImage || card.dataset.image;
+            const imageSrc = card.dataset.image || fallbackImage;
+            const imageTitle = card.dataset.title;
+            const imageDescription = card.dataset.description;
 
             /**
              * Find the index in visible images
              * Only consider images that are currently visible (not hidden by filter)
              */
-            const visibleCards = Array.from(
-                document.querySelectorAll(
-                    '.gallery-item:not(.hidden):not(.gallery-item-hidden) .gallery-card'
-                )
-            );
+            const visibleCards = getVisibleCards();
             currentImageIndex = visibleCards.indexOf(card);
-
-            /**
-             * Refresh gallery images from API before opening modal
-             * This ensures we have the latest data for navigation
-             */
-            await refreshGalleryImagesFromApi();
 
             // Update modal content with clicked image
             updateModalContent(imageSrc, imageTitle, imageDescription, fallbackImage);
@@ -451,6 +480,13 @@ function initGalleryModal() {
                 const modalInstance = new window.bootstrap.Modal(modal);
                 modalInstance.show();
             }
+
+            /**
+             * Refresh images in the background so opening feels instant.
+             * Once refreshed, update navigation buttons if needed.
+             */
+            // Refresh in background; do not block the modal opening
+            refreshGalleryImagesFromApi().then(updateNavigationButtons);
         });
     }
 
@@ -506,9 +542,10 @@ function initGalleryModal() {
         /**
          * Track touch start position
          */
+        // Passive listeners improve scroll performance on mobile
         modal.addEventListener('touchstart', function (e) {
             touchStartX = e.changedTouches[0].screenX;
-        });
+        }, { passive: true });
 
         /**
          * Track touch end position and handle swipe
@@ -516,7 +553,7 @@ function initGalleryModal() {
         modal.addEventListener('touchend', function (e) {
             touchEndX = e.changedTouches[0].screenX;
             handleSwipe();
-        });
+        }, { passive: true });
     }
 
     /**
@@ -544,10 +581,12 @@ function initGalleryModal() {
 // ============================================================================
 
 /**
- * Timeout for debounced collectGalleryImages calls
- * Used to prevent multiple rapid calls to collectGalleryImages
+ * Helper: get all currently visible gallery cards
+ * (not hidden by filter or pagination).
  */
-let collectImagesTimeout = null;
+function getVisibleCards() {
+    return Array.from(document.querySelectorAll(VISIBLE_CARD_SELECTOR));
+}
 
 /**
  * Collect gallery images from DOM
@@ -566,39 +605,20 @@ let collectImagesTimeout = null;
  */
 async function collectGalleryImages() {
     // Get all visible gallery cards (not hidden by filter or load more)
-    const visibleCards = document.querySelectorAll(
-        '.gallery-item:not(.hidden):not(.gallery-item-hidden) .gallery-card'
-    );
+    const visibleCards = getVisibleCards();
 
     // Extract image data from each card's data attributes
     galleryImages = Array.from(visibleCards).map(card => ({
-        src: card.getAttribute('data-image') || card.getAttribute('data-fallback-image'),
-        fallback: card.getAttribute('data-fallback-image') || card.getAttribute('data-image'),
-        title: card.getAttribute('data-title'),
-        description: card.getAttribute('data-description'),
+        src: card.dataset.image || card.dataset.fallbackImage,
+        fallback: card.dataset.fallbackImage || card.dataset.image,
+        title: card.dataset.title,
+        description: card.dataset.description,
     }));
 }
 
-/**
- * Debounced version of collectGalleryImages
- *
- * Prevents multiple rapid calls to collectGalleryImages by waiting
- * for a delay period before executing. If called again within the delay,
- * the previous call is cancelled and a new delay starts.
- *
- * This is useful when:
- * - Filter changes trigger multiple collection calls
- * - Load more images triggers collection
- * - Multiple rapid filter changes occur
- *
- * @param {number} delay - Delay in milliseconds (default: 300)
- */
-function debouncedCollectGalleryImages(delay = 300) {
-    clearTimeout(collectImagesTimeout);
-    collectImagesTimeout = setTimeout(() => {
-        collectGalleryImages();
-    }, delay);
-}
+// Debounced collector – single instance used across the file
+// Keeps rapid UI changes from causing repeated DOM scans.
+const debouncedCollectGalleryImages = debounce(collectGalleryImages, 350);
 
 /**
  * Refresh gallery images from API
@@ -638,6 +658,9 @@ async function refreshGalleryImagesFromApi() {
 
         // Fetch images from API
         const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
         const result = await response.json();
 
         if (result.success) {
@@ -852,13 +875,8 @@ function updateNavigationButtons() {
     // Show buttons only if there are multiple images
     const shouldShow = galleryImages.length > 1;
 
-    if (prevBtn) {
-        prevBtn.style.display = shouldShow ? 'flex' : 'none';
-    }
-
-    if (nextBtn) {
-        nextBtn.style.display = shouldShow ? 'flex' : 'none';
-    }
+    setDisplay(prevBtn, shouldShow);
+    setDisplay(nextBtn, shouldShow);
 }
 
 // ============================================================================

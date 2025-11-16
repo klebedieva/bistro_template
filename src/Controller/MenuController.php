@@ -198,8 +198,6 @@ final class MenuController extends AbstractController
             $prepTimeDisplay = (string) $item->getPrepTimeMin();
         } elseif ($item->getPrepTimeMax()) {
             $prepTimeDisplay = (string) $item->getPrepTimeMax();
-        } elseif ($item->getPrepTimeMinutes()) {
-            $prepTimeDisplay = (string) $item->getPrepTimeMinutes();
         }
 
         // Compute rating summary from approved dish reviews - optimized helper

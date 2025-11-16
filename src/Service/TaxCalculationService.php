@@ -12,6 +12,58 @@ class TaxCalculationService
     }
 
     /**
+     * Recalculate full monetary totals for an order in one pass.
+     * This method:
+     * - Recalculates line items
+     * - Splits TTC into HT/TVA
+     * - Applies coupon OR manual discount (if provided)
+     * - Persists formatted monetary values on the Order entity
+     *
+     * It is intentionally beginner-friendly and self-contained so callers
+     * don't need to orchestrate multiple steps.
+     */
+    public function recalculateTotals(\App\Entity\Order $order, ?\App\Entity\Coupon $coupon, ?float $manualDiscount): void
+    {
+        // 1) Recalculate items and sum TTC
+        $subtotalWithTax = 0.0;
+        foreach ($order->getItems() as $item) {
+            $item->recalculateTotal();
+            $subtotalWithTax += (float) $item->getTotal();
+        }
+
+        // 2) HT/TVA from TTC
+        $taxBreakdown = $this->calculateTaxFromTTC($subtotalWithTax);
+        $order->setSubtotal($this->formatAmount($taxBreakdown['amountWithoutTax']));
+        $order->setTaxAmount($this->formatAmount($taxBreakdown['taxAmount']));
+
+        // 3) Delivery fee
+        $deliveryFee = (float) ($order->getDeliveryFee() ?? 0);
+
+        // 4) Reset discounts state to avoid accumulation on repeated calls
+        $order->setCoupon(null);
+        $order->setDiscountAmount('0.00');
+
+        // 5) Apply either coupon discount or manual discount
+        $orderAmountBeforeDiscount = $subtotalWithTax + $deliveryFee;
+        $discountToApply = 0.0;
+
+        if ($coupon !== null) {
+            // Let coupon compute discount against current amount
+            $discountToApply = max(0.0, (float) $coupon->calculateDiscount($orderAmountBeforeDiscount));
+            $order->setCoupon($coupon);
+        } elseif ($manualDiscount !== null) {
+            // Clamp manual discount to [0, orderAmountBeforeDiscount]
+            $discountToApply = max(0.0, min((float) $manualDiscount, $orderAmountBeforeDiscount));
+        }
+
+        $order->setDiscountAmount($this->formatAmount($discountToApply));
+
+        // 6) Total
+        $total = max($orderAmountBeforeDiscount - $discountToApply, 0.0);
+        $order->setTotal($this->formatAmount($total));
+    }
+
+    /**
      * Calculates taxes for amount including taxes (TTC)
      */
     public function calculateTaxFromTTC(float $amountWithTax): array
@@ -59,6 +111,8 @@ class TaxCalculationService
      */
     public function applyOrderTotals(Order $order): void
     {
+        // Kept for backward compatibility with existing code paths.
+        // New code should prefer recalculateTotals() which accepts coupon/discount input.
         $subtotalWithTax = 0.0;
 
         foreach ($order->getItems() as $item) {
