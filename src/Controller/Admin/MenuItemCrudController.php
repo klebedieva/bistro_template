@@ -28,6 +28,7 @@ use App\Repository\AllergenRepository;
 use App\Service\FileUploadValidator;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 #[IsGranted('ROLE_MODERATOR')]
 class MenuItemCrudController extends AbstractCrudController
@@ -190,7 +191,18 @@ class MenuItemCrudController extends AbstractCrudController
      */
     public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
-        $this->validateUploadedFile($entityInstance);
+        if ($entityInstance instanceof MenuItem) {
+            // Handle file upload FIRST - this ensures file is saved before entity validation
+            try {
+                $this->handleFileUpload($entityInstance);
+            } catch (\Symfony\Component\HttpKernel\Exception\BadRequestHttpException $e) {
+                // Re-throw to show validation error in form
+                throw $e;
+            } catch (\Exception $e) {
+                // Convert to BadRequestHttpException for proper form error display
+                throw new \Symfony\Component\HttpKernel\Exception\BadRequestHttpException($e->getMessage(), $e);
+            }
+        }
         parent::persistEntity($entityManager, $entityInstance);
     }
 
@@ -199,32 +211,132 @@ class MenuItemCrudController extends AbstractCrudController
      */
     public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
-        $this->validateUploadedFile($entityInstance);
+        if ($entityInstance instanceof MenuItem) {
+            // Handle file upload if new file is being uploaded
+            try {
+                $this->handleFileUpload($entityInstance);
+            } catch (\Symfony\Component\HttpKernel\Exception\BadRequestHttpException $e) {
+                // Re-throw to show validation error in form
+                throw $e;
+            } catch (\Exception $e) {
+                // Convert to BadRequestHttpException for proper form error display
+                throw new \Symfony\Component\HttpKernel\Exception\BadRequestHttpException($e->getMessage(), $e);
+            }
+            
+            // If image is empty after upload attempt, keep the existing value
+            if (empty($entityInstance->getImage())) {
+                $originalEntity = $entityManager->getRepository(MenuItem::class)->find($entityInstance->getId());
+                if ($originalEntity && $originalEntity->getImage()) {
+                    $entityInstance->setImage($originalEntity->getImage());
+                }
+            }
+        }
         parent::updateEntity($entityManager, $entityInstance);
     }
 
     /**
-     * Validate uploaded file if present
+     * Handle file upload for menu item images
+     * This ensures files are saved to the correct directory and path is stored correctly in database
+     * 
+     * Note: This method handles the file upload manually to ensure files are saved to the correct
+     * location on the hosting server. EasyAdmin's automatic file handling can sometimes fail on
+     * hosting environments due to path resolution issues.
      */
-    private function validateUploadedFile($entityInstance): void
+    private function handleFileUpload(MenuItem $menuItem): void
     {
-        if (!$entityInstance instanceof MenuItem) {
-            return;
-        }
-
         $request = $this->container->get('request_stack')->getCurrentRequest();
+        
         if (!$request || !$request->files->has('MenuItem')) {
             return;
         }
-
+        
         $formData = $request->files->get('MenuItem');
-        if (isset($formData['image']) && $formData['image'] instanceof UploadedFile) {
-            try {
-                $this->fileValidator->validate($formData['image']);
-            } catch (FileException $e) {
-                throw new \InvalidArgumentException('Validation du fichier échouée : ' . $e->getMessage());
+        
+        if (!isset($formData['image']) || !$formData['image']) {
+            return;
+        }
+        
+        $uploadedFile = $formData['image'];
+        
+        if (!$uploadedFile instanceof UploadedFile) {
+            return;
+        }
+        
+        // Validate file: MIME type, extension, and size
+        try {
+            $this->fileValidator->validate($uploadedFile);
+        } catch (FileException $e) {
+            // Add flash message and throw exception to show validation error
+            $this->addFlash('error', $e->getMessage());
+            throw new BadRequestHttpException($e->getMessage());
+        }
+        
+        // Get project directory to build absolute path
+        // This ensures the path works correctly on hosting servers
+        $projectDir = $this->getParameter('kernel.project_dir');
+        $uploadDir = $projectDir . '/public/uploads/menu';
+        
+        // Ensure upload directory exists with proper permissions
+        if (!is_dir($uploadDir)) {
+            if (!mkdir($uploadDir, 0755, true)) {
+                throw new \RuntimeException('Не удалось создать директорию для загрузки: ' . $uploadDir);
             }
         }
+        
+        // Check if directory is writable
+        if (!is_writable($uploadDir)) {
+            throw new \RuntimeException('Директория для загрузки недоступна для записи: ' . $uploadDir);
+        }
+        
+        // Generate unique filename using slug and timestamp pattern (as configured in ImageField)
+        $slug = $this->getSlug($menuItem);
+        $extension = $uploadedFile->guessExtension() ?: $uploadedFile->getClientOriginalExtension();
+        $timestamp = time();
+        $fileName = $slug . '-' . $timestamp . '.' . $extension;
+        
+        // Ensure filename is unique (in case of rapid uploads)
+        $fullPath = $uploadDir . '/' . $fileName;
+        $counter = 1;
+        while (file_exists($fullPath)) {
+            $fileName = $slug . '-' . $timestamp . '-' . $counter . '.' . $extension;
+            $fullPath = $uploadDir . '/' . $fileName;
+            $counter++;
+        }
+        
+        try {
+            // Move file to upload directory
+            // This ensures the file is saved to the correct location
+            $uploadedFile->move($uploadDir, $fileName);
+            
+            // Verify file was actually moved
+            if (!file_exists($fullPath)) {
+                throw new \RuntimeException('Файл не был сохранен после перемещения');
+            }
+            
+            // Store only the filename in database (not full path)
+            // The basePath in ImageField will handle the path resolution for display
+            $menuItem->setImage($fileName);
+        } catch (\Exception $e) {
+            // Clean up if file was partially moved
+            if (file_exists($fullPath)) {
+                @unlink($fullPath);
+            }
+            throw new \InvalidArgumentException('Erreur lors de l\'upload du fichier: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get slug from menu item name for filename generation
+     */
+    private function getSlug(MenuItem $menuItem): string
+    {
+        $name = $menuItem->getName() ?? 'menu-item';
+        // Simple slug generation: lowercase, replace spaces with hyphens, remove special chars
+        $slug = strtolower(trim($name));
+        $slug = preg_replace('/[^a-z0-9-]/', '-', $slug);
+        $slug = preg_replace('/-+/', '-', $slug);
+        $slug = trim($slug, '-');
+        return $slug ?: 'menu-item';
     }
 }
 

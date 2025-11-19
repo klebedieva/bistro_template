@@ -98,7 +98,6 @@ class CartController extends AbstractApiController
             );
         }, $cart['items']);
 
-        // Build structured cart response DTO
         $cartResponse = new CartResponseDTO(
             items: $cartItems,
             total: $cart['total'] ?? 0,
