@@ -80,6 +80,14 @@
                                        class="form-control" 
                                        placeholder="Votre mot de passe"
                                        required>
+                                <button class="btn btn-outline-secondary"
+                                        type="button"
+                                        id="togglePassword"
+                                        data-toggle-password
+                                        aria-label="Afficher le mot de passe"
+                                        title="Afficher le mot de passe">
+                                    <i class="bi bi-eye"></i>
+                                </button>
                             </div>
                         </div>
                         
@@ -103,5 +111,8 @@
             </div>
         </div>
     </div>
+    
+    <!-- Login page scripts -->
+    <script src="{{ asset('static/js/login.js') }}"></script>
 </body>
 </html>

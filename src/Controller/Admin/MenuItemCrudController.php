@@ -279,13 +279,13 @@ class MenuItemCrudController extends AbstractCrudController
         // Ensure upload directory exists with proper permissions
         if (!is_dir($uploadDir)) {
             if (!mkdir($uploadDir, 0755, true)) {
-                throw new \RuntimeException('Не удалось создать директорию для загрузки: ' . $uploadDir);
+                throw new \RuntimeException('Failed to create upload directory: ' . $uploadDir);
             }
         }
         
         // Check if directory is writable
         if (!is_writable($uploadDir)) {
-            throw new \RuntimeException('Директория для загрузки недоступна для записи: ' . $uploadDir);
+            throw new \RuntimeException('Upload directory is not writable: ' . $uploadDir);
         }
         
         // Generate unique filename using slug and timestamp pattern (as configured in ImageField)
@@ -310,7 +310,7 @@ class MenuItemCrudController extends AbstractCrudController
             
             // Verify file was actually moved
             if (!file_exists($fullPath)) {
-                throw new \RuntimeException('Файл не был сохранен после перемещения');
+                throw new \RuntimeException('File was not saved after move operation');
             }
             
             // Store only the filename in database (not full path)
