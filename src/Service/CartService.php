@@ -109,12 +109,14 @@ class CartService
 
             // Create new cart entry with all item details
             // Image path is resolved using MenuItemImageResolver to ensure consistent format
+            // Pass category to resolver so it can use the correct folder (entrees, plats, desserts)
+            $category = $menuItem->getCategory();
             $cart[$menuItemId] = [
                 'id' => $menuItem->getId(),
                 'name' => $menuItem->getName(),
                 'price' => (float) $menuItem->getPrice(),
                 'image' => $this->imageResolver->resolve($menuItem->getImage()),
-                'category' => $menuItem->getCategory(),
+                'category' => $category,
                 'quantity' => $quantity,
             ];
         }

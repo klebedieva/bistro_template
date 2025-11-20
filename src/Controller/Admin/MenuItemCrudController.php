@@ -57,12 +57,31 @@ class MenuItemCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         // Configure ImageField for display only - file upload is handled manually in handleFileUpload()
-        // We disable EasyAdmin's automatic upload handling to avoid conflicts
+        // Images are stored in /static/img/menu/ (all menu items in one folder)
+        // Note: setUploadDir is required by EasyAdmin, but we override file handling in handleFileUpload()
         $imageField = ImageField::new('image', 'Image')
-            ->setBasePath('/uploads/menu')
-            ->setUploadDir('public/uploads/menu')
-            ->setUploadedFileNamePattern('[slug]-[timestamp].[extension]')
-            ->setHelp('Téléversez une image; le fichier sera copié dans /public/uploads/menu')
+            ->setBasePath('/static/img/menu')
+            ->setUploadDir('public/static/img/menu') // Required by EasyAdmin, but we override in handleFileUpload()
+            ->setHelp('Téléversez une image. Le fichier sera copié dans /public/static/img/menu/')
+            // Format image path - if it's just a filename, prepend /static/img/menu/
+            ->formatValue(function ($value, $entity) {
+                if (!$value) {
+                    return null;
+                }
+                
+                // If already a full path (starts with /), return as-is
+                if (str_starts_with($value, '/')) {
+                    return $value;
+                }
+                
+                // If it's an external URL, return as-is
+                if (str_starts_with($value, 'http')) {
+                    return $value;
+                }
+                
+                // Return path with menu folder: /static/img/menu/filename.jpg
+                return '/static/img/menu/' . ltrim($value, '/');
+            })
             // Disable EasyAdmin's automatic file handling - we handle it manually
             ->setFormTypeOptions([
                 'required' => $pageName === Crud::PAGE_NEW,
@@ -315,9 +334,9 @@ class MenuItemCrudController extends AbstractCrudController
         }
         
         // Get project directory to build absolute path
-        // This ensures the path works correctly on hosting servers
+        // Images are stored in /static/img/menu/ (all menu items in one folder)
         $projectDir = $this->getParameter('kernel.project_dir');
-        $uploadDir = $projectDir . '/public/uploads/menu';
+        $uploadDir = $projectDir . '/public/static/img/menu';
         
         // Ensure upload directory exists with proper permissions
         if (!is_dir($uploadDir)) {
@@ -331,17 +350,15 @@ class MenuItemCrudController extends AbstractCrudController
             throw new \RuntimeException('Upload directory is not writable: ' . $uploadDir);
         }
         
-        // Generate unique filename using slug and timestamp pattern (as configured in ImageField)
-        $slug = $this->getSlug($menuItem);
+        // Generate unique filename (similar to gallery - using uniqid for simplicity)
         $extension = $uploadedFile->guessExtension() ?: $uploadedFile->getClientOriginalExtension();
-        $timestamp = time();
-        $fileName = $slug . '-' . $timestamp . '.' . $extension;
+        $fileName = uniqid() . '.' . $extension;
         
         // Ensure filename is unique (in case of rapid uploads)
         $fullPath = $uploadDir . '/' . $fileName;
         $counter = 1;
         while (file_exists($fullPath)) {
-            $fileName = $slug . '-' . $timestamp . '-' . $counter . '.' . $extension;
+            $fileName = uniqid() . '-' . $counter . '.' . $extension;
             $fullPath = $uploadDir . '/' . $fileName;
             $counter++;
         }

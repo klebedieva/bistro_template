@@ -47,16 +47,17 @@ final class MenuController extends AbstractController
             }
 
             // Resolve public image path
+            // Images are stored in /static/img/menu/ (all menu items in one folder)
             $image = $item->getImage();
             if ($image) {
-                // If it's just a filename from upload, prefix the uploads base path
+                // If it's just a filename from upload, prefix with menu folder
                 if (
                     !str_starts_with($image, '/uploads/')
                     && !str_starts_with($image, '/assets/')
                     && !str_starts_with($image, '/static/')
                     && !str_starts_with($image, 'http')
                 ) {
-                    $image = '/uploads/menu/' . ltrim($image, '/');
+                    $image = '/static/img/menu/' . ltrim($image, '/');
                 }
                 // If path starts with 'assets/' or 'static/', make it absolute under public
                 if (str_starts_with($image, 'assets/') || str_starts_with($image, 'static/')) {
@@ -148,16 +149,20 @@ final class MenuController extends AbstractController
             }
         }
 
+        // Resolve public image path
+        // Images are stored in /static/img/menu/ (all menu items in one folder)
         $image = $item->getImage();
         if ($image) {
+            // If it's just a filename from upload, prefix with menu folder
             if (
                 !str_starts_with($image, '/uploads/')
                 && !str_starts_with($image, '/assets/')
                 && !str_starts_with($image, '/static/')
                 && !str_starts_with($image, 'http')
             ) {
-                $image = '/uploads/menu/' . ltrim($image, '/');
+                $image = '/static/img/menu/' . ltrim($image, '/');
             }
+            // If path starts with 'assets/' or 'static/', make it absolute under public
             if (str_starts_with($image, 'assets/') || str_starts_with($image, 'static/')) {
                 $image = '/' . ltrim($image, '/');
             }
@@ -175,7 +180,8 @@ final class MenuController extends AbstractController
                     && !str_starts_with($rImage, '/static/')
                     && !str_starts_with($rImage, 'http')
                 ) {
-                    $rImage = '/uploads/menu/' . ltrim($rImage, '/');
+                    // All menu images are in /static/img/menu/
+                    $rImage = '/static/img/menu/' . ltrim($rImage, '/');
                 }
                 if (str_starts_with($rImage, 'assets/') || str_starts_with($rImage, 'static/')) {
                     $rImage = '/' . ltrim($rImage, '/');

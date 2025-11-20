@@ -39,7 +39,7 @@ class CartItemDTO
         #[OA\Property(property: 'quantity', type: 'integer', example: 2, description: 'Item quantity')]
         public int $quantity,
 
-        #[OA\Property(property: 'image', type: 'string', example: '/uploads/menu/plat_1.png', description: 'Item image path')]
+        #[OA\Property(property: 'image', type: 'string', example: '/static/img/menu/plat_1.png', description: 'Item image path')]
         public string $image,
 
         #[OA\Property(property: 'category', type: 'string', example: 'plats', description: 'Item category')]

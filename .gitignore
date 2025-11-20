@@ -7,7 +7,8 @@
 /public/bundles/
 /var/
 /vendor/
-/*.md
+# Markdown files (except README.md)
+*.md
 !/README.md
 docs/architecture/
 docs/reports/
@@ -81,6 +82,11 @@ Thumbs.db
 # Upload directories (if any)
 public/uploads/
 public/media/
+
+# Menu image directories (if created by mistake)
+public/static/img/desserts/
+public/static/img/entrees/
+public/static/img/plats/
 
 # Postman collections (local development/testing)
 *.postman_collection.json
