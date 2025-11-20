@@ -1,0 +1,4 @@
+# This file ensures the menu/ directory is tracked by Git
+# Menu item images uploaded via admin panel should be committed to Git
+# so they persist across deployments on Scalingo
+
