@@ -508,39 +508,30 @@
 
                 // Extract modal ID from button ID (e.g., "addReviewSubmit" -> "addReview")
                 const modalId = button.id.replace('Submit', '');
-                const form = document.getElementById(modalId + 'Form');
+                const elements = getFormElements(modalId);
 
-                if (!form) return;
+                if (!elements || !elements.form) return;
 
                 /**
                  * Validate all fields before submission
                  * All validations must pass for form to be submitted
                  */
-                const isNameValid = validateName(
-                    getElement(modalId, 'nameInput', modalId + 'Name'),
-                    modalId
-                );
-                const isEmailValid = validateEmail(
-                    getElement(modalId, 'emailInput', modalId + 'Email'),
-                    modalId
-                );
-                const isRatingValid = validateRating(
-                    getElement(modalId, 'ratingInput', modalId + 'Rating')
-                );
-                const isCommentValid = validateComment(
-                    getElement(modalId, 'textInput', modalId + 'Text'),
-                    modalId
-                );
+                const validations = [
+                    validateName(elements.nameInput, modalId),
+                    validateEmail(elements.emailInput, modalId),
+                    validateRating(elements.ratingInput),
+                    validateComment(elements.textInput, modalId),
+                ];
 
-                if (isNameValid && isEmailValid && isRatingValid && isCommentValid) {
+                if (validations.every(v => v)) {
                     // All validations passed - submit form
-                    submitReview(form, modalId);
+                    submitReview(elements.form, modalId);
                 } else {
                     /**
                      * Scroll to first invalid field
                      * This helps user see what needs to be fixed
                      */
-                    const firstInvalid = form.querySelector('.is-invalid');
+                    const firstInvalid = elements.form.querySelector('.is-invalid');
                     if (firstInvalid) {
                         firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         firstInvalid.focus();
@@ -711,11 +702,11 @@
         const rating = elements.ratingInput.value;
         const comment = elements.textInput.value.trim();
         // Get CSRF token: first try form field, then fallback to global meta tag
-        let csrfToken = form.querySelector('input[name="_token"]')?.value;
-        if (!csrfToken && window.getCsrfToken) {
-            csrfToken = window.getCsrfToken();
-        }
-        const dishIdInput = form.querySelector('input[name="dish_id"]');
+        const csrfToken =
+            elements.form.querySelector('input[name="_token"]')?.value ||
+            window.getCsrfToken?.() ||
+            null;
+        const dishIdInput = elements.form.querySelector('input[name="dish_id"]');
 
         /**
          * Choose endpoint and payload format
@@ -765,21 +756,30 @@
         /**
          * Submit form via AJAX
          * Uses fetch API for modern, promise-based HTTP requests
-         * For API endpoints, use window.apiRequest() to automatically include CSRF token
+         * For API endpoints, use CSRF token from form (has correct ID: review_submit)
+         * For FormData endpoints, manually add CSRF token to headers
          */
         const requestPromise = isApiEndpoint
-            ? window.apiRequest(endpoint, {
+            ? fetch(endpoint, {
                   method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                      'X-Requested-With': 'XMLHttpRequest', // Identifies request as AJAX
+                      'X-CSRF-Token': csrfToken || '', // CSRF token from form (review_submit)
+                  },
+                  credentials: 'same-origin', // Include cookies for session
                   body: JSON.stringify(payload),
               })
             : fetch(endpoint, {
                   method: 'POST',
                   headers: {
                       'X-Requested-With': 'XMLHttpRequest', // Identifies request as AJAX
+                      'X-CSRF-Token': csrfToken || '', // CSRF token for security
                   },
+                  credentials: 'same-origin', // Include cookies for session
                   body: payload,
               });
-        
+
         requestPromise
             .then(response => response.json()) // Parse JSON response
             .then(data => {
@@ -791,11 +791,11 @@
                      * Close the modal gracefully
                      * Use Bootstrap Modal API to properly close modal
                      */
-                    const openModalEl = document.getElementById(modalId);
-                    if (openModalEl && window.bootstrap) {
+                    const modalEl = document.getElementById(modalId);
+                    if (modalEl && window.bootstrap) {
                         const modalInstance =
-                            window.bootstrap.Modal.getInstance(openModalEl) ||
-                            new window.bootstrap.Modal(openModalEl);
+                            window.bootstrap.Modal.getInstance(modalEl) ||
+                            new window.bootstrap.Modal(modalEl);
                         modalInstance.hide();
                     }
 
@@ -831,11 +831,11 @@
                  * Force close modal on error too
                  * User shouldn't be stuck with open modal on error
                  */
-                const openModalEl = document.getElementById(modalId);
-                if (openModalEl && window.bootstrap) {
+                const modalEl = document.getElementById(modalId);
+                if (modalEl && window.bootstrap) {
                     const modalInstance =
-                        window.bootstrap.Modal.getInstance(openModalEl) ||
-                        new window.bootstrap.Modal(openModalEl);
+                        window.bootstrap.Modal.getInstance(modalEl) ||
+                        new window.bootstrap.Modal(modalEl);
                     modalInstance.hide();
                 }
             })

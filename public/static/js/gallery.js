@@ -243,16 +243,32 @@ function initImageErrorHandling() {
         }
 
         /**
+         * Helper to update image and card state
+         *
+         * @param {HTMLElement} image - The image element
+         * @param {HTMLElement|null} cardElement - The card element
+         * @param {string} state - State to set: 'loaded', 'error', or 'loading'
+         */
+        function updateImageState(image, cardElement, state) {
+            const states = ['loaded', 'loading', 'error'];
+            states.forEach(s => {
+                image.classList.remove(s);
+                if (cardElement) {
+                    cardElement.classList.remove(s);
+                }
+            });
+            image.classList.add(state);
+            if (cardElement) {
+                cardElement.classList.add(state);
+            }
+        }
+
+        /**
          * Handle image loading errors
          * When image fails to load, mark as error state
          */
         img.addEventListener('error', function () {
-            this.classList.remove('loaded', 'loading');
-            this.classList.add('error');
-            if (card) {
-                card.classList.remove('loaded', 'loading');
-                card.classList.add('error');
-            }
+            updateImageState(this, card, 'error');
         });
 
         /**
@@ -261,12 +277,7 @@ function initImageErrorHandling() {
          * Note: This mainly applies to dynamically loaded images
          */
         img.addEventListener('load', function () {
-            this.classList.remove('loading', 'error');
-            this.classList.add('loaded');
-            if (card) {
-                card.classList.remove('loading', 'error');
-                card.classList.add('loaded');
-            }
+            updateImageState(this, card, 'loaded');
         });
     });
 }
@@ -543,17 +554,25 @@ function initGalleryModal() {
          * Track touch start position
          */
         // Passive listeners improve scroll performance on mobile
-        modal.addEventListener('touchstart', function (e) {
-            touchStartX = e.changedTouches[0].screenX;
-        }, { passive: true });
+        modal.addEventListener(
+            'touchstart',
+            function (e) {
+                touchStartX = e.changedTouches[0].screenX;
+            },
+            { passive: true }
+        );
 
         /**
          * Track touch end position and handle swipe
          */
-        modal.addEventListener('touchend', function (e) {
-            touchEndX = e.changedTouches[0].screenX;
-            handleSwipe();
-        }, { passive: true });
+        modal.addEventListener(
+            'touchend',
+            function (e) {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            },
+            { passive: true }
+        );
     }
 
     /**
@@ -1037,7 +1056,8 @@ function applyVisibilityLimit() {
     let visibleCount = 0;
 
     galleryItems.forEach(item => {
-        const matchesFilter = currentFilter === 'all' || item.getAttribute('data-category') === currentFilter;
+        const matchesFilter =
+            currentFilter === 'all' || item.getAttribute('data-category') === currentFilter;
 
         if (!matchesFilter) {
             /**

@@ -361,120 +361,99 @@
      * @param {HTMLElement} field - The form field element to validate
      * @returns {boolean} True if field is valid, false otherwise
      */
+    /**
+     * Get today's date at midnight for date comparison
+     *
+     * @returns {Date} Today's date with time set to 00:00:00
+     */
+    function getTodayMidnight() {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return today;
+    }
+
+    /**
+     * Check if selected time is in the past (only for today's date)
+     *
+     * @param {string} timeValue - Time string in HH:MM format
+     * @param {string} selectedDate - Selected date in YYYY-MM-DD format
+     * @returns {boolean} True if time is valid, false if in the past
+     */
+    function isTimeInPast(timeValue, selectedDate) {
+        const today = new Date().toISOString().split('T')[0];
+        if (selectedDate !== today) return false; // Future date - any time is valid
+
+        const now = new Date();
+        const [hours, minutes] = timeValue.split(':').map(Number);
+        const selectedDateTime = new Date();
+        selectedDateTime.setHours(hours, minutes, 0, 0);
+        return selectedDateTime <= now;
+    }
+
     function validateField(field) {
         const value = field.value.trim();
         const fieldName = field.name;
-        let isValid = false;
-        let errorMessage = '';
         const errorElementId = fieldName.replace(/\[/g, '_').replace(/\]/g, '') + 'Error';
 
         /**
          * Validation rules for each field type
          * Each field type has specific validation requirements
          */
-
-        // First name validation
-        if (fieldName.includes('[firstName]')) {
-            const result = FV.validateName(value, 'Le prénom');
-            FV.applyFieldState(field, errorElementId, result);
-            return result.valid;
-        }
-        // Last name validation (same rules as first name)
-        else if (fieldName.includes('[lastName]')) {
-            const result = FV.validateName(value, 'Le nom');
-            FV.applyFieldState(field, errorElementId, result);
-            return result.valid;
-        }
-        // Email validation
-        else if (fieldName.includes('[email]')) {
-            const result = FV.validateEmail(value, { label: `L'email` });
-            FV.applyFieldState(field, errorElementId, result);
-            return result.valid;
-        }
-        // Phone validation
-        else if (fieldName.includes('[phone]')) {
-            const result = FV.validatePhone(value, {
-                label: 'Le numéro de téléphone',
-                required: true,
-            });
-            FV.applyFieldState(field, errorElementId, result);
-            return result.valid;
-        }
-        // Date validation
-        else if (fieldName.includes('[date]')) {
-            if (value === '') {
-                errorMessage = 'La date est requise';
-            } else {
-                // Check if date is in the past
+        const validators = {
+            '[firstName]': () => FV.validateName(value, 'Le prénom'),
+            '[lastName]': () => FV.validateName(value, 'Le nom'),
+            '[email]': () => FV.validateEmail(value, { label: `L'email` }),
+            '[phone]': () =>
+                FV.validatePhone(value, {
+                    label: 'Le numéro de téléphone',
+                    required: true,
+                }),
+            '[date]': () => {
+                if (value === '') {
+                    return { valid: false, message: 'La date est requise' };
+                }
                 const selectedDate = new Date(value);
-                const today = new Date();
-                today.setHours(0, 0, 0, 0); // Reset time to midnight for accurate comparison
-
-                if (selectedDate < today) {
-                    errorMessage = 'La date ne peut pas être dans le passé';
-                } else {
-                    isValid = true;
+                if (selectedDate < getTodayMidnight()) {
+                    return { valid: false, message: 'La date ne peut pas être dans le passé' };
                 }
-            }
-        }
-        // Time validation
-        else if (fieldName.includes('[time]')) {
-            if (value === '') {
-                errorMessage = "L'heure est requise";
-            } else {
-                /**
-                 * Check if time is in the past (only if selected date is today)
-                 * For future dates, any time is valid
-                 */
+                return { valid: true };
+            },
+            '[time]': () => {
+                if (value === '') {
+                    return { valid: false, message: "L'heure est requise" };
+                }
                 const dateInput = getElement('dateInput');
-                const selectedDate = dateInput ? dateInput.value : '';
-                const today = new Date().toISOString().split('T')[0];
-
-                // Only check past times if date is today
-                if (selectedDate === today) {
-                    const now = new Date();
-                    // Parse time string (e.g., "14:30" -> hours=14, minutes=30)
-                    const [hours, minutes] = value.split(':').map(Number);
-
-                    // Create Date object for selected time today
-                    const selectedDateTime = new Date();
-                    selectedDateTime.setHours(hours, minutes, 0, 0);
-
-                    // Check if selected time is in the past
-                    if (selectedDateTime <= now) {
-                        errorMessage = "L'heure ne peut pas être dans le passé";
-                    } else {
-                        isValid = true;
-                    }
-                } else {
-                    // Future date - any time is valid
-                    isValid = true;
+                const selectedDate = dateInput?.value || '';
+                if (isTimeInPast(value, selectedDate)) {
+                    return { valid: false, message: "L'heure ne peut pas être dans le passé" };
                 }
-            }
-        }
-        // Guests validation
-        else if (fieldName.includes('[guests]')) {
-            if (value === '') {
-                errorMessage = 'Le nombre de personnes est requis';
-            } else if (parseInt(value) < 1) {
-                errorMessage = 'Le nombre de personnes doit être au moins 1';
-            } else {
-                isValid = true;
-            }
-        }
-        // Message validation (optional field)
-        else if (fieldName.includes('[message]')) {
-            const result = FV.validateMessage(value, {
-                label: 'Le message',
-                required: false,
-                min: 0,
-                max: 1000,
-            });
-            FV.applyFieldState(field, errorElementId, result);
-            return result.valid;
+                return { valid: true };
+            },
+            '[guests]': () => {
+                if (value === '') {
+                    return { valid: false, message: 'Le nombre de personnes est requis' };
+                }
+                if (parseInt(value) < 1) {
+                    return { valid: false, message: 'Le nombre de personnes doit être au moins 1' };
+                }
+                return { valid: true };
+            },
+            '[message]': () =>
+                FV.validateMessage(value, {
+                    label: 'Le message',
+                    required: false,
+                    min: 0,
+                    max: 1000,
+                }),
+        };
+
+        // Find matching validator
+        const validatorKey = Object.keys(validators).find(key => fieldName.includes(key));
+        if (!validatorKey) {
+            return true; // Unknown field, consider valid
         }
 
-        const result = isValid ? { valid: true } : { valid: false, message: errorMessage };
+        const result = validators[validatorKey]();
         FV.applyFieldState(field, errorElementId, result);
         return result.valid;
     }
@@ -503,7 +482,6 @@
         const elements = getFormElements();
         if (!elements || !elements.submitBtn) return;
 
-        const form = elements.form;
         const submitBtn = elements.submitBtn;
 
         // Store original button text for restoration
@@ -538,31 +516,24 @@
         );
 
         /**
-         * Add CSRF token to form data
-         * Try to get token from form first (if Symfony form includes it)
-         * Fall back to meta tag if not found in form
+         * Submit form via AJAX
+         * Uses fetch with CSRF token for FormData support
+         * Note: For FormData, we need to let browser set Content-Type with boundary
          */
-        let csrfToken = form.querySelector('input[name="reservation[_token]"]')?.value;
-        if (!csrfToken) {
-            // Fallback to global CSRF token helper
-            csrfToken = window.getCsrfToken();
-        }
+        const csrfToken = window.getCsrfToken?.() || null;
         if (csrfToken) {
             formData.append('_token', csrfToken);
         }
-
-        /**
-         * Submit form via AJAX
-         * Uses fetch API for modern, promise-based HTTP requests
-         */
         fetch('/reservation-ajax', {
             method: 'POST',
             body: formData,
             headers: {
-                'X-Requested-With': 'XMLHttpRequest', // Identifies request as AJAX
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-Token': csrfToken || '',
             },
+            credentials: 'same-origin',
         })
-            .then(response => response.json()) // Parse JSON response
+            .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     // Form submitted successfully

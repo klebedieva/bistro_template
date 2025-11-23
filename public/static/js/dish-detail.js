@@ -157,13 +157,34 @@ document.addEventListener('DOMContentLoaded', function () {
  *     console.log(item.name);
  * }
  */
+/**
+ * Normalize ID to string for consistent comparison
+ *
+ * @param {string|number} id - Item ID
+ * @returns {string} Normalized string ID
+ */
+function normalizeId(id) {
+    return String(id);
+}
+
+/**
+ * Compare two IDs (handles both string and number formats)
+ *
+ * @param {string|number} id1 - First ID
+ * @param {string|number} id2 - Second ID
+ * @returns {boolean} True if IDs match
+ */
+function compareIds(id1, id2) {
+    return normalizeId(id1) === normalizeId(id2) || parseInt(id1) === parseInt(id2);
+}
+
 function findItemById(itemId) {
     /**
      * Priority 1: Check current page data
      * dishData is typically provided by the server for the current page
      * This is the fastest and most reliable source
      */
-    if (window.dishData && window.dishData.id == itemId) {
+    if (window.dishData && compareIds(window.dishData.id, itemId)) {
         return window.dishData;
     }
 
@@ -172,7 +193,7 @@ function findItemById(itemId) {
      * This is used when item data needs to be found from global menu data
      */
     if (window.menuItems) {
-        return window.menuItems.find(item => item.id == itemId);
+        return window.menuItems.find(item => compareIds(item.id, itemId));
     }
 
     /**
@@ -180,7 +201,7 @@ function findItemById(itemId) {
      * Some items might be categorized as drinks
      */
     if (window.drinksData) {
-        return window.drinksData.find(item => item.id == itemId);
+        return window.drinksData.find(item => compareIds(item.id, itemId));
     }
 
     return null;
@@ -441,10 +462,10 @@ async function getItemQuantity(itemId, useCache = true) {
 
         /**
          * Find item in cart by ID
-         * Uses strict equality (===) for comparison
+         * Uses compareIds for flexible ID comparison
          * Item structure: { id, name, price, quantity, ... }
          */
-        const item = cart.items.find(i => i.id === itemId);
+        const item = cart.items.find(i => compareIds(i.id, itemId));
 
         /**
          * Get quantity (0 if item not found)
@@ -576,7 +597,7 @@ async function addToCartDetail(itemId) {
                      * Otherwise, it's a quantity increase
                      */
                     const cart = await window.cartAPI.getCart();
-                    const cartItem = cart.items.find(i => i.id === itemId);
+                    const cartItem = cart.items.find(i => compareIds(i.id, itemId));
 
                     if (cartItem && cartItem.quantity === 1) {
                         /**
@@ -627,7 +648,7 @@ async function removeFromCartDetail(itemId) {
          * Need to check quantity before deciding action
          */
         const cart = await window.cartAPI.getCart();
-        const item = cart.items.find(i => i.id === itemId);
+        const item = cart.items.find(i => compareIds(i.id, itemId));
 
         /**
          * Only proceed if item exists in cart

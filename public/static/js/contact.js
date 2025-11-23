@@ -488,44 +488,37 @@
         const formData = new FormData();
 
         // Collect all form field values (using cached elements)
-        const firstNameInput = getElement('firstNameInput');
-        const lastNameInput = getElement('lastNameInput');
-        const emailInput = getElement('emailInput');
-        const phoneInput = getElement('phoneInput');
-        const subjectInput = getElement('subjectInput');
-        const messageInput = getElement('messageInput');
-        const consentInput = getElement('consentInput');
+        const elements = getFormElements();
+        if (!elements) return;
 
-        formData.append('firstName', firstNameInput?.value.trim() || '');
-        formData.append('lastName', lastNameInput?.value.trim() || '');
-        formData.append('email', emailInput?.value.trim() || '');
-        formData.append('phone', phoneInput?.value.trim() || '');
-        formData.append('subject', subjectInput?.value || '');
-        formData.append('message', messageInput?.value.trim() || '');
+        formData.append('firstName', elements.firstNameInput?.value.trim() || '');
+        formData.append('lastName', elements.lastNameInput?.value.trim() || '');
+        formData.append('email', elements.emailInput?.value.trim() || '');
+        formData.append('phone', elements.phoneInput?.value.trim() || '');
+        formData.append('subject', elements.subjectInput?.value || '');
+        formData.append('message', elements.messageInput?.value.trim() || '');
         // Convert checkbox boolean to string ('1' or '0')
-        formData.append('consent', consentInput?.checked ? '1' : '0');
-
-        /**
-         * Add CSRF token to form data
-         * CSRF token is required for security (prevents cross-site request forgery)
-         */
-        const csrfToken = window.getCsrfToken();
-        if (csrfToken) {
-            formData.append('_token', csrfToken);
-        }
+        formData.append('consent', elements.consentInput?.checked ? '1' : '0');
 
         /**
          * Submit form via AJAX
-         * Uses fetch API for modern, promise-based HTTP requests
+         * Uses fetch with CSRF token for FormData support
+         * Note: For FormData, we need to let browser set Content-Type with boundary
          */
+        const csrfToken = window.getCsrfToken?.() || null;
+        if (csrfToken) {
+            formData.append('_token', csrfToken);
+        }
         fetch('/contact-ajax', {
             method: 'POST',
             body: formData,
             headers: {
-                'X-Requested-With': 'XMLHttpRequest', // Identifies request as AJAX
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-Token': csrfToken || '',
             },
+            credentials: 'same-origin',
         })
-            .then(response => response.json()) // Parse JSON response
+            .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     // Form submitted successfully
