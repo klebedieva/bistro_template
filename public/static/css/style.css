@@ -483,7 +483,8 @@ footer a.text-white:hover {
 .carousel-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(139, 69, 19, 0.35), rgba(212, 165, 116, 0.25)), linear-gradient(to bottom, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.45));
+  background: linear-gradient(135deg, rgba(139, 69, 19, 0.35), rgba(212, 165, 116, 0.25)), 
+              linear-gradient(to bottom, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.45));
   z-index: 1;
 }
 .carousel-banner .container,
@@ -1445,17 +1446,9 @@ img.hero-media {
     border: 0;
 }
 
-/* Reservation Header Banner */
+/* Reservation Header Banner - extends page-banner-header */
 .reservation-header {
-    color: white;
-    position: relative;
-    height: 100vh !important;
-    min-height: 100vh !important;
-    display: flex;
-    align-items: center;
-    margin-top: 0;
-    padding: 0 !important;
-    overflow: hidden;
+    /* Base styles from components/banners.css */
 }
 
 .reservation-header .container {
@@ -1524,13 +1517,7 @@ img.hero-media {
     }
 }
 
-.reservation-header::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(139, 69, 19, 0.35), rgba(212, 165, 116, 0.25)), linear-gradient(to bottom, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.45));
-    z-index: 1;
-}
+/* Banner overlay moved to components/banners.css */
 
 .reservation-header h1,
 .menu-hero h1,
@@ -1557,13 +1544,7 @@ img.hero-media {
     font-family: 'Inter', sans-serif;
 }
 
-.reservation-hero-divider {
-    width: 80px;
-    height: 4px;
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    margin: 1rem auto 3rem auto;
-    border-radius: 2px;
-}
+/* Banner divider moved to components/banners.css */
 
 .reservation-header .breadcrumb {
     background: none;

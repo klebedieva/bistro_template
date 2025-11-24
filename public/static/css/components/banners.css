@@ -1,0 +1,185 @@
+/* =====================================================================
+   PAGE BANNER COMPONENTS
+   ---------------------------------------------------------------------
+   Shared banner/header styles for all page headers (menu, gallery, 
+   contact, reviews, reservation). Eliminates duplication across 
+   page-specific stylesheets.
+   ===================================================================== */
+
+/* Common banner overlay gradient - used by all page headers */
+.page-banner-overlay {
+    background: linear-gradient(135deg, rgba(139, 69, 19, 0.35), rgba(212, 165, 116, 0.25)), 
+                linear-gradient(to bottom, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.45));
+}
+
+/* Base banner header styles - applied to all page headers */
+.page-banner-header,
+.menu-hero,
+.gallery-header,
+.contact-header,
+.reviews-header,
+.reservation-header {
+    color: white;
+    position: relative;
+    height: 100vh !important;
+    min-height: 100vh !important;
+    display: flex;
+    align-items: center;
+    margin-top: 0;
+    padding: 0 !important;
+    overflow: hidden;
+}
+
+.page-banner-header::before,
+.menu-hero::before,
+.gallery-header::before,
+.contact-header::before,
+.reviews-header::before,
+.reservation-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(139, 69, 19, 0.35), rgba(212, 165, 116, 0.25)), 
+                linear-gradient(to bottom, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.45));
+    z-index: 1;
+}
+
+.page-banner-header .container,
+.menu-hero .container,
+.gallery-header .container,
+.contact-header .container,
+.reviews-header .container,
+.reservation-header .container {
+    position: relative;
+    z-index: 2;
+}
+
+.page-banner-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(139, 69, 19, 0.35), rgba(212, 165, 116, 0.25)), 
+                linear-gradient(to bottom, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.45));
+    z-index: 1;
+}
+
+.page-banner-header .container {
+    position: relative;
+    z-index: 2;
+}
+
+/* Banner typography */
+.page-banner-header h1,
+.page-banner-header .display-4,
+.menu-hero h1,
+.menu-hero .display-4,
+.gallery-header h1,
+.gallery-header .display-4,
+.contact-header h1,
+.contact-header .display-4,
+.reviews-header h1,
+.reviews-header .display-4,
+.reservation-header h1,
+.reservation-header .display-4 {
+    font-size: 4rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    text-align: center !important;
+    font-family: var(--font-serif);
+    font-weight: 600;
+}
+
+.page-banner-header .lead,
+.menu-hero .lead,
+.gallery-header .lead,
+.contact-header .lead,
+.reviews-header .lead,
+.reservation-header .lead {
+    font-size: 1.5rem;
+    font-weight: 300;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    margin-bottom: 1rem;
+    text-align: center !important;
+    font-family: var(--font-sans);
+}
+
+/* Banner divider - decorative line */
+.page-banner-divider,
+.menu-hero-divider,
+.gallery-header-divider,
+.contact-hero-divider,
+.reviews-header-divider,
+.reservation-hero-divider {
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    margin: 1rem auto 2rem auto;
+    border-radius: 2px;
+}
+
+/* Responsive banner heights */
+@media (max-width: 768px) {
+    .page-banner-header,
+    .menu-hero,
+    .gallery-header,
+    .contact-header,
+    .reviews-header,
+    .reservation-header {
+        height: 70vh !important;
+        min-height: 70vh !important;
+        max-height: 70vh !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .page-banner-header h1,
+    .page-banner-header .display-4,
+    .menu-hero h1,
+    .menu-hero .display-4,
+    .gallery-header h1,
+    .gallery-header .display-4,
+    .contact-header h1,
+    .contact-header .display-4,
+    .reviews-header h1,
+    .reviews-header .display-4,
+    .reservation-header h1,
+    .reservation-header .display-4 {
+        font-size: 3rem !important;
+    }
+    
+    .page-banner-header .lead,
+    .menu-hero .lead,
+    .gallery-header .lead,
+    .contact-header .lead,
+    .reviews-header .lead,
+    .reservation-header .lead {
+        font-size: 1.2rem !important;
+    }
+}
+
+/* Tablet typography */
+@media (min-width: 577px) and (max-width: 768px) {
+    .page-banner-header h1,
+    .page-banner-header .display-4,
+    .menu-hero h1,
+    .menu-hero .display-4,
+    .gallery-header h1,
+    .gallery-header .display-4,
+    .contact-header h1,
+    .contact-header .display-4,
+    .reviews-header h1,
+    .reviews-header .display-4,
+    .reservation-header h1,
+    .reservation-header .display-4 {
+        font-size: 3.5rem !important;
+    }
+    
+    .page-banner-header .lead,
+    .menu-hero .lead,
+    .gallery-header .lead,
+    .contact-header .lead,
+    .reviews-header .lead,
+    .reservation-header .lead {
+        font-size: 1.2rem !important;
+    }
+}
+
