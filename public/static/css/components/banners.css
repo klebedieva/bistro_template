@@ -124,9 +124,9 @@
     .contact-header,
     .reviews-header,
     .reservation-header {
-        height: 70vh !important;
-        min-height: 70vh !important;
-        max-height: 70vh !important;
+        height: 100vh !important;
+        min-height: 100vh !important;
+        max-height: 100vh !important;
     }
 }
 

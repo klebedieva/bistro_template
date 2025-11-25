@@ -441,9 +441,9 @@
 /* Responsive Design */
 @media (max-width: 768px) {
     .gallery-header {
-        height: 70vh;
-        min-height: 70vh;
-        max-height: 70vh;
+        height: 100vh !important;
+        min-height: 100vh !important;
+        max-height: 100vh !important;
     }
     
     .gallery-filters { padding-top: 0; padding-bottom: 0.5rem; margin-top: 0 !important; }
@@ -498,9 +498,9 @@
 
 @media (max-width: 576px) {
     .gallery-header {
-        height: 70vh;
-        min-height: 70vh;
-        max-height: 70vh;
+        height: 100vh !important;
+        min-height: 100vh !important;
+        max-height: 100vh !important;
     }
     
     .gallery-filters { padding-top: 0; padding-bottom: 0.45rem; margin-top: 0 !important; }

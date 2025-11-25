@@ -685,18 +685,27 @@ async function refreshGalleryImagesFromApi() {
         if (result.success) {
             /**
              * Map API response to gallery images format
-             * API returns items with imageUrl, we map to src
+             * API returns data as object with items array: { items: [...], total: 10 }
+             * We need to access result.data.items, not result.data directly
              */
-            galleryImages = result.data.map(item => ({
-                src: item.imageUrl,
-                fallback: item.originalUrl || item.imageUrl,
-                title: item.title,
-                description: item.description,
-            }));
+            const items = result.data?.items || result.data || [];
+            
+            // Ensure items is an array before mapping
+            if (Array.isArray(items)) {
+                galleryImages = items.map(item => ({
+                    src: item.imageUrl,
+                    fallback: item.originalUrl || item.imageUrl,
+                    title: item.title,
+                    description: item.description,
+                }));
 
-            // Update cache
-            galleryCache = galleryImages;
-            cacheTimestamp = now;
+                // Update cache
+                galleryCache = galleryImages;
+                cacheTimestamp = now;
+            } else {
+                // If data structure is unexpected, fall back to DOM collection
+                throw new Error('API response format is invalid: data.items is not an array');
+            }
         }
     } catch (error) {
         /**

@@ -69,8 +69,15 @@ function showStep(step) {
     /**
      * Hide all step content
      * Remove active class from all steps
+     * Remove focus from any focused elements before hiding to prevent accessibility issues
      */
     document.querySelectorAll('.order-step-content').forEach(c => {
+        // Remove focus from any focused elements inside this step before hiding
+        const focusedElement = c.querySelector(':focus');
+        if (focusedElement && typeof focusedElement.blur === 'function') {
+            focusedElement.blur();
+        }
+        
         c.classList.remove('active');
         c.setAttribute('aria-hidden', 'true');
     });
@@ -83,6 +90,19 @@ function showStep(step) {
     if (target) {
         target.classList.add('active');
         target.setAttribute('aria-hidden', 'false');
+        
+        /**
+         * Move focus to first focusable element in the new step
+         * This improves accessibility and prevents focus from being trapped in hidden step
+         */
+        setTimeout(() => {
+            const firstFocusable = target.querySelector(
+                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            );
+            if (firstFocusable && typeof firstFocusable.focus === 'function') {
+                firstFocusable.focus();
+            }
+        }, 0);
     }
 
     /**

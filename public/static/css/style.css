@@ -500,10 +500,11 @@ footer a.text-white:hover {
 }
 
 /* Carousel banner responsive heights */
-@media (max-width: 991px) {
+@media (max-width: 768px) {
   .carousel-banner {
-    height: 70vh !important;
-    min-height: 70vh !important;
+    height: 100vh !important;
+    min-height: 100vh !important;
+    max-height: 100vh !important;
   }
 }
 
@@ -553,8 +554,9 @@ footer a.text-white:hover {
 
 @media (max-width: 576px) {
   .carousel-banner {
-    height: 70vh !important;
-    min-height: 70vh !important;
+    height: 100vh !important;
+    min-height: 100vh !important;
+    max-height: 100vh !important;
   }
   .d-flex.flex-column.flex-sm-row.justify-content-center.align-items-center.gap-3 .btn {
     font-size: 1.5rem !important;
@@ -796,13 +798,48 @@ footer a[href^="mailto:"] {
   .ps-lg-custom {
     padding-left: 0 !important;
   }
+  footer .row.align-items-center {
+    text-align: center !important;
+    flex-direction: column !important;
+    align-items: center !important;
+  }
   footer .row.align-items-center > div {
     text-align: center !important;
+    width: 100%;
+    max-width: 100%;
+    flex: 0 0 100%;
+  }
+  /* Override Bootstrap text-md-start class */
+  footer .row.align-items-center .text-md-start {
+    text-align: center !important;
+  }
+  footer .col-md-6 {
+    text-align: center !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+  }
+  footer .col-md-6:first-child {
+    margin-bottom: 1rem;
+  }
+  footer .col-md-6 nav {
+    justify-content: center !important;
+    text-align: center;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+  }
+  /* Override Bootstrap justify-content-md-end class - must be more specific than Bootstrap's @media (min-width: 768px) */
+  footer nav[aria-label="Liens légaux"],
+  footer .col-md-6 nav[class*="justify-content"] {
     justify-content: center !important;
   }
   footer .row.align-items-center a {
     display: inline-block;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0;
   }
 }
 
@@ -853,9 +890,11 @@ footer a[href^="mailto:"] {
     font-size: 1.2rem !important;
   }
 
-  /* Slightly reduce reservation banner height on very small screens */
+  /* Full height on very small screens */
   .reservation-header {
-    min-height: 45vh !important;
+    height: 100vh !important;
+    min-height: 100vh !important;
+    max-height: 100vh !important;
   }
   
   .reservation-hero-divider {
@@ -1458,9 +1497,9 @@ img.hero-media {
 
 @media (max-width: 768px) {
     .reservation-header {
-        height: 70vh !important;
-        min-height: 70vh !important;
-        max-height: 70vh !important;
+        height: 100vh !important;
+        min-height: 100vh !important;
+        max-height: 100vh !important;
     }
     /* Push title and subtitle slightly lower */
     .reservation-header h1,
@@ -1484,13 +1523,42 @@ img.hero-media {
         margin-right: auto !important;
         display: block;
     }
-    .reservation-info {
+    /* Only apply to reservation-info on reservation page, not homepage */
+    #reservation .reservation-info {
         display: flex;
         flex-direction: column;
         align-items: center !important;
     }
-    .reservation-info .info-item {
+    #reservation .reservation-info .info-item {
         justify-content: center !important;
+    }
+}
+
+/* Center "Informations pratiques" on screens smaller than 992px */
+@media (max-width: 991.98px) {
+    #reservation .col-lg-6:first-child {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    #reservation .col-lg-6:first-child .section-title,
+    #reservation .col-lg-6:first-child .lead {
+        text-align: center !important;
+    }
+    
+    #reservation .col-lg-6:first-child .reservation-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+    
+    #reservation .col-lg-6:first-child .reservation-info .info-item {
+        justify-content: center;
+        width: 100%;
     }
 }
 
