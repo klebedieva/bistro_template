@@ -1,0 +1,32 @@
+<div
+    id="cookieConsentBanner"
+    class="cookie-consent-banner"
+    role="dialog"
+    aria-live="polite"
+    aria-modal="false"
+    aria-label="Gestion des cookies"
+    data-cookie-banner
+    aria-hidden="true"
+>
+    <div>
+        <h3>Vos préférences cookies</h3>
+        <p>
+            Nous utilisons des cookies nécessaires au fonctionnement du site et, avec votre accord,
+            des cookies de mesure d'audience pour améliorer votre expérience. Vous pouvez accepter
+            tous les cookies ou conserver uniquement les essentiels.
+        </p>
+        <small>
+            Plus d'informations dans notre
+            <a href="{{ path('app_privacy_policy') }}" class="cookie-link">politique de confidentialité</a>.
+        </small>
+    </div>
+    <div class="cookie-consent-actions">
+        <button type="button" class="cookie-btn secondary" data-cookie-accept="essential">
+            Essentiels uniquement
+        </button>
+        <button type="button" class="cookie-btn primary" data-cookie-accept="all">
+            Tout accepter
+        </button>
+    </div>
+</div>
+

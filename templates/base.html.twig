@@ -107,6 +107,7 @@
         <link rel="stylesheet" href="{{ asset('static/css/components/cards.css') }}?v=1">
         <link rel="stylesheet" href="{{ asset('static/css/components/cart.css') }}?v=1">
         <link rel="stylesheet" href="{{ asset('static/css/style.css') }}?v={{ 'now'|date('YmdHis') }}">
+        <link rel="stylesheet" href="{{ asset('static/css/cookie-consent.css') }}?v=1">
         {# 404.css is loaded only on the 404 page to avoid global overrides #}
     {% endblock %}
     
@@ -121,6 +122,7 @@
         {# Cart functionality - API version #}
         <script src="{{ asset('static/js/cart-api.js') }}?v=4"></script>
         <script src="{{ asset('static/js/global.js') }}"></script>
+        <script src="{{ asset('static/js/cookie-consent.js') }}?v=1"></script>
         <script>
             window.appMenuPath = '{{ path('app_menu') }}';
         </script>
@@ -134,10 +136,13 @@
     {% block hero %}{% endblock %}
 
     {# Main content block for each page #}
-    {% block body %}{% endblock %}
+{% block body %}{% endblock %}
 
-    {# Include footer partial #}
-    {% include 'partials/footer.html.twig' %}
+{# Cookie consent banner #}
+{% include 'components/cookie_banner.html.twig' %}
+
+{# Include footer partial #}
+{% include 'partials/footer.html.twig' %}
     
     {# Include cart sidebar #}
     {% include 'partials/cart-sidebar.html.twig' %}
