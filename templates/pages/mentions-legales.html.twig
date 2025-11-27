@@ -1,0 +1,96 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <meta name="description" content="Mentions légales du restaurant Le Trois Quarts à Marseille.">
+    <link rel="stylesheet" href="{{ asset('static/css/cgv.css') }}?v={{ 'now'|date('YmdHis') }}">
+{% endblock %}
+
+{% block body %}
+<body class="cgv-page">
+    <section class="cgv-header d-flex align-items-center justify-content-center">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10 text-center">
+                    <h1 class="display-4 mb-3">Mentions légales</h1>
+                    <p class="lead">Le Trois Quarts - Brasserie</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-10 mx-auto">
+                    <div class="mb-5">
+                        <h2>1. Éditeur du site</h2>
+                        <div class="info-box">
+                            <p><strong>Raison sociale :</strong> Le Trois Quarts SARL</p>
+                            <p><strong>Capital social :</strong> 50 000 €</p>
+                            <p><strong>Siège social :</strong> 139 Boulevard Chave, 13005 Marseille, France</p>
+                            <p><strong>SIRET :</strong> 123 456 789 00012</p>
+                            <p><strong>SIREN :</strong> 123 456 789</p>
+                            <p><strong>RCS :</strong> Marseille B 123 456 789</p>
+                            <p><strong>Code APE :</strong> 5610A</p>
+                            <p><strong>Directeur de la publication :</strong> Jean Dupont</p>
+                            <p><strong>Contact :</strong> +33 4 91 92 96 16 • letroisquarts@gmail.com</p>
+                        </div>
+                    </div>
+
+                    <div class="mb-5">
+                        <h2>2. Hébergeur</h2>
+                        <p>OVH SAS<br>2 rue Kellermann<br>59100 Roubaix, France<br>Tél. : +33 9 72 10 10 07</p>
+                    </div>
+
+                    <div class="mb-5">
+                        <h2>3. Conception et réalisation</h2>
+                        <p>Site conçu par l'équipe interne du Trois Quarts et ses prestataires digitaux. Pour toute question technique, écrivez à <a href="mailto:letroisquarts@gmail.com">letroisquarts@gmail.com</a>.</p>
+                    </div>
+
+                    <div class="mb-5">
+                        <h2>4. Propriété intellectuelle</h2>
+                        <p>L'ensemble des contenus présents sur le site www.letroisquarts.online (textes, visuels, graphismes, logo, vidéos, icônes, etc.) est protégé par le droit d'auteur et demeure la propriété exclusive du Trois Quarts ou de ses partenaires.</p>
+                        <p>Toute reproduction, représentation, modification, publication ou adaptation, totale ou partielle, de ces éléments sans autorisation écrite préalable est interdite.</p>
+                    </div>
+
+                    <div class="mb-5">
+                        <h2>5. Responsabilité</h2>
+                        <p>Le Trois Quarts met tout en œuvre pour assurer l'exactitude des informations publiées. Toutefois, des erreurs ou omissions involontaires peuvent subsister. Le Trois Quarts ne pourra être tenu responsable de l'utilisation faite de ces informations ou d'un dommage direct ou indirect résultant de l'accès au site.</p>
+                        <p>Le site peut contenir des liens hypertextes vers d'autres sites. Le Trois Quarts décline toute responsabilité quant au contenu et aux pratiques de ces sites tiers.</p>
+                    </div>
+
+                    <div class="mb-5">
+                        <h2>6. Données personnelles</h2>
+                        <p>Les informations collectées via les formulaires de réservation, de commande ou de contact sont traitées conformément à notre <a href="{{ path('app_privacy_policy') }}">politique de confidentialité</a>.</p>
+                        <p>Conformément au RGPD, vous disposez d'un droit d'accès, de rectification, de suppression et d'opposition aux données vous concernant. Adressez vos demandes à letroisquarts@gmail.com.</p>
+                    </div>
+
+                    <div class="mb-5">
+                        <h2>7. Cookies</h2>
+                        <p>Lors de vos visites, des cookies peuvent être automatiquement installés sur votre navigateur pour assurer le bon fonctionnement du site, mesurer l'audience ou faciliter la commande en ligne. Vous pouvez configurer votre navigateur pour refuser les cookies. Pour plus d'informations, consultez la section dédiée dans la politique de confidentialité.</p>
+                    </div>
+
+                    <div class="mb-5">
+                        <h2>8. Accessibilité</h2>
+                        <p>Le Trois Quarts s'efforce de rendre son site accessible à tous. Si vous rencontrez des problèmes d'accessibilité, merci de nous écrire afin que nous puissions améliorer votre expérience.</p>
+                    </div>
+
+                    <div class="mb-5">
+                        <h2>9. Loi applicable</h2>
+                        <p>Les présentes mentions légales sont régies par le droit français. Tout litige relatif à l'utilisation du site sera de la compétence exclusive des tribunaux de Marseille après tentative préalable de résolution amiable.</p>
+                    </div>
+
+                    <p class="last-updated">Dernière mise à jour : Novembre 2025</p>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+{% endblock %}
+
+

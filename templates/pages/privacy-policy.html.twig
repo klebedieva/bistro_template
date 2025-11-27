@@ -1,0 +1,117 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <meta name="description" content="Politique de confidentialité du restaurant Le Trois Quarts à Marseille.">
+    <link rel="stylesheet" href="{{ asset('static/css/cgv.css') }}?v={{ 'now'|date('YmdHis') }}">
+{% endblock %}
+
+{% block body %}
+<body class="cgv-page">
+    <section class="cgv-header d-flex align-items-center justify-content-center">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10 text-center">
+                    <h1 class="display-4 mb-3">Politique de confidentialité</h1>
+                    <p class="lead">Protection de vos données personnelles</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-10 mx-auto">
+                    <div class="mb-5">
+                        <h2>1. Responsable du traitement</h2>
+                        <p>Le Trois Quarts SARL, 139 Boulevard Chave, 13005 Marseille, est responsable du traitement des données collectées via le site www.letroisquarts.online.</p>
+                        <p>Contact délégué à la protection des données : <a href="mailto:letroisquarts@gmail.com">letroisquarts@gmail.com</a></p>
+                    </div>
+
+                    <div class="mb-5">
+                        <h2>2. Données collectées</h2>
+                        <p>Selon votre utilisation du site, nous pouvons collecter :</p>
+                        <ul>
+                            <li>Identité : nom, prénom</li>
+                            <li>Coordonnées : email, téléphone, adresse de livraison</li>
+                            <li>Informations de réservation ou de commande : date, heure, nombre de couverts, panier</li>
+                            <li>Données de navigation : pages consultées, cookies techniques et analytiques</li>
+                            <li>Historique relationnel : messages envoyés, avis, incidents</li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-5">
+                        <h2>3. Finalités et bases légales</h2>
+                        <p>Les traitements effectués reposent sur les bases légales suivantes :</p>
+                        <ul>
+                            <li><strong>Exécution du contrat :</strong> gestion des commandes, réservations, livraison et facturation.</li>
+                            <li><strong>Intérêt légitime :</strong> amélioration du service, prévention de la fraude, sécurité du site.</li>
+                            <li><strong>Obligation légale :</strong> conservation des pièces comptables.</li>
+                            <li><strong>Consentement :</strong> envoi d'offres commerciales, mesure d'audience non essentielle, cookies marketing.</li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-5">
+                        <h2>4. Durées de conservation</h2>
+                        <ul>
+                            <li>Données de commande : 5 ans (obligation comptable).</li>
+                            <li>Données prospects : 3 ans à compter du dernier contact.</li>
+                            <li>Cookies analytiques : 13 mois maximum.</li>
+                            <li>Copies de pièces justificatives : durée nécessaire à la vérification.</li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-5">
+                        <h2>5. Destinataires</h2>
+                        <p>Vos données sont destinées aux équipes internes du Trois Quarts habilitées à les traiter (service réservation, cuisine, logistique, marketing). Certains prestataires techniques (hébergeur, prestataire de paiement, solutions de livraison) peuvent y avoir accès pour exécuter leur mission sous contrat garantissant la confidentialité.</p>
+                    </div>
+
+                    <div class="mb-5">
+                        <h2>6. Vos droits</h2>
+                        <p>Conformément au RGPD et à la loi Informatique et Libertés, vous disposez des droits suivants :</p>
+                        <ul>
+                            <li>Droit d'accès et copie de vos données</li>
+                            <li>Droit de rectification</li>
+                            <li>Droit d'effacement</li>
+                            <li>Droit à la limitation</li>
+                            <li>Droit d'opposition pour motifs légitimes ou à tout moment en cas de prospection</li>
+                            <li>Droit à la portabilité pour les données fournies sur la base du consentement ou du contrat</li>
+                            <li>Droit de définir des directives sur le sort de vos données après décès</li>
+                        </ul>
+                        <p>Pour exercer vos droits, écrivez à letroisquarts@gmail.com ou par courrier à Le Trois Quarts, 139 Boulevard Chave, 13005 Marseille. Vous pouvez également saisir la CNIL.</p>
+                    </div>
+
+                    <div class="mb-5">
+                        <h2>7. Sécurité des données</h2>
+                        <p>Nous mettons en œuvre des mesures techniques (chiffrement, sauvegardes, pare-feu) et organisationnelles (gestion des accès, sensibilisation du personnel) pour protéger vos données contre toute perte, divulgation ou accès non autorisé.</p>
+                    </div>
+
+                    <div class="mb-5">
+                        <h2>8. Cookies et traceurs</h2>
+                        <p>Le site utilise des cookies nécessaires à son fonctionnement ainsi que des cookies analytiques pour mesurer l'audience. Vous pouvez accepter ou refuser les cookies optionnels via le bandeau dédié ou en configurant votre navigateur. Le retrait du consentement n'affecte pas l'accès au service.</p>
+                    </div>
+
+                    <div class="mb-5">
+                        <h2>9. Sous-traitance et transferts</h2>
+                        <p>Nos sous-traitants agissent uniquement sur instruction et présentent des garanties suffisantes. Vos données sont hébergées dans l'Union européenne. En cas de transfert hors UE, nous appliquons les clauses contractuelles types de la Commission européenne.</p>
+                    </div>
+
+                    <div class="mb-5">
+                        <h2>10. Mise à jour de la politique</h2>
+                        <p>La présente politique pourra être modifiée afin de refléter l'évolution de nos pratiques ou de la réglementation. Toute mise à jour majeure sera signalée sur le site.</p>
+                    </div>
+
+                    <p class="last-updated">Dernière mise à jour : Novembre 2025</p>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+{% endblock %}
+
+
