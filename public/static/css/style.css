@@ -98,6 +98,7 @@
 }
 
 /* Mobile burger menu underline behavior - SHORT underline like under the cart */
+
 @media (max-width: 991.98px) {
     .navbar-collapse .navbar-nav .nav-link {
         position: relative;

@@ -60,6 +60,18 @@
     border: 2px solid rgba(166, 103, 47, 0.4);
 }
 
+.cookie-btn.revoke {
+    background: transparent;
+    color: #dc3545;
+    border: 2px solid rgba(220, 53, 69, 0.4);
+    font-size: 0.9rem;
+}
+
+.cookie-btn.revoke:hover {
+    background: rgba(220, 53, 69, 0.1);
+    border-color: #dc3545;
+}
+
 .cookie-btn:hover {
     transform: translateY(-2px);
 }

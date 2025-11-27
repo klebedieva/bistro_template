@@ -122,9 +122,47 @@
         {# Cart functionality - API version #}
         <script src="{{ asset('static/js/cart-api.js') }}?v=4"></script>
         <script src="{{ asset('static/js/global.js') }}"></script>
-        <script src="{{ asset('static/js/cookie-consent.js') }}?v=1"></script>
+        {# Cookie management - must load before cookie-consent.js #}
+        <script src="{{ asset('static/js/cookie-manager.js') }}?v=1"></script>
+        <script src="{{ asset('static/js/cookie-consent.js') }}?v=2"></script>
         <script>
             window.appMenuPath = '{{ path('app_menu') }}';
+            
+            {# Cookie configuration - uncomment and configure when you have tracking IDs #}
+            {#
+            window.cookieConfig = {
+                // Google Analytics
+                googleAnalyticsId: 'G-XXXXXXXXXX',
+                
+                // Matomo Analytics
+                matomoUrl: 'https://your-matomo-instance.com',
+                matomoSiteId: '1',
+                
+                // Facebook Pixel
+                facebookPixelId: 'XXXXXXXXXXXXXXX',
+                
+                // Custom analytics scripts
+                customAnalytics: [
+                    {
+                        src: 'https://example.com/analytics.js',
+                        id: 'custom-analytics-1',
+                        async: true,
+                        onLoad: function() {
+                            console.log('Custom analytics initialized');
+                        }
+                    }
+                ],
+                
+                // Custom marketing scripts
+                customMarketing: [
+                    {
+                        src: 'https://example.com/marketing.js',
+                        id: 'custom-marketing-1',
+                        async: true
+                    }
+                ]
+            };
+            #}
         </script>
     {% endblock %}
 </head>
