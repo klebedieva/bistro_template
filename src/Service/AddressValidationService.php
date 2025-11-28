@@ -121,12 +121,8 @@ class AddressValidationService
         }
 
         // Step 3: Address geocoding failed (address not found in API)
-        // If zip code is available, use it as fallback (less accurate but better than nothing)
-        if ($zipCode) {
-            return $this->validateZipCodeForDelivery($zipCode);
-        }
-
-        // Step 4: No zip code available and address not found - return error
+        // Return error message - do not use zip code as fallback
+        // User must provide a valid street address for delivery
         return [
             'valid' => false,
             'error' => 'Adresse introuvable',
@@ -186,7 +182,6 @@ class AddressValidationService
             $response = $this->httpClient->request('GET', 'https://nominatim.openstreetmap.org/search', [
                 'query' => [
                     'postalcode' => $zipCode,
-                    'city' => 'Marseille',
                     'countrycodes' => 'fr',
                     'format' => 'json',
                     'limit' => 1
@@ -247,11 +242,8 @@ class AddressValidationService
             return $this->geocodeAddressSimple($cleanAddress, $zipCode);
 
         } catch (\Exception $e) {
-            // If everything failed - try to extract zip code and use fallback coordinates
-            $extractedZipCode = $this->extractZipCodeFromAddress($address);
-            if ($extractedZipCode) {
-                return $this->getFallbackCoordinates($extractedZipCode);
-            }
+            // If everything failed - address not found, return null
+            // Do not use fallback coordinates to avoid false positives
             return null;
         }
     }
@@ -267,8 +259,7 @@ class AddressValidationService
             'format' => 'json',
             'limit' => 1,
             'addressdetails' => 1,
-            'countrycodes' => 'fr',
-            'city' => 'Marseille'
+            'countrycodes' => 'fr'
         ];
         if (preg_match('/^(\d+)\s+(.+)$/i', $address, $matches)) {
             $queryParams['street'] = $matches[1] . ' ' . trim($matches[2]);
@@ -310,7 +301,7 @@ class AddressValidationService
     private function geocodeAddressSimple(string $address, ?string $zipCode = null): ?array
     {
         $queryParams = [
-            'q' => $address . ', Marseille, France',
+            'q' => $address . ', France',
             'format' => 'json',
             'limit' => 1,
             'addressdetails' => 1,

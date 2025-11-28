@@ -21,6 +21,7 @@ class ReservationType extends AbstractType
         $builder
             ->add('firstName', TextType::class, [
                 'label' => 'Prénom',
+                'attr' => ['autocomplete' => 'given-name'],
                 'constraints' => [
                     new Assert\NotBlank([
                         'message' => 'Le prénom est requis'
@@ -33,6 +34,7 @@ class ReservationType extends AbstractType
             ])
             ->add('lastName', TextType::class, [
                 'label' => 'Nom',
+                'attr' => ['autocomplete' => 'family-name'],
                 'constraints' => [
                     new Assert\NotBlank([
                         'message' => 'Le nom est requis'
@@ -45,6 +47,7 @@ class ReservationType extends AbstractType
             ])
             ->add('email', EmailType::class, [
                 'label' => 'Email',
+                'attr' => ['autocomplete' => 'email'],
                 'constraints' => [
                     new Assert\NotBlank([
                         'message' => 'L\'email est requis'
@@ -56,6 +59,7 @@ class ReservationType extends AbstractType
             ])
             ->add('phone', TelType::class, [
                 'label' => 'Téléphone',
+                'attr' => ['autocomplete' => 'tel'],
                 'constraints' => [
                     new Assert\NotBlank([
                         'message' => 'Le numéro de téléphone est requis'
@@ -69,6 +73,7 @@ class ReservationType extends AbstractType
             ->add('date', DateType::class, [
                 'label' => 'Date',
                 'widget' => 'single_text',
+                'attr' => ['autocomplete' => 'off'],
                 'constraints' => [
                     new Assert\NotBlank([
                         'message' => 'La date est requise'
@@ -83,6 +88,7 @@ class ReservationType extends AbstractType
                 'label' => 'Heure',
                 'choices' => $this->generateTimeChoices(),
                 'placeholder' => 'Choisir...',
+                'attr' => ['autocomplete' => 'off'],
                 'constraints' => [
                     new Assert\NotBlank([
                         'message' => 'L\'heure est requise'
@@ -104,6 +110,7 @@ class ReservationType extends AbstractType
                     '10+ personnes' => 10
                 ],
                 'placeholder' => 'Nombre...',
+                'attr' => ['autocomplete' => 'off'],
                 'constraints' => [
                     new Assert\NotBlank([
                         'message' => 'Le nombre de personnes est requis'
@@ -118,6 +125,7 @@ class ReservationType extends AbstractType
             ->add('message', TextareaType::class, [
                 'label' => 'Message (optionnel)',
                 'required' => false,
+                'attr' => ['autocomplete' => 'off'],
                 'constraints' => [
                     new Assert\Length([
                         'min' => 3,

@@ -299,7 +299,18 @@ function initGallery() {
             const result = await response.json();
 
             if (result.success) {
-                const apiImages = result.data.map(item => ({
+                // Handle different API response formats
+                // API might return data as array or as object with items property
+                const items = Array.isArray(result.data) 
+                    ? result.data 
+                    : (result.data?.items || []);
+                
+                // Ensure items is an array before mapping
+                if (!Array.isArray(items)) {
+                    throw new Error('API response format is invalid: data is not an array');
+                }
+                
+                const apiImages = items.map(item => ({
                     src: item.imageUrl,
                     fallback: item.originalUrl || item.imageUrl,
                     title: item.title || '',
@@ -542,6 +553,20 @@ function initGallery() {
             }
         }
     });
+
+    /**
+     * Fix accessibility issue: remove focus from close button before modal closes
+     * This prevents the aria-hidden warning when closing the modal
+     */
+    if (modal) {
+        modal.addEventListener('hide.bs.modal', function () {
+            // Remove focus from any focused element inside the modal
+            const focusedElement = modal.querySelector(':focus');
+            if (focusedElement) {
+                focusedElement.blur();
+            }
+        });
+    }
 
     // Initialize the counter on page load
     updateCounter();

@@ -85,18 +85,20 @@
                             <div class="address-selection">
                                 <div class="row">
                                     <div class="col-md-8 mb-3">
-                                        <label for="deliveryAddress" class="visually-hidden">Adresse complète</label>
-                                        <input type="text" class="form-control" id="deliveryAddress" placeholder="Adresse complète" required aria-describedby="deliveryAddress-help">
+                                        <label for="deliveryAddress" class="form-label">Adresse complète</label>
+                                        <input type="text" class="form-control" id="deliveryAddress" name="deliveryAddress" placeholder="Adresse complète" autocomplete="street-address" required aria-describedby="deliveryAddress-help">
                                         <div class="form-text" id="deliveryAddress-help">Exemple: 123 Rue de la République</div>
                                     </div>
                                     <div class="col-md-4 mb-3">
-                                        <label for="deliveryZip" class="visually-hidden">Code postal</label>
-                                        <input type="text" class="form-control" id="deliveryZip" placeholder="Code postal" required aria-describedby="deliveryZip-help">
+                                        <label for="deliveryZip" class="form-label">Code postal</label>
+                                        <input type="text" class="form-control" id="deliveryZip" name="deliveryZip" placeholder="Code postal" autocomplete="postal-code" required aria-describedby="deliveryZip-help">
                                         <div class="form-text" id="deliveryZip-help">Exemple: 13001</div>
                                     </div>
                                 </div>
-                                <label for="deliveryInstructions" class="visually-hidden">Instructions de livraison</label>
-                                <textarea class="form-control mb-3" id="deliveryInstructions" rows="3" placeholder="Instructions de livraison (optionnel)" aria-label="Instructions de livraison optionnelles"></textarea>
+                                <div class="mb-3">
+                                    <label for="deliveryInstructions" class="form-label">Instructions de livraison</label>
+                                    <textarea class="form-control" id="deliveryInstructions" name="deliveryInstructions" rows="3" placeholder="Instructions de livraison (optionnel)" autocomplete="off" aria-label="Instructions de livraison optionnelles"></textarea>
+                                </div>
                             </div>
                         </div>
 
@@ -105,22 +107,22 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="clientFirstName" class="form-label">Prénom <span aria-label="requis">*</span></label>
-                                    <input type="text" class="form-control" id="clientFirstName" placeholder="Votre prénom" required aria-required="true">
+                                    <input type="text" class="form-control" id="clientFirstName" name="clientFirstName" placeholder="Votre prénom" autocomplete="given-name" required aria-required="true">
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="clientLastName" class="form-label">Nom <span aria-label="requis">*</span></label>
-                                    <input type="text" class="form-control" id="clientLastName" placeholder="Votre nom" required aria-required="true">
+                                    <input type="text" class="form-control" id="clientLastName" name="clientLastName" placeholder="Votre nom" autocomplete="family-name" required aria-required="true">
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="clientPhone" class="form-label">Téléphone <span aria-label="requis">*</span></label>
-                                    <input type="tel" class="form-control" id="clientPhone" placeholder="Votre numéro de téléphone" required aria-required="true" aria-describedby="clientPhone-help">
+                                    <input type="tel" class="form-control" id="clientPhone" name="clientPhone" placeholder="Votre numéro de téléphone" autocomplete="tel" required aria-required="true" aria-describedby="clientPhone-help">
                                     <div class="form-text" id="clientPhone-help">Format accepté: 06 12 34 56 78, +33 6 12 34 56 78</div>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="clientEmail" class="form-label">Email <span aria-label="requis">*</span></label>
-                                    <input type="email" class="form-control" id="clientEmail" placeholder="votre@email.com" required aria-required="true">
+                                    <input type="email" class="form-control" id="clientEmail" name="clientEmail" placeholder="votre@email.com" autocomplete="email" required aria-required="true">
                                 </div>
                             </div>
                         </div>
@@ -130,11 +132,11 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="deliveryDate" class="form-label">Date</label>
-                                    <input type="date" class="form-control" id="deliveryDate" required aria-required="true">
+                                    <input type="date" class="form-control" id="deliveryDate" name="deliveryDate" autocomplete="off" required aria-required="true">
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="deliveryTime" class="form-label">Heure</label>
-                                    <select class="form-select" id="deliveryTime" required aria-required="true">
+                                    <select class="form-select" id="deliveryTime" name="deliveryTime" autocomplete="off" required aria-required="true">
                                         <option value="">Choisir un créneau</option>
                                     </select>
                                 </div>
@@ -252,9 +254,9 @@
                         <div class="summary-line total"><span>Total TTC</span><span id="totalAmount" aria-live="polite" aria-label="Total à payer">0€</span></div>
                     </div>
                     <div class="promo-code" role="region" aria-labelledby="promo-code-title">
-                        <label for="promoCode" class="visually-hidden" id="promo-code-title">Code promo</label>
+                        <label for="promoCode" class="form-label" id="promo-code-title">Code promo</label>
                         <div class="input-group">
-                            <input type="text" class="form-control" id="promoCode" placeholder="Code promo" aria-label="Entrer un code promo">
+                            <input type="text" class="form-control" id="promoCode" name="promoCode" placeholder="Code promo" autocomplete="off" aria-label="Entrer un code promo">
                             <button class="btn btn-outline-secondary" type="button" aria-label="Appliquer le code promo">Appliquer</button>
                         </div>
                     </div>

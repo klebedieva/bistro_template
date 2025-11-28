@@ -131,6 +131,32 @@ td .btn {
     box-shadow: none !important;
 }
 
+/* Убедиться, что action-delete выглядит так же, как и другие действия */
+.action-delete.btn.btn-soft-danger.btn-sm {
+    background-color: #f8f9fa !important;
+    border: 1px solid #dee2e6 !important;
+    color: #dc3545 !important;
+    margin: 0 2px !important;
+    box-shadow: none !important;
+    display: inline-block !important;
+    border-radius: 8px !important;
+    font-size: 0.875rem !important;
+    padding: 0.375rem 0.75rem !important;
+    transition: all 0.2s ease !important;
+}
+
+.action-delete.btn.btn-soft-danger.btn-sm:hover {
+    background-color: #e9ecef !important;
+    border: 1px solid #adb5bd !important;
+    color: #c82333 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+.action-delete.btn.btn-soft-danger.btn-sm:focus {
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
 /* Focus styles for all buttons */
 .btn.btn-soft-warning.btn-sm:focus {
     box-shadow: 0 0 0 0.2rem rgba(255, 111, 0, 0.25) !important;

@@ -100,6 +100,22 @@ section.contact-section .contact-info {
     box-shadow: 0 8px 25px rgba(212, 165, 116, 0.2);
 }
 
+/* Make contact cards wider on screens up to 1200px */
+@media (max-width: 1200px) {
+    .contact-section .col-md-4 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+}
+
+/* Full width on very small screens */
+@media (max-width: 768px) {
+    .contact-section .col-md-4 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
+
 /* Contact Section Titles - titles with decorative lines */
 .contact-form-card h3,
 .map-section h3 {

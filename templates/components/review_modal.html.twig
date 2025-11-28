@@ -22,7 +22,7 @@ Usage:
                 <form id="{{ modal_id|default('addReviewModal') }}Form" novalidate>
                     <div class="mb-3">
                         <label for="{{ modal_id|default('addReviewModal') }}Name" class="form-label">Votre nom *</label>
-                        <input type="text" class="form-control" id="{{ modal_id|default('addReviewModal') }}Name" name="name" required>
+                        <input type="text" class="form-control" id="{{ modal_id|default('addReviewModal') }}Name" name="name" autocomplete="name" required>
                         <div class="invalid-feedback" id="{{ modal_id|default('addReviewModal') }}NameError"></div>
                     </div>
                     
@@ -58,7 +58,7 @@ Usage:
                     
                     <div class="mb-3">
                         <label for="{{ modal_id|default('addReviewModal') }}Email" class="form-label">Email (optionnel)</label>
-                        <input type="email" class="form-control" id="{{ modal_id|default('addReviewModal') }}Email" name="email" placeholder="votre@email.com">
+                        <input type="email" class="form-control" id="{{ modal_id|default('addReviewModal') }}Email" name="email" placeholder="votre@email.com" autocomplete="email">
                         <div class="invalid-feedback" id="{{ modal_id|default('addReviewModal') }}EmailError"></div>
                     </div>
                     

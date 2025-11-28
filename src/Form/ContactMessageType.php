@@ -15,10 +15,23 @@ class ContactMessageType extends AbstractType
     
     {
         $builder
-            ->add('firstName', null, ['label' => 'form.firstName'])
-            ->add('lastName',  null, ['label' => 'form.lastName'])
-            ->add('email',     null, ['label' => 'form.email'])
-            ->add('phone',     null, ['label' => 'form.phone', 'required' => false])
+            ->add('firstName', null, [
+                'label' => 'form.firstName',
+                'attr' => ['autocomplete' => 'given-name'],
+            ])
+            ->add('lastName',  null, [
+                'label' => 'form.lastName',
+                'attr' => ['autocomplete' => 'family-name'],
+            ])
+            ->add('email',     null, [
+                'label' => 'form.email',
+                'attr' => ['autocomplete' => 'email'],
+            ])
+            ->add('phone',     null, [
+                'label' => 'form.phone',
+                'required' => false,
+                'attr' => ['autocomplete' => 'tel'],
+            ])
             ->add('subject', ChoiceType::class, [
                 'label' => 'form.subject',
                 'placeholder' => 'form.choose_subject',
@@ -31,14 +44,19 @@ class ContactMessageType extends AbstractType
                     'form.autre'           => 'autre',
                 ],
                 'required' => true,
+                'attr' => ['autocomplete' => 'off'],
             ])
             ->add('message', TextareaType::class, [
                 'label' => 'form.message',
-                'attr' => ['rows' => 6],
+                'attr' => [
+                    'rows' => 6,
+                    'autocomplete' => 'off',
+                ],
             ])
             ->add('consent', CheckboxType::class, [
                 'label' => 'form.consent',
                 'required' => true,
+                'attr' => ['autocomplete' => 'off'],
             ])
         ;
     }

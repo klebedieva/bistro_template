@@ -593,6 +593,20 @@ function initGalleryModal() {
             }
         }
     }
+
+    /**
+     * Fix accessibility issue: remove focus from close button before modal closes
+     * This prevents the aria-hidden warning when closing the modal
+     */
+    if (modal) {
+        modal.addEventListener('hide.bs.modal', function () {
+            // Remove focus from any focused element inside the modal
+            const focusedElement = modal.querySelector(':focus');
+            if (focusedElement) {
+                focusedElement.blur();
+            }
+        });
+    }
 }
 
 // ============================================================================
