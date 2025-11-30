@@ -11,6 +11,8 @@ if (is_file(dirname(__DIR__).'/vendor/phpunit/phpunit/phpunit')) {
     } else {
         define('PHPUNIT_COMPOSER_INSTALL', dirname(__DIR__).'/vendor/autoload.php');
         require PHPUNIT_COMPOSER_INSTALL;
+        // Class is loaded dynamically via require above
+        /** @phpstan-ignore-next-line */
         PHPUnit\TextUI\Command::main();
     }
 } else {

@@ -5,7 +5,6 @@ namespace App\Controller;
 use App\DTO\ReservationCreateRequest;
 use App\Entity\Review;
 use App\Entity\Reservation;
-use App\Form\ReviewType;
 use App\Form\ReservationType;
 use App\Repository\ReviewRepository;
 use App\Repository\GalleryImageRepository;
@@ -292,27 +291,8 @@ class HomeController extends AbstractApiController
         // Get only approved reviews for display on reviews page
         $reviews = $reviewRepository->findApprovedOrderedByDate();
         
-        // Create review form
-        $review = new Review();
-        $reviewForm = $this->createForm(ReviewType::class, $review);
-        
-        $reviewForm->handleRequest($request);
-        
-        if ($reviewForm->isSubmitted() && $reviewForm->isValid()) {
-            // By default review is not approved (requires moderation)
-            $review->setIsApproved(false);
-
-            // Delegate persistence to service to keep controller thin
-            $this->reviewService->createReviewFromEntity($review);
-            
-            $this->addFlash('success', 'Merci pour votre avis ! Il sera publié après modération.');
-            
-            return $this->redirectToRoute('app_reviews');
-        }
-        
         return $this->render('pages/reviews.html.twig', [
             'reviews' => $reviews,
-            'reviewForm' => $reviewForm->createView(),
             'reviewStats' => $reviewRepository->getApprovedGeneralStats(),
             'seo_title' => 'Avis clients | Le Trois Quarts Marseille',
             'seo_description' => 'Lisez les témoignages de nos clients et partagez votre expérience au Trois Quarts, brasserie conviviale du quartier du Camas.',

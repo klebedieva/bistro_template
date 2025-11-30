@@ -2,10 +2,12 @@
 
 namespace App\EventSubscriber;
 
+use App\Entity\User;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Security\Http\Event\LoginSuccessEvent;
 use Symfony\Component\Security\Http\Event\LoginFailureEvent;
+use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 
 /**
  * Login Audit Event Subscriber
@@ -76,8 +78,16 @@ class LoginAuditSubscriber implements EventSubscriberInterface
         $user = $event->getUser();
         $ip = $request->getClientIp();
         $ua = (string)$request->headers->get('User-Agent', '');
+        
+        $email = null;
+        if ($user instanceof User) {
+            $email = $user->getEmail();
+        } elseif (method_exists($user, 'getUserIdentifier')) {
+            $email = $user->getUserIdentifier();
+        }
+        
         $this->logger->info('Login success', [
-            'email' => method_exists($user, 'getEmail') ? $user->getEmail() : null,
+            'email' => $email,
             'ip' => $ip,
             'user_agent' => $ua,
             'path' => $request->getPathInfo(),
@@ -99,8 +109,8 @@ class LoginAuditSubscriber implements EventSubscriberInterface
         $email = null;
         $passport = $event->getPassport();
         if ($passport !== null) {
-            $badge = $passport->getBadge('user_badge');
-            if ($badge !== null && method_exists($badge, 'getUserIdentifier')) {
+            $badge = $passport->getBadge(UserBadge::class);
+            if ($badge instanceof UserBadge) {
                 $email = $badge->getUserIdentifier();
             }
         }

@@ -71,7 +71,7 @@ class ReservationService
         if ($reservation->getStatus() === null) {
             $reservation->setStatus(ReservationStatus::PENDING);
         }
-        if ($reservation->getIsConfirmed() === null) {
+        if ($reservation->isConfirmed() === null) {
             $reservation->setIsConfirmed(false);
         }
 
