@@ -19,8 +19,14 @@ final class Version20250923114552 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('CREATE TABLE drink (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(160) NOT NULL, price NUMERIC(10, 2) NOT NULL, type VARCHAR(32) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+        $platform = $this->connection->getDatabasePlatform();
+        $isPostgres = $platform instanceof \Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+
+        if ($isPostgres) {
+            $this->addSql('CREATE TABLE drink (id SERIAL NOT NULL, name VARCHAR(160) NOT NULL, price NUMERIC(10, 2) NOT NULL, type VARCHAR(32) NOT NULL, PRIMARY KEY(id))');
+        } else {
+            $this->addSql('CREATE TABLE drink (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(160) NOT NULL, price NUMERIC(10, 2) NOT NULL, type VARCHAR(32) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+        }
     }
 
     public function down(Schema $schema): void
