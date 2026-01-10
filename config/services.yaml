@@ -2,7 +2,8 @@
 # Files in the packages/ subdirectory configure your dependencies.
 
 parameters:
-    app.base_url: '%env(APP_BASE_URL)%'
+    # APP_BASE_URL is optional - use empty string if not set
+    app.base_url: '%env(default::string:APP_BASE_URL)%'
     
     # Order configuration
     order.idempotency_ttl: 600  # Idempotency cache TTL in seconds (10 minutes)
