@@ -14,8 +14,26 @@ mkdir -p /var/www/html/var/cache /var/www/html/var/log
 chown -R www-data:www-data /var/www/html/var
 chmod -R 775 /var/www/html/var
 
-# Clear cache if needed (optional - uncomment if cache issues occur)
-# php bin/console cache:clear --env=prod --no-debug || true
+# Check if Composer dependencies are installed
+if [ ! -f "/var/www/html/vendor/autoload.php" ]; then
+    echo "WARNING: Composer dependencies not found! Installing..."
+    cd /var/www/html
+    composer install --no-dev --optimize-autoloader --no-interaction || echo "Composer install failed, but continuing..."
+fi
+
+# Check critical environment variables
+if [ -z "$APP_SECRET" ]; then
+    echo "WARNING: APP_SECRET environment variable is not set!"
+fi
+
+if [ -z "$DATABASE_URL" ]; then
+    echo "WARNING: DATABASE_URL environment variable is not set!"
+fi
+
+# Clear and warmup cache for production
+echo "Preparing Symfony cache..."
+php bin/console cache:clear --env=prod --no-debug --no-interaction || echo "Cache clear failed, but continuing..."
+php bin/console cache:warmup --env=prod --no-debug --no-interaction || echo "Cache warmup failed, but continuing..."
 
 echo "Starting Apache..."
 exec apache2-foreground
