@@ -16,6 +16,10 @@ RUN set -eux; \
     a2enmod mpm_prefork; \
     apachectl -M | grep -i mpm
 
+# Prevent any other MPM from being enabled at runtime
+RUN rm -f /etc/apache2/mods-available/mpm_event.load \
+          /etc/apache2/mods-available/mpm_worker.load || true
+
 # Symfony public/
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' \
@@ -28,4 +32,8 @@ COPY . .
 
 RUN chown -R www-data:www-data /var/www/html
 
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 EXPOSE 80
+CMD ["docker-entrypoint.sh"]
