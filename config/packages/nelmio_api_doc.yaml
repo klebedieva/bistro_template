@@ -19,7 +19,7 @@ nelmio_api_doc:
             version: '1.0.0'
             contact:
                 name: 'Bistro'
-                url: '%app.base_url%'
+                url: '${app.base_url}'
                 email: 'contact@bistro.com'
         components:
             securitySchemes:
@@ -30,7 +30,7 @@ nelmio_api_doc:
         security:
             - SwaggerBypass: []
         servers:
-            - url: '%app.base_url%'
+            - url: '${app.base_url}'
               description: 'Production server'
             - url: 'https://127.0.0.1:8000'
               description: 'Development server (HTTPS)'

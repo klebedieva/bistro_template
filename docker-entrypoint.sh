@@ -52,5 +52,12 @@ if [ ! -d "/var/www/html/vendor" ]; then
     echo "ERROR: vendor directory not found!"
 fi
 
+# Set APP_BASE_URL from environment if provided, otherwise leave empty
+if [ -n "$APP_BASE_URL" ]; then
+    echo "APP_BASE_URL is set: $APP_BASE_URL"
+    # Update services.yaml to use the value (if needed)
+    # For now, we'll use env() directly in YAML
+fi
+
 echo "Starting Apache..."
 exec apache2-foreground
