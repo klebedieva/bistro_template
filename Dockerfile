@@ -1,17 +1,19 @@
 FROM php:8.3-apache
 
+# Basic dependencies
 RUN apt-get update \
     && apt-get install -y unzip git libzip-dev \
     && docker-php-ext-install zip pdo pdo_mysql
 
-# mod_rewrite for Symfony
+# Enable rewrite
 RUN a2enmod rewrite
 
-# ✅ Fix: use only one MPM
-RUN a2dismod mpm_event mpm_worker || true \
+# 🔥 STRICT: remove all MPM except prefork
+RUN rm -f /etc/apache2/mods-enabled/mpm_event.* \
+          /etc/apache2/mods-enabled/mpm_worker.* \
     && a2enmod mpm_prefork
 
-# ✅ Symfony: document root = /public
+# Symfony: DocumentRoot = /public
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' \
     /etc/apache2/sites-available/*.conf \
