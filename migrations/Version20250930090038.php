@@ -19,9 +19,15 @@ final class Version20250930090038 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        // Create only the restaurant tables entity table; skip legacy allergen tables
         if (!$schema->hasTable('tables')) {
-            $this->addSql('CREATE TABLE tables (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(100) NOT NULL, capacity INT NOT NULL, zone VARCHAR(50) DEFAULT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+            $platform = $this->connection->getDatabasePlatform();
+            $isPostgres = $platform instanceof \Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+
+            if ($isPostgres) {
+                $this->addSql('CREATE TABLE tables (id SERIAL NOT NULL, name VARCHAR(100) NOT NULL, capacity INT NOT NULL, zone VARCHAR(50) DEFAULT NULL, PRIMARY KEY(id))');
+            } else {
+                $this->addSql('CREATE TABLE tables (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(100) NOT NULL, capacity INT NOT NULL, zone VARCHAR(50) DEFAULT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
+            }
         }
     }
 

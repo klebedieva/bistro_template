@@ -24,35 +24,59 @@ final class Version20251120194327 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        // Extract filename from paths containing /uploads/menu/
-        // Example: /uploads/menu/entree-1.png → entree-1.png
-        $this->addSql("
-            UPDATE menu_item 
-            SET image = SUBSTRING_INDEX(image, '/', -1)
-            WHERE image LIKE '%/uploads/menu/%' 
-               OR image LIKE '%uploads/menu/%'
-        ");
+        $platform = $this->connection->getDatabasePlatform();
+        $isPostgres = $platform instanceof \Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 
-        // Extract filename from paths containing /static/img/menu/ or /static/img/{category}/
-        // Example: /static/img/menu/plat-1.png → plat-1.png
-        // Note: This also handles old paths with category folders (entrees, plats, desserts)
-        $this->addSql("
-            UPDATE menu_item 
-            SET image = SUBSTRING_INDEX(image, '/', -1)
-            WHERE image LIKE '%/static/img/%' 
-               OR image LIKE '%static/img/%'
-        ");
+        if ($isPostgres) {
+            // PostgreSQL syntax: use SPLIT_PART or regexp_replace
+            // Extract filename from paths containing /uploads/menu/
+            $this->addSql("
+                UPDATE menu_item 
+                SET image = (string_to_array(image, '/'))[array_length(string_to_array(image, '/'), 1)]
+                WHERE image LIKE '%/uploads/menu/%' 
+                   OR image LIKE '%uploads/menu/%'
+            ");
 
-        // Extract filename from any path that contains a slash (likely a full path)
-        // This catches any remaining full paths
-        // Example: /var/www/.../public/uploads/menu/file.jpg → file.jpg
-        $this->addSql("
-            UPDATE menu_item 
-            SET image = SUBSTRING_INDEX(image, '/', -1)
-            WHERE image LIKE '%/%' 
-              AND image NOT LIKE 'http%'
-              AND image NOT LIKE 'https%'
-        ");
+            // Extract filename from paths containing /static/img/
+            $this->addSql("
+                UPDATE menu_item 
+                SET image = (string_to_array(image, '/'))[array_length(string_to_array(image, '/'), 1)]
+                WHERE image LIKE '%/static/img/%' 
+                   OR image LIKE '%static/img/%'
+            ");
+
+            // Extract filename from any path that contains a slash
+            $this->addSql("
+                UPDATE menu_item 
+                SET image = (string_to_array(image, '/'))[array_length(string_to_array(image, '/'), 1)]
+                WHERE image LIKE '%/%' 
+                  AND image NOT LIKE 'http%'
+                  AND image NOT LIKE 'https%'
+            ");
+        } else {
+            // MySQL syntax: SUBSTRING_INDEX
+            $this->addSql("
+                UPDATE menu_item 
+                SET image = SUBSTRING_INDEX(image, '/', -1)
+                WHERE image LIKE '%/uploads/menu/%' 
+                   OR image LIKE '%uploads/menu/%'
+            ");
+
+            $this->addSql("
+                UPDATE menu_item 
+                SET image = SUBSTRING_INDEX(image, '/', -1)
+                WHERE image LIKE '%/static/img/%' 
+                   OR image LIKE '%static/img/%'
+            ");
+
+            $this->addSql("
+                UPDATE menu_item 
+                SET image = SUBSTRING_INDEX(image, '/', -1)
+                WHERE image LIKE '%/%' 
+                  AND image NOT LIKE 'http%'
+                  AND image NOT LIKE 'https%'
+            ");
+        }
     }
 
     public function down(Schema $schema): void

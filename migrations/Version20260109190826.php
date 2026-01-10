@@ -19,15 +19,27 @@ final class Version20260109190826 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        // this up() migration is auto-generated, please modify it to your needs
+        $platform = $this->connection->getDatabasePlatform();
+        $isPostgres = $platform instanceof \Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+
         $this->addSql('ALTER TABLE menu_item DROP prep_time_minutes');
-        $this->addSql('ALTER TABLE `order` ADD client_first_name VARCHAR(255) DEFAULT NULL, ADD client_last_name VARCHAR(255) DEFAULT NULL, ADD client_phone VARCHAR(20) DEFAULT NULL');
+        if ($isPostgres) {
+            $this->addSql('ALTER TABLE "order" ADD client_first_name VARCHAR(255) DEFAULT NULL, ADD client_last_name VARCHAR(255) DEFAULT NULL, ADD client_phone VARCHAR(20) DEFAULT NULL');
+        } else {
+            $this->addSql('ALTER TABLE `order` ADD client_first_name VARCHAR(255) DEFAULT NULL, ADD client_last_name VARCHAR(255) DEFAULT NULL, ADD client_phone VARCHAR(20) DEFAULT NULL');
+        }
     }
 
     public function down(Schema $schema): void
     {
-        // this down() migration is auto-generated, please modify it to your needs
+        $platform = $this->connection->getDatabasePlatform();
+        $isPostgres = $platform instanceof \Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+
         $this->addSql('ALTER TABLE menu_item ADD prep_time_minutes INT DEFAULT NULL');
-        $this->addSql('ALTER TABLE `order` DROP client_first_name, DROP client_last_name, DROP client_phone');
+        if ($isPostgres) {
+            $this->addSql('ALTER TABLE "order" DROP client_first_name, DROP client_last_name, DROP client_phone');
+        } else {
+            $this->addSql('ALTER TABLE `order` DROP client_first_name, DROP client_last_name, DROP client_phone');
+        }
     }
 }
