@@ -19,13 +19,25 @@ final class Version20251009092646 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE `order` ADD client_email VARCHAR(255) DEFAULT NULL, ADD client_name VARCHAR(255) DEFAULT NULL');
+        $platform = $this->connection->getDatabasePlatform();
+        $isPostgres = $platform instanceof \Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+
+        if ($isPostgres) {
+            $this->addSql('ALTER TABLE "order" ADD client_email VARCHAR(255) DEFAULT NULL, ADD client_name VARCHAR(255) DEFAULT NULL');
+        } else {
+            $this->addSql('ALTER TABLE `order` ADD client_email VARCHAR(255) DEFAULT NULL, ADD client_name VARCHAR(255) DEFAULT NULL');
+        }
     }
 
     public function down(Schema $schema): void
     {
-        // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE `order` DROP client_email, DROP client_name');
+        $platform = $this->connection->getDatabasePlatform();
+        $isPostgres = $platform instanceof \Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+
+        if ($isPostgres) {
+            $this->addSql('ALTER TABLE "order" DROP client_email, DROP client_name');
+        } else {
+            $this->addSql('ALTER TABLE `order` DROP client_email, DROP client_name');
+        }
     }
 }
