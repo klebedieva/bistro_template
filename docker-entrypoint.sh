@@ -55,12 +55,29 @@ if [ ! -d "/var/www/html/vendor" ]; then
     echo "ERROR: vendor directory not found!"
 fi
 
-# Set APP_BASE_URL from environment if provided, otherwise leave empty
-if [ -n "$APP_BASE_URL" ]; then
-    echo "APP_BASE_URL is set: $APP_BASE_URL"
-    # Update services.yaml to use the value (if needed)
-    # For now, we'll use env() directly in YAML
-fi
+# Enable PHP error logging to help debug 502 errors
+echo "Configuring PHP error logging..."
+echo "log_errors = On" >> /usr/local/etc/php/conf.d/error-logging.ini
+echo "error_log = /var/log/apache2/php_errors.log" >> /usr/local/etc/php/conf.d/error-logging.ini
+echo "display_errors = Off" >> /usr/local/etc/php/conf.d/error-logging.ini
+echo "error_reporting = E_ALL" >> /usr/local/etc/php/conf.d/error-logging.ini
+
+# Try to test if Symfony Kernel can be loaded (this will show errors)
+echo "Testing Symfony Kernel loading..."
+php -r "
+try {
+    require '/var/www/html/vendor/autoload_runtime.php';
+    \$context = ['APP_ENV' => 'prod', 'APP_DEBUG' => false];
+    \$kernelFn = require '/var/www/html/public/index.php';
+    \$kernel = \$kernelFn(\$context);
+    echo 'SUCCESS: Kernel loaded: ' . get_class(\$kernel) . PHP_EOL;
+} catch (Throwable \$e) {
+    echo 'ERROR loading Kernel: ' . get_class(\$e) . PHP_EOL;
+    echo 'Message: ' . \$e->getMessage() . PHP_EOL;
+    echo 'File: ' . \$e->getFile() . ':' . \$e->getLine() . PHP_EOL;
+    exit(1);
+}
+" 2>&1 || echo "Kernel test had warnings (this is OK if DB is not ready)"
 
 echo "Starting Apache..."
 exec apache2-foreground
