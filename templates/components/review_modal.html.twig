@@ -53,7 +53,7 @@ Usage:
                     <div class="mb-3">
                         <label for="{{ modal_id|default('addReviewModal') }}Text" class="form-label">Votre avis *</label>
                         <textarea class="form-control" id="{{ modal_id|default('addReviewModal') }}Text" name="comment" rows="4" 
-                                  placeholder="{% if review_type|default('restaurant') == 'dish' %}Partagez votre avis sur ce plat...{% else %}Partagez votre expérience au Trois Quarts...{% endif %}" required></textarea>
+                                  placeholder="{% if review_type|default('restaurant') == 'dish' %}Partagez votre avis sur ce plat...{% else %}Partagez votre expérience au Bistro...{% endif %}" required></textarea>
                         <div class="invalid-feedback" id="{{ modal_id|default('addReviewModal') }}TextError"></div>
                     </div>
                     

@@ -26,7 +26,7 @@ class UserFixtures extends Fixture implements FixtureGroupInterface
         // Admin with secure password: Admin13005!@#Secure
         // Requirements: 12+ chars, uppercase, lowercase, digit, special char
         $admin = new User();
-        $admin->setEmail('admin@letroisquarts.online')
+        $admin->setEmail('admin@bistro.com')
               ->setName('Admin')
               ->setRole(UserRole::ADMIN)
               ->setIsActive(true);
@@ -36,7 +36,7 @@ class UserFixtures extends Fixture implements FixtureGroupInterface
         // Moderator with secure password: Moder13005!@#Secure
         // Requirements: 12+ chars, uppercase, lowercase, digit, special char
         $moderator = new User();
-        $moderator->setEmail('moderator@letroisquarts.online')
+        $moderator->setEmail('moderator@bistro.com')
                   ->setName('Moderator')
                   ->setRole(UserRole::MODERATOR)
                   ->setIsActive(true);

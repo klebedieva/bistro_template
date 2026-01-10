@@ -8,8 +8,8 @@
     {# ----------------------------------------------------------------- #}
     {# SEO BASICS: TITLE, DESCRIPTION, ROBOTS, CANONICAL                  #}
     {# ----------------------------------------------------------------- #}
-    {% set default_title = 'Le Trois Quarts – Brasserie au cœur du Camas' %}
-    {% set default_description = 'Le Trois Quarts propose une cuisine méditerranéenne généreuse, un service chaleureux et une terrasse conviviale à Marseille.' %}
+    {% set default_title = 'Bistro – Brasserie à Paris' %}
+    {% set default_description = 'Bistro propose une cuisine méditerranéenne généreuse, un service chaleureux et une terrasse conviviale à Paris.' %}
     {% set meta_title = seo_title|default(default_title) %}
     {% set meta_description = seo_description|default(default_description) %}
     {% set meta_robots = seo_robots|default('index,follow') %}
@@ -50,19 +50,19 @@
         {{ {
             '@context': 'https://schema.org',
             '@type': 'Restaurant',
-            'name': 'Le Trois Quarts',
+            'name': 'Bistro',
             'url': canonical_url|default(og_url),
             'image': og_image,
             'description': meta_description,
             'servesCuisine': ['Cuisine méditerranéenne', 'Cuisine française'],
             'address': {
                 '@type': 'PostalAddress',
-                'streetAddress': '139 Boulevard Chave',
-                'addressLocality': 'Marseille',
-                'postalCode': '13005',
+                'streetAddress': '5 Avenue Anatole France',
+                'addressLocality': 'Paris',
+                'postalCode': '75007',
                 'addressCountry': 'FR'
             },
-            'telephone': '+33 4 91 92 96 16',
+            'telephone': '+33 6 00 00 00 00',
             'priceRange': '€€',
             'openingHoursSpecification': [
                 {
@@ -80,10 +80,7 @@
                     'closes': '23:00'
                 }
             ],
-            'sameAs': [
-                'https://www.facebook.com/bistroletroisquarts/?locale=fr_FR',
-                'https://www.instagram.com/letroisquarts'
-            ]
+            'sameAs': []
         }|json_encode(constant('JSON_UNESCAPED_SLASHES'))|raw }}
     </script>
 

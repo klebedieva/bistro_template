@@ -15,9 +15,9 @@ class MentionsLegalesController extends AbstractController
     public function __invoke(): Response
     {
         return $this->render('pages/mentions-legales.html.twig', [
-            'seo_title' => 'Mentions légales | Le Trois Quarts',
-            'seo_description' => 'Informations légales, éditeur du site, responsable de publication et hébergeur du Trois Quarts.',
-            'seo_og_description' => 'Mentions légales et informations réglementaires du Trois Quarts.',
+            'seo_title' => 'Mentions légales | Bistro Paris',
+            'seo_description' => 'Informations légales, éditeur du site, responsable de publication et hébergeur du Bistro.',
+            'seo_og_description' => 'Mentions légales et informations réglementaires du Bistro.',
             'seo_robots' => 'noindex,follow',
         ]);
     }

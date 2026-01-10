@@ -1,6 +1,6 @@
-# Le Trois Quarts – Restaurant Platform
+# Bistro – Restaurant Platform
 
-Modern Symfony application that powers the public website, online ordering flow and administration tools of the Le Trois Quarts brasserie in Marseille (FR-13).
+Modern Symfony application that powers the public website, online ordering flow and administration tools of the Bistro brasserie in Paris.
 
 ---
 
@@ -31,7 +31,7 @@ Modern Symfony application that powers the public website, online ordering flow 
 ## 📂 Repository structure (excerpt)
 
 ```
-le_trois_quarts/
+bistro/
 ├── config/                  # Symfony & service configuration
 ├── docs/                    # Architecture notes + testing guides
 ├── public/
@@ -57,7 +57,7 @@ le_trois_quarts/
 1. **Clone & install**
    ```bash
    git clone <repository-url>
-   cd le_trois_quarts
+   cd bistro
    composer install
    ```
 
@@ -124,19 +124,19 @@ le_trois_quarts/
 
 ## 📞 Restaurant contact
 
-**Le Trois Quarts**  
-139 Boulevard Chave, 13005 Marseille  
-☎️ 04 91 92 96 16  
-✉️ letroisquarts@gmail.com  
+**Bistro**  
+5 Avenue Anatole France, 75007 Paris  
+☎️ +33 6 00 00 00 00  
+✉️ contact@bistro.com  
 🕗 08:00 – 23:00 (daily)
 
 ---
 
 ## 📄 License & contributions
 
-This codebase is proprietary and maintained for Le Trois Quarts restaurant.  
+This codebase is proprietary and maintained for Bistro restaurant.  
 External pull requests are not accepted; for questions contact the internal development team.
 
 ---
 
-_Built with ❤️ for Le Trois Quarts_
+_Built with ❤️ for Bistro_

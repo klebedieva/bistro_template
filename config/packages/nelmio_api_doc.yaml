@@ -1,7 +1,7 @@
 nelmio_api_doc:
     documentation:
         info:
-            title: 'Le Trois Quarts - API'
+            title: 'Bistro - API'
             description: |
                 🛒 REST API for shopping cart, orders and reviews management
                 
@@ -18,9 +18,9 @@ nelmio_api_doc:
                 
             version: '1.0.0'
             contact:
-                name: 'Le Trois Quarts'
+                name: 'Bistro'
                 url: '%app.base_url%'
-                email: 'contact@letroisquarts.online'
+                email: 'contact@bistro.com'
         components:
             securitySchemes:
                 SwaggerBypass:

@@ -18,7 +18,7 @@
             {{ {
                 '@context': 'https://schema.org',
                 '@type': 'Restaurant',
-                'name': 'Le Trois Quarts',
+                'name': 'Bistro',
                 'aggregateRating': {
                     '@type': 'AggregateRating',
                     'ratingValue': reviewStats.avg|number_format(1, '.', ''),
@@ -45,10 +45,10 @@
             <div class="row align-items-center">
                 <div class="col-lg-6">
                     <div class="about-content py-4 text-center text-lg-start">
-                        <h2 class="section-title mb-4 display-4 display-md-5 display-lg-4">Bienvenue au Trois Quarts</h2>
-                        <p class="lead mb-4 fs-5 fs-md-6 fs-lg-5">Votre brasserie conviviale au cœur du quartier du Camas, sur le boulevard Chave.</p>
+                        <h2 class="section-title mb-4 display-4 display-md-5 display-lg-4">Bienvenue au Bistro</h2>
+                        <p class="lead mb-4 fs-5 fs-md-6 fs-lg-5">Votre brasserie conviviale au cœur de Paris, près du Champ de Mars.</p>
                         <p class="fs-6 fs-md-5 fs-lg-6 mb-3">Installez-vous en terrasse et profitez d'un moment gourmand dans une ambiance chaleureuse. Que ce soit pour un café, un déjeuner entre amis ou un verre en soirée, notre équipe vous accueille avec le sourire.</p>
-                        <p class="fs-6 fs-md-5 fs-lg-6">Venez découvrir notre carte alliant tradition et créativité ! Situé sur le boulevard Chave, en plein cœur du Camas, Le Trois Quarts est une brasserie où il fait bon se retrouver. Terrasse ensoleillée, ambiance décontractée et une cuisine généreuse : tout est réuni pour un moment agréable. Nos plats sont préparés avec des produits frais et de saison, dans le respect des saveurs authentiques de la cuisine méditerranéenne.</p>
+                        <p class="fs-6 fs-md-5 fs-lg-6">Venez découvrir notre carte alliant tradition et créativité ! Situé à proximité de la Tour Eiffel, Bistro est une brasserie où il fait bon se retrouver. Terrasse ensoleillée, ambiance décontractée et une cuisine généreuse : tout est réuni pour un moment agréable. Nos plats sont préparés avec des produits frais et de saison, dans le respect des saveurs authentiques de la cuisine méditerranéenne.</p>
                         
                         <div class="features mt-4">
                             <div class="row justify-content-center">
@@ -72,10 +72,7 @@
                 </div>
                 <div class="col-lg-6">
                     <div class="about-image text-center">
-                        <picture>
-                            <source srcset="{{ asset('static/img/restaurant_1.jpg')|imagine_filter('hero_webp') }}" type="image/webp">
-                            <img src="{{ asset('static/img/restaurant_1.jpg')|imagine_filter('hero_jpeg') }}" alt="À propos du restaurant" class="img-fluid rounded shadow about-photo" loading="lazy">
-                        </picture>
+                        <img src="{{ asset('static/img/restaurant_1.jpeg') }}" alt="À propos du restaurant" class="img-fluid rounded shadow about-photo" loading="lazy">
                     </div>
                 </div>
             </div>
@@ -87,7 +84,7 @@
         <div class="container">
             <div class="text-center mb-5">
                 <h2 class="section-title text-center mb-4 display-4 display-md-5 display-lg-4">Avis de nos clients</h2>
-                <p class="section-subtitle text-center mb-0 fs-5 fs-md-6 fs-lg-5">Ce que pensent nos clients de leur expérience au Trois Quarts</p>
+                <p class="section-subtitle text-center mb-0 fs-5 fs-md-6 fs-lg-5">Ce que pensent nos clients de leur expérience au Bistro</p>
             </div>
             
             <div class="row" id="reviewsContainer">
@@ -141,7 +138,7 @@
         <div class="container">
             <div class="text-center mb-5">
                 <h2 class="section-title text-center mb-4 display-4 display-md-5 display-lg-4">Galerie</h2>
-                <p class="section-subtitle text-center mb-0 fs-5 fs-md-6 fs-lg-5">Découvrez l'ambiance du Trois Quarts</p>
+                <p class="section-subtitle text-center mb-0 fs-5 fs-md-6 fs-lg-5">Découvrez l'ambiance du Bistro</p>
             </div>
             
             <div class="row g-3">
@@ -158,9 +155,7 @@
                         {% set imagePath = image.fullImagePath %}
                         <div class="col-lg-4 col-md-6">
                             <div
-                                class="gallery-item rounded-2"
-                                data-bs-toggle="modal"
-                                data-bs-target="#galleryModal"
+                                class="gallery-item gallery-card rounded-2"
                                 data-image="{{ asset(imagePath)|imagine_filter('hero_jpeg') }}"
                                 data-fallback-image="{{ asset(imagePath) }}"
                                 data-title="{{ image.title|default('') }}"
@@ -171,7 +166,11 @@
                                     <img src="{{ asset(imagePath) }}" alt="{{ image.title }}" class="img-fluid" loading="lazy">
                                 </picture>
                                 <div class="gallery-overlay">
-                                    <i class="bi bi-zoom-in"></i>
+                                    <div class="gallery-content">
+                                        <h5>{{ image.title|default('') }}</h5>
+                                        <p>{{ image.description|default('') }}</p>
+                                        <i class="bi bi-zoom-in"></i>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -205,7 +204,7 @@
                         </div>
                         <div class="info-item d-flex align-items-center justify-content-center justify-content-lg-start">
                             <i class="bi bi-telephone me-2 fs-5"></i>
-                            <a href="tel:0491929616" class="fs-6 fs-md-5 text-decoration-none phone-link">04 91 92 96 16</a>
+                            <a href="tel:+33600000000" class="fs-6 fs-md-5 text-decoration-none phone-link">+33 6 00 00 00 00</a>
                         </div>
                     </div>
                 </div>
@@ -218,7 +217,7 @@
                                 <i class="bi bi-calendar-check me-2"></i>Réserver une table
                             </a>
                             <div class="mt-3">
-                                <small class="text-muted fs-7">Ou appelez-nous au <a href="tel:0491929616" class="text-muted text-decoration-none">04 91 92 96 16</a></small>
+                                <small class="text-muted fs-7">Ou appelez-nous au <a href="tel:+33600000000" class="text-muted text-decoration-none">+33 6 00 00 00 00</a></small>
                             </div>
                         </div>
                     </div>

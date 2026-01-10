@@ -77,9 +77,9 @@ class HomeController extends AbstractApiController
             'reviews' => $reviews,
             'galleryImages' => $galleryImages,
             'reviewStats' => $reviewStats,
-            'seo_title' => 'Le Trois Quarts | Brasserie conviviale à Marseille',
-            'seo_description' => 'Découvrez Le Trois Quarts, brasserie du quartier du Camas à Marseille : cuisine méditerranéenne maison, terrasse ensoleillée et ambiance chaleureuse.',
-            'seo_og_description' => 'Ambiance chaleureuse, cuisine généreuse et service souriant : Le Trois Quarts vous accueille au cœur du Camas à Marseille.',
+            'seo_title' => 'Bistro | Brasserie conviviale à Paris',
+            'seo_description' => 'Découvrez Bistro, brasserie à Paris : cuisine méditerranéenne maison, terrasse ensoleillée et ambiance chaleureuse.',
+            'seo_og_description' => 'Ambiance chaleureuse, cuisine généreuse et service souriant : Bistro vous accueille à Paris.',
         ]);
 
         $response->setPublic();
@@ -94,9 +94,9 @@ class HomeController extends AbstractApiController
     public function menu(): Response
     {
         return $this->render('pages/menu.html.twig', [
-            'seo_title' => 'Notre carte | Le Trois Quarts Marseille',
-            'seo_description' => 'Parcourez la carte du Trois Quarts : entrées, plats, desserts et boissons faits maison aux saveurs méditerranéennes.',
-            'seo_og_description' => 'Explorez la carte du Trois Quarts et trouvez votre prochain coup de cœur gourmand.',
+            'seo_title' => 'Notre carte | Bistro Paris',
+            'seo_description' => 'Parcourez la carte du Bistro : entrées, plats, desserts et boissons faits maison aux saveurs méditerranéennes.',
+            'seo_og_description' => 'Explorez la carte du Bistro et trouvez votre prochain coup de cœur gourmand.',
         ]);
     }
 
@@ -116,9 +116,9 @@ class HomeController extends AbstractApiController
         return $this->render('pages/gallery.html.twig', [
             'images' => $images,
             'categoryCounts' => $categoryCounts,
-            'seo_title' => 'Galerie photos | Le Trois Quarts Marseille',
-            'seo_description' => 'Plongez dans l’ambiance du Trois Quarts grâce à notre sélection de photos : salle, terrasse, plats signatures et moments de convivialité.',
-            'seo_og_description' => 'Découvrez en images l’ambiance chaleureuse et la cuisine généreuse du Trois Quarts à Marseille.',
+            'seo_title' => 'Galerie photos | Bistro Paris',
+            'seo_description' => 'Plongez dans l\'ambiance du Bistro grâce à notre sélection de photos : salle, terrasse, plats signatures et moments de convivialité.',
+            'seo_og_description' => 'Découvrez en images l\'ambiance chaleureuse et la cuisine généreuse du Bistro à Paris.',
         ]);
     }
 
@@ -150,9 +150,9 @@ class HomeController extends AbstractApiController
         
         return $this->render('pages/reservation.html.twig', [
             'reservationForm' => $reservationForm->createView(),
-            'seo_title' => 'Réserver une table | Le Trois Quarts Marseille',
-            'seo_description' => 'Réservez facilement votre table au Trois Quarts pour profiter d’une cuisine méditerranéenne généreuse et d’une terrasse ensoleillée.',
-            'seo_og_description' => 'Planifiez votre prochain repas au Trois Quarts : réservez votre table en quelques clics.',
+            'seo_title' => 'Réserver une table | Bistro Paris',
+            'seo_description' => 'Réservez facilement votre table au Bistro pour profiter d\'une cuisine méditerranéenne généreuse et d\'une terrasse ensoleillée.',
+            'seo_og_description' => 'Planifiez votre prochain repas au Bistro : réservez votre table en quelques clics.',
         ]);
     }
 
@@ -294,9 +294,9 @@ class HomeController extends AbstractApiController
         return $this->render('pages/reviews.html.twig', [
             'reviews' => $reviews,
             'reviewStats' => $reviewRepository->getApprovedGeneralStats(),
-            'seo_title' => 'Avis clients | Le Trois Quarts Marseille',
-            'seo_description' => 'Lisez les témoignages de nos clients et partagez votre expérience au Trois Quarts, brasserie conviviale du quartier du Camas.',
-            'seo_og_description' => 'Les clients racontent leur passage au Trois Quarts : découvrez leurs avis et laissez le vôtre.',
+            'seo_title' => 'Avis clients | Bistro Paris',
+            'seo_description' => 'Lisez les témoignages de nos clients et partagez votre expérience au Bistro, brasserie conviviale à Paris.',
+            'seo_og_description' => 'Les clients racontent leur passage au Bistro : découvrez leurs avis et laissez le vôtre.',
         ]);
     }
 

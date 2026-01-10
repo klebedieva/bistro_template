@@ -26,7 +26,7 @@ use PHPUnit\Framework\TestCase;
  * - VAT (Value Added Tax): TVA in French
  * 
  * @package App\Tests\Unit\Service
- * @author Le Trois Quarts Development Team
+ * @author Bistro Development Team
  */
 class TaxCalculationServiceTest extends TestCase
 {

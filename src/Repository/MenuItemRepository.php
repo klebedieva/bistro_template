@@ -16,6 +16,27 @@ class MenuItemRepository extends ServiceEntityRepository
 		parent::__construct($registry, MenuItem::class);
 	}
 
+	/**
+	 * Find all menu items with badges, tags and allergens loaded (eager loading)
+	 * to avoid N+1 queries when accessing relationships.
+	 *
+	 * @return MenuItem[]
+	 */
+	public function findAllWithRelations(): array
+	{
+		return $this->createQueryBuilder('m')
+			->leftJoin('m.badges', 'b')
+			->addSelect('b')
+			->leftJoin('m.tags', 't')
+			->addSelect('t')
+			->leftJoin('m.allergens', 'a')
+			->addSelect('a')
+			->orderBy('m.category', 'ASC')
+			->addOrderBy('m.id', 'ASC')
+			->getQuery()
+			->getResult();
+	}
+
 
 
 	/**

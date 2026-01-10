@@ -15,9 +15,9 @@ class PrivacyPolicyController extends AbstractController
     public function __invoke(): Response
     {
         return $this->render('pages/privacy-policy.html.twig', [
-            'seo_title' => 'Politique de confidentialité | Le Trois Quarts',
-            'seo_description' => 'Découvrez comment Le Trois Quarts collecte, utilise et protège vos données personnelles.',
-            'seo_og_description' => 'Politique de confidentialité et informations RGPD du Trois Quarts.',
+            'seo_title' => 'Politique de confidentialité | Bistro Paris',
+            'seo_description' => 'Découvrez comment Bistro collecte, utilise et protège vos données personnelles.',
+            'seo_og_description' => 'Politique de confidentialité et informations RGPD du Bistro.',
             'seo_robots' => 'noindex,follow',
         ]);
     }

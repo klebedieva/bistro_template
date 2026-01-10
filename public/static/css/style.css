@@ -277,16 +277,16 @@ section .text-center.mb-5 {
 
 .about-image img {
     transition: var(--transition);
-    max-height: 680px;
+    max-height: 580px;
     object-fit: cover;
-    width: 630px;
+    width: 500px;
     max-width: 100%;
 }
 
 /* Homepage about image specific presentation extracted from inline styles */
 .about-image .about-photo {
-    max-height: 700px;
-    width: 580px;
+    max-height: 660px;
+    width: 600px;
     object-fit: cover;
     filter: brightness(0.85) contrast(1.1) sepia(0.15) saturate(1.1);
 }

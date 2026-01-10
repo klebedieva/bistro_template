@@ -32,7 +32,7 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
  * - Error handling (non-existent items)
  * 
  * @package App\Tests\Unit\Service
- * @author Le Trois Quarts Development Team
+ * @author Bistro Development Team
  */
 class CartServiceTest extends TestCase
 {

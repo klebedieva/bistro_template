@@ -443,7 +443,7 @@ class OrderCrudController extends AbstractCrudController
                 if ($order->getClientEmail() && $order->getClientName()) {
                     $clientEmail = $order->getClientEmail();
                     $clientName = $order->getClientName();
-                    $emailSubject = 'Confirmation de votre commande - Le Trois Quarts';
+                    $emailSubject = 'Confirmation de votre commande - Bistro';
                     
                     $emailSent = $this->emailService->sendOrderConfirmation(
                         $clientEmail,

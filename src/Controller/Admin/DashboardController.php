@@ -156,7 +156,7 @@ class DashboardController extends AbstractDashboardController
     public function configureDashboard(): Dashboard
     {
         return Dashboard::new()
-            ->setTitle('Le Trois Quarts - Administration')
+            ->setTitle('Bistro - Administration')
             ->setFaviconPath('favicon.ico')
             ->setTextDirection('ltr')
             ->renderContentMaximized();

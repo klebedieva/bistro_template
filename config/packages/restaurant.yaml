@@ -6,13 +6,14 @@ parameters:
             free_delivery_threshold: 50.00
             radius_km: 5
         # Exact restaurant coordinates (used for distance calculations)
+        # Coordinates of Eiffel Tower (Champ de Mars, 5 Avenue Anatole France, 75007 Paris)
         coords:
-            lat: 43.2958784824937   # Exact latitude of the restaurant
-            lng: 5.395759357443253  # Exact longitude of the restaurant
+            lat: 48.858844   # Exact latitude of Eiffel Tower
+            lng: 2.294351    # Exact longitude of Eiffel Tower
         contact:
-            phone: '+33 4 91 XX XX XX'
-            email: 'contact@letroisquarts.fr'
-            address: 'Marseille, France'
+            phone: '+33 6 00 00 00 00'
+            email: 'contact@bistro.com'
+            address: 'Champ de Mars, 5 Avenue Anatole France, 75007 Paris, France'
         business_hours:
             # Working hours: 7 days a week from 7:00 to 23:00
             daily:

@@ -1,4 +1,4 @@
-// Main JavaScript file for Le Trois Quarts website
+// Main JavaScript file for Bistro website
 // Version 2 - No global error notifications for reservation form
 //
 // This file contains all the core JavaScript functionality for the website:
@@ -97,11 +97,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Only initialize homepage gallery if:
     // 1. Gallery items exist on the page (.gallery-item elements)
-    // 2. We're NOT on the dedicated gallery page (which uses .gallery-card)
+    // 2. We're NOT on the dedicated gallery page (which uses .gallery-card without .gallery-item)
     // This prevents conflicts between homepage gallery and gallery page
+    const galleryItems = document.querySelectorAll('.gallery-item');
+    const galleryCardsOnly = document.querySelectorAll('.gallery-card:not(.gallery-item)');
     if (
-        document.querySelectorAll('.gallery-item').length > 0 &&
-        !document.querySelector('.gallery-card')
+        galleryItems.length > 0 &&
+        galleryCardsOnly.length === 0
     ) {
         initGallery();
     }
@@ -140,16 +142,16 @@ function initNavbar() {
             if (window.scrollY > 100) {
                 // Add 'scrolled' class to navbar (CSS uses this to change styles)
                 navbar.classList.add('scrolled');
-                // Switch to smaller logo for scrolled state
+                // Switch to logo1 for scrolled state
                 if (logoImg) {
-                    logoImg.src = '/logo2.png';
+                    logoImg.src = '/logo1.png';
                 }
             } else {
                 // Remove 'scrolled' class (back to original state)
                 navbar.classList.remove('scrolled');
-                // Switch back to original logo
+                // Switch back to logo2 (original logo)
                 if (logoImg) {
-                    logoImg.src = '/logo-footer1.png';
+                    logoImg.src = '/logo2.png';
                 }
             }
         },
@@ -672,11 +674,16 @@ function initAnimations() {
     /**
      * Start observing elements for animation
      * These CSS classes indicate elements that should animate on scroll
+     * Exclude gallery-item with gallery-card class to avoid loading spinner
      */
     const animatedElements = document.querySelectorAll(
-        '.menu-category-card, .gallery-item, .contact-info, .feature-item'
+        '.menu-category-card, .gallery-item:not(.gallery-card), .contact-info, .feature-item'
     );
     animatedElements.forEach(el => {
+        // Skip gallery items that have gallery-card class (they use different loading mechanism)
+        if (el.classList.contains('gallery-card')) {
+            return;
+        }
         observer.observe(el);
     });
 }

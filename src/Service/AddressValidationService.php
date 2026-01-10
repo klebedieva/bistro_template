@@ -32,10 +32,10 @@ class AddressValidationService
         try {
             return $this->restaurantSettings->getRestaurantCoordinates();
         } catch (\Exception $e) {
-            // If config is not available, use default coordinates
+            // If config is not available, use default coordinates (Eiffel Tower)
             return [
-                'lat' => 43.2965,
-                'lng' => 5.3698
+                'lat' => 48.858844,
+                'lng' => 2.294351
             ];
         }
     }
@@ -413,18 +413,21 @@ class AddressValidationService
     private function calculateDistance(float $lat1, float $lng1, float $lat2, float $lng2): float
     {
         // Earth radius in kilometers
-        $earthRadius = 6371;
+        $earthRadius = 6371.0;
 
-        // Convert coordinate difference to radians
+        // Convert coordinates to radians
+        $lat1Rad = deg2rad($lat1);
+        $lat2Rad = deg2rad($lat2);
         $dLat = deg2rad($lat2 - $lat1);
         $dLng = deg2rad($lng2 - $lng1);
 
         // Haversine formula for distance calculation
-        $a = sin($dLat/2) * sin($dLat/2) +
-             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
-             sin($dLng/2) * sin($dLng/2);
+        // More stable version using atan2
+        $a = sin($dLat / 2) * sin($dLat / 2) +
+             cos($lat1Rad) * cos($lat2Rad) *
+             sin($dLng / 2) * sin($dLng / 2);
         
-        $c = 2 * atan2(sqrt($a), sqrt(1-$a));
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
 
         // Return distance in kilometers
         return $earthRadius * $c;

@@ -26,7 +26,8 @@ final class MenuController extends AbstractController
     public function index(MenuItemRepository $menuItemRepository, DrinkRepository $drinkRepository, CacheManager $cacheManager, LoggerInterface $logger): Response
     {
         // Récupérer toutes les entrées du menu depuis la base de données
-        $items = $menuItemRepository->findAll();
+        // Используем метод с eager loading для загрузки badges, tags и allergens
+        $items = $menuItemRepository->findAllWithRelations();
 
         // Normaliser les entités pour le front (structure attendue par static/js/menu.js)
         $menuItems = array_map(static function (MenuItem $item) use ($cacheManager, $logger): array {
@@ -127,9 +128,9 @@ final class MenuController extends AbstractController
         return $this->render('pages/menu.html.twig', [
             'menuItemsJson' => $menuItemsJson,
             'drinksJson' => $drinksJson,
-            'seo_title' => 'Menu restaurant | Le Trois Quarts Marseille',
-            'seo_description' => 'Consultez le menu complet du Trois Quarts : plats méditerranéens, desserts gourmands et boissons sélectionnées.',
-            'seo_og_description' => 'Une carte de saison, des produits frais et des recettes généreuses : découvrez le menu du Trois Quarts.',
+            'seo_title' => 'Menu restaurant | Bistro Paris',
+            'seo_description' => 'Consultez le menu complet du Bistro : plats méditerranéens, desserts gourmands et boissons sélectionnées.',
+            'seo_og_description' => 'Une carte de saison, des produits frais et des recettes généreuses : découvrez le menu du Bistro.',
         ]);
     }
 
@@ -214,7 +215,7 @@ final class MenuController extends AbstractController
         $rawDescription = strip_tags($item->getDescription() ?? '');
         $normalizedDescription = trim($rawDescription) !== ''
             ? trim($rawDescription)
-            : sprintf('Découvrez %s, une spécialité du Trois Quarts au cœur du Camas.', $item->getName());
+            : sprintf('Découvrez %s, une spécialité du Bistro à Paris.', $item->getName());
         $shortDescription = mb_strlen($normalizedDescription) > 155
             ? mb_substr($normalizedDescription, 0, 152) . '...'
             : $normalizedDescription;
@@ -229,7 +230,7 @@ final class MenuController extends AbstractController
             'related' => $related,
             'ratingCount' => $ratingCount,
             'ratingAvg' => $ratingAvg,
-            'seo_title' => sprintf('%s | Le Trois Quarts Marseille', $item->getName()),
+            'seo_title' => sprintf('%s | Bistro Paris', $item->getName()),
             'seo_description' => $shortDescription,
             'seo_og_description' => $shortDescription,
             'seo_image' => $image ?? null,

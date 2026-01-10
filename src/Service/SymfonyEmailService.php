@@ -17,8 +17,8 @@ class SymfonyEmailService
     public function __construct(MailerInterface $mailer)
     {
         $this->mailer = $mailer;
-        $this->fromEmail = 'contact@letroisquarts.online';
-        $this->fromName = 'Le Trois Quarts';
+        $this->fromEmail = 'contact@bistro.com';
+        $this->fromName = 'Bistro';
     }
 
     public function sendReplyToClient(string $clientEmail, string $clientName, string $subject, string $message): bool
@@ -43,7 +43,7 @@ class SymfonyEmailService
         try {
             $email = (new Email())
                 ->from(new Address($this->fromEmail, $this->fromName))
-                ->to(new Address($this->fromEmail, $this->fromName)) // Admin receives at contact@letroisquarts.online
+                ->to(new Address($this->fromEmail, $this->fromName)) // Admin receives at contact@bistro.com
                 ->replyTo(new Address($clientEmail, $clientName))
                 ->subject("🔔 Nouveau message de contact: " . $subject)
                 ->html($this->getAdminNotificationTemplate($clientName, $clientEmail, $subject, $message));
@@ -62,7 +62,7 @@ class SymfonyEmailService
         <html>
         <head>
             <meta charset='UTF-8'>
-            <title>Réponse de Le Trois Quarts</title>
+            <title>Réponse de Bistro</title>
             <style>
                 body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
                 .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -76,7 +76,7 @@ class SymfonyEmailService
         <body>
             <div class='container'>
                 <div class='header'>
-                    <h1>Le Trois Quarts</h1>
+                    <h1>Bistro</h1>
                     <p>Brasserie - Marseille</p>
                 </div>
                 <div class='content'>
@@ -85,10 +85,10 @@ class SymfonyEmailService
                         " . nl2br(htmlspecialchars($message)) . "
                     </div>
                     <p style='font-size: 16px; margin-top: 25px; margin-bottom: 15px;'>Nous espérons vous voir bientôt au restaurant !</p>
-                    <p style='font-size: 16px; margin-bottom: 0;'>Cordialement,<br><strong>L'équipe du Trois Quarts</strong></p>
+                    <p style='font-size: 16px; margin-bottom: 0;'>Cordialement,<br><strong>L'équipe du Bistro</strong></p>
                 </div>
                 <div class='footer'>
-                    <p>139 Boulevard Chave, 13005 Marseille | 04 91 92 96 16</p>
+                    <p>5 Avenue Anatole France, 75007 Paris | +33 6 00 00 00 00</p>
                 </div>
             </div>
         </body>
@@ -114,7 +114,7 @@ class SymfonyEmailService
         <html>
         <head>
             <meta charset='UTF-8'>
-            <title>Nouveau message de contact - Le Trois Quarts</title>
+            <title>Nouveau message de contact - Bistro</title>
             <style>
                 body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
                 .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -138,7 +138,7 @@ class SymfonyEmailService
             <div class='container'>
                 <div class='header'>
                     <h1>Nouveau message de contact</h1>
-                    <p>Le Trois Quarts - Brasserie Marseille</p>
+                    <p>Bistro - Brasserie Marseille</p>
                 </div>
                 <div class='content'>
                     <div class='info'>
@@ -162,8 +162,8 @@ class SymfonyEmailService
                     </div>
                 </div>
                 <div class='footer'>
-                    <p>contact@letroisquarts.online | 04 91 92 96 16</p>
-                    <p>139 Boulevard Chave, 13005 Marseille</p>
+                    <p>contact@bistro.com | +33 6 00 00 00 00</p>
+                    <p>5 Avenue Anatole France, 75007 Paris</p>
                 </div>
             </div>
         </body>
@@ -200,7 +200,7 @@ class SymfonyEmailService
         <html>
         <head>
             <meta charset='UTF-8'>
-            <title>Confirmation de réservation - Le Trois Quarts</title>
+            <title>Confirmation de réservation - Bistro</title>
             <style>
                 body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
                 .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -219,7 +219,7 @@ class SymfonyEmailService
         <body>
             <div class='container'>
                 <div class='header'>
-                    <h1>Le Trois Quarts</h1>
+                    <h1>Bistro</h1>
                     <p>Brasserie - Marseille</p>
                 </div>
                 <div class='content'>
@@ -229,10 +229,10 @@ class SymfonyEmailService
                         " . nl2br(htmlspecialchars($message)) . "
                     </div>
                     
-                    <p style='font-size: 16px; margin-top: 25px; margin-bottom: 0;'>Cordialement,<br><strong>L'équipe du Trois Quarts</strong></p>
+                    <p style='font-size: 16px; margin-top: 25px; margin-bottom: 0;'>Cordialement,<br><strong>L'équipe du Bistro</strong></p>
                 </div>
                 <div class='footer'>
-                    <p>139 Boulevard Chave, 13005 Marseille | 04 91 92 96 16</p>
+                    <p>5 Avenue Anatole France, 75007 Paris | +33 6 00 00 00 00</p>
                 </div>
             </div>
         </body>
@@ -268,7 +268,7 @@ class SymfonyEmailService
         <html>
         <head>
             <meta charset='UTF-8'>
-            <title>Annulation de réservation - Le Trois Quarts</title>
+            <title>Annulation de réservation - Bistro</title>
             <style>
                 body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
                 .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -287,7 +287,7 @@ class SymfonyEmailService
         <body>
             <div class='container'>
                 <div class='header'>
-                    <h1>Le Trois Quarts</h1>
+                    <h1>Bistro</h1>
                     <p>Brasserie - Marseille</p>
                 </div>
                 <div class='content'>
@@ -316,10 +316,10 @@ class SymfonyEmailService
                     
                     <p style='font-size: 16px; margin-top: 25px; margin-bottom: 15px;'>Nous nous excusons pour tout inconvénient causé.</p>
                     <p style='font-size: 16px; margin-bottom: 15px;'>N'hésitez pas à nous contacter si vous souhaitez effectuer une nouvelle réservation.</p>
-                    <p style='font-size: 16px; margin-bottom: 0;'>Cordialement,<br><strong>L'équipe du Trois Quarts</strong></p>
+                    <p style='font-size: 16px; margin-bottom: 0;'>Cordialement,<br><strong>L'équipe du Bistro</strong></p>
                 </div>
                 <div class='footer'>
-                    <p>139 Boulevard Chave, 13005 Marseille | 04 91 92 96 16</p>
+                    <p>5 Avenue Anatole France, 75007 Paris | +33 6 00 00 00 00</p>
                 </div>
             </div>
         </body>
@@ -339,7 +339,7 @@ class SymfonyEmailService
 
             $email = (new Email())
                 ->from(new Address($this->fromEmail, $this->fromName))
-                ->to(new Address($this->fromEmail, $this->fromName)) // Admin receives at contact@letroisquarts.online
+                ->to(new Address($this->fromEmail, $this->fromName)) // Admin receives at contact@bistro.com
                 ->replyTo(new Address($clientEmail, $clientName))
                 ->subject("🔔 Nouvelle demande de réservation: " . $clientName)
                 ->html($this->getReservationAdminNotificationTemplate($clientName, $clientEmail, $date, $time, $guests, $phone, $message));
@@ -361,7 +361,7 @@ class SymfonyEmailService
         <html>
         <head>
             <meta charset='UTF-8'>
-            <title>Nouvelle demande de réservation - Le Trois Quarts</title>
+            <title>Nouvelle demande de réservation - Bistro</title>
             <style>
                 body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
                 .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -389,7 +389,7 @@ class SymfonyEmailService
             <div class='container'>
                 <div class='header'>
                     <h1>Nouvelle demande de réservation</h1>
-                    <p>Le Trois Quarts - Brasserie Marseille</p>
+                    <p>Bistro - Brasserie Marseille</p>
                 </div>
                 <div class='content'>
                     <div class='info'>
@@ -431,8 +431,8 @@ class SymfonyEmailService
                     </div>
                 </div>
                 <div class='footer'>
-                    <p>contact@letroisquarts.online | 04 91 92 96 16</p>
-                    <p>139 Boulevard Chave, 13005 Marseille</p>
+                    <p>contact@bistro.com | +33 6 00 00 00 00</p>
+                    <p>5 Avenue Anatole France, 75007 Paris</p>
                 </div>
             </div>
         </body>
@@ -483,7 +483,7 @@ class SymfonyEmailService
         <html>
         <head>
             <meta charset='UTF-8'>
-            <title>Confirmation de commande - Le Trois Quarts</title>
+            <title>Confirmation de commande - Bistro</title>
             <style>
                 body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
                 .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -503,7 +503,7 @@ class SymfonyEmailService
         <body>
             <div class='container'>
                 <div class='header'>
-                    <h1>Le Trois Quarts</h1>
+                    <h1>Bistro</h1>
                     <p>Brasserie - Marseille</p>
                 </div>
                 <div class='content'>
@@ -536,10 +536,10 @@ class SymfonyEmailService
                     </div>
                     
                     <p style='font-size: 16px; margin-top: 25px; margin-bottom: 15px;'>Nous vous remercions pour votre commande !</p>
-                    <p style='font-size: 16px; margin-bottom: 0;'>Cordialement,<br><strong>L'équipe du Trois Quarts</strong></p>
+                    <p style='font-size: 16px; margin-bottom: 0;'>Cordialement,<br><strong>L'équipe du Bistro</strong></p>
                 </div>
                 <div class='footer'>
-                    <p>139 Boulevard Chave, 13005 Marseille | 04 91 92 96 16</p>
+                    <p>5 Avenue Anatole France, 75007 Paris | +33 6 00 00 00 00</p>
                 </div>
             </div>
         </body>
@@ -612,7 +612,7 @@ class SymfonyEmailService
         <html>
         <head>
             <meta charset='UTF-8'>
-            <title>Nouvelle commande - Le Trois Quarts</title>
+            <title>Nouvelle commande - Bistro</title>
             <style>
                 body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
                 .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -661,8 +661,8 @@ class SymfonyEmailService
                     </div>
                 </div>
                 <div class='footer'>
-                    <p>contact@letroisquarts.online | 04 91 92 96 16</p>
-                    <p>139 Boulevard Chave, 13005 Marseille</p>
+                    <p>contact@bistro.com | +33 6 00 00 00 00</p>
+                    <p>5 Avenue Anatole France, 75007 Paris</p>
                 </div>
             </div>
         </body>

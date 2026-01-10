@@ -58,7 +58,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
  * - ParameterBagInterface (order configuration)
  * 
  * @package App\Tests\Unit\Service
- * @author Le Trois Quarts Development Team
+ * @author Bistro Development Team
  */
 class OrderServiceTest extends TestCase
 {

@@ -43,8 +43,8 @@ class SecurityController extends AbstractController
         return $this->render('security/login.html.twig', [
             'last_username' => $lastUsername,
             'error' => $error,
-            'seo_title' => 'Connexion administrateur | Le Trois Quarts',
-            'seo_description' => 'Accès réservé à l’équipe du Trois Quarts pour la gestion des commandes, réservations et contenus.',
+            'seo_title' => 'Connexion administrateur | Le Bistro',
+            'seo_description' => 'Accès réservé à l’équipe du Bistro pour la gestion des commandes, réservations et contenus.',
             'seo_robots' => 'noindex,nofollow',
         ]);
     }

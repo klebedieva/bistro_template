@@ -62,7 +62,7 @@ class MenuFixtures extends Fixture implements FixtureGroupInterface, DependentFi
                 'price' => '22.00',
                 'category' => 'plats',
                 'image' => '/static/img/menu/plat_1.png',
-                'badges' => ['Maison'],
+                'badges' => ['Fait maison'],
                 'tags' => [],
             ],
             [

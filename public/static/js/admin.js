@@ -260,11 +260,11 @@
         // Used in UI (data-template attribute)
         reservation: `Nous avons bien reçu votre demande de réservation. Nous allons vérifier nos disponibilités et vous confirmer dans les plus brefs délais.
 
-En attendant, vous pouvez également nous appeler au 04 91 92 96 16 pour une réservation immédiate.`,
+En attendant, vous pouvez également nous appeler au +33 6 00 00 00 00 pour une réservation immédiate.`,
 
         commande: `Merci pour votre commande. Elle est en cours de préparation/validation. Nous vous recontactons très vite avec les détails (montant, délai, retrait/livraison).`,
 
-        evenement_prive: `Merci pour votre intérêt pour l'organisation d'un évènement privé au Trois Quarts. Afin de vous proposer une offre adaptée, pouvez‑vous nous préciser la date souhaitée, le nombre de personnes et vos besoins (menu, boissons, budget) ?
+        evenement_prive: `Merci pour votre intérêt pour l'organisation d'un évènement privé au Bistro. Afin de vous proposer une offre adaptée, pouvez‑vous nous préciser la date souhaitée, le nombre de personnes et vos besoins (menu, boissons, budget) ?
 
 Nous reviendrons vers vous rapidement avec une proposition personnalisée.`,
 

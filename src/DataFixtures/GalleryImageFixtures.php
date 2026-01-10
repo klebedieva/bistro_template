@@ -60,7 +60,7 @@ class GalleryImageFixtures extends Fixture
             // Ambiance
             [
                 'title' => 'Ambiance chaleureuse',
-                'description' => 'L\'atmosphère conviviale du Trois Quarts',
+                'description' => 'L\'atmosphère conviviale du Bistro',
                 'imagePath' => 'ambiance_1.jpg',
                 'category' => 'ambiance',
                 'displayOrder' => 5,

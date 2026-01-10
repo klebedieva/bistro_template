@@ -1,7 +1,7 @@
 {
-  "name": "le_trois_quarts",
+  "name": "bistro",
   "version": "1.0.0",
-  "description": "Modern Symfony application that powers the public website, online ordering flow and administration tools of the Le Trois Quarts brasserie in Marseille (FR-13).",
+  "description": "Modern Symfony application that powers the public website, online ordering flow and administration tools of the Bistro brasserie in Marseille (FR-13).",
   "main": "index.js",
   "directories": {
     "doc": "docs",

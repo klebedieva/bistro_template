@@ -60,8 +60,9 @@ class RestaurantSettingsService
     {
         $restaurant = $this->parameterBag->get('restaurant');
         // Coordinates are stored in restaurant.coords (not restaurant.delivery.coords)
-        $lat = isset($restaurant['coords']['lat']) ? (float)$restaurant['coords']['lat'] : 43.2965;
-        $lng = isset($restaurant['coords']['lng']) ? (float)$restaurant['coords']['lng'] : 5.3698;
+        // Default coordinates: Eiffel Tower (48.858844, 2.294351)
+        $lat = isset($restaurant['coords']['lat']) ? (float)$restaurant['coords']['lat'] : 48.858844;
+        $lng = isset($restaurant['coords']['lng']) ? (float)$restaurant['coords']['lng'] : 2.294351;
         return ['lat' => $lat, 'lng' => $lng];
     }
 

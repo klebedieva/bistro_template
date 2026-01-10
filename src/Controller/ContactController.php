@@ -115,9 +115,9 @@ class ContactController extends AbstractApiController
 
         return $this->render('pages/contact.html.twig', [
             'contactForm' => $form->createView(),
-            'seo_title' => 'Contact | Le Trois Quarts Marseille',
-            'seo_description' => 'Contactez Le Trois Quarts pour toute question, réservation de groupe ou demande d’information. Nous vous répondons rapidement.',
-            'seo_og_description' => 'Échangez avec l’équipe du Trois Quarts : téléphone, email et formulaire de contact.',
+            'seo_title' => 'Contact | Bistro Paris',
+            'seo_description' => 'Contactez Bistro pour toute question, réservation de groupe ou demande d’information. Nous vous répondons rapidement.',
+            'seo_og_description' => 'Échangez avec l’équipe du Bistro : téléphone, email et formulaire de contact.',
         ]);
     }
 

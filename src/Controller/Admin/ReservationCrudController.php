@@ -393,7 +393,7 @@ class ReservationCrudController extends AbstractCrudController
 
                 // Step 5: Send confirmation email to client
                 $clientName = $reservation->getFirstName().' '.$reservation->getLastName();
-                $emailSubject = 'Confirmation de votre réservation - Le Trois Quarts';
+                $emailSubject = 'Confirmation de votre réservation - Bistro';
                 
                 // Try to send email, but do not block on failures (sandbox limits, etc.)
                 $emailSent = $this->emailService->sendReservationConfirmation(
@@ -455,7 +455,7 @@ class ReservationCrudController extends AbstractCrudController
             
             // Send cancellation email to client
             $clientName = $reservation->getFirstName() . ' ' . $reservation->getLastName();
-            $emailSubject = "Annulation de votre réservation - Le Trois Quarts";
+            $emailSubject = "Annulation de votre réservation - Bistro";
             
             $emailSent = $this->emailService->sendReservationCancellation(
                 $reservation->getEmail(),

@@ -14,7 +14,7 @@ form:
   reclamation: 'Réclamation'
   autre: 'Autre'
   message: 'Message'
-  consent: "J'accepte d'être contacté par Le Trois Quarts concernant ma demande"
+  consent: "J'accepte d'être contacté par Bistro concernant ma demande"
 
 # Traductions supplémentaires pour les formulaires
 Votre nom: 'Votre nom'
@@ -22,7 +22,7 @@ Votre nom complet: 'Votre nom complet'
 Email (optionnel): 'Email (optionnel)'
 votre@email.com: 'votre@email.com'
 Votre avis: 'Votre avis'
-Partagez votre expérience au Trois Quarts...: 'Partagez votre expérience au Trois Quarts...'
+Partagez votre expérience au Bistro...: 'Partagez votre expérience au Bistro...'
 Envoyer l'avis: "Envoyer l'avis"
 Note: 'Note'
 Sélectionnez une note: 'Sélectionnez une note'

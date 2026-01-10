@@ -11,8 +11,42 @@
 }
 .dish-image-container img:hover { opacity: 1; transform: scale(1.02); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25); }
 
-.dish-badges { position: absolute; top: 15px; left: 15px; display: flex; gap: 0.5rem; }
-.dish-badges .badge { font-size: 0.8rem; padding: 0.5rem 0.75rem; }
+.dish-badges { position: absolute; top: 15px; left: 15px; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.dish-badges .menu-badge {
+    background: rgba(255, 255, 255, 0.95) !important;
+    color: var(--primary-color) !important;
+    padding: 0.25rem 0.75rem !important;
+    border-radius: 15px !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+.dish-badges .menu-badge.specialty {
+    background: #dc3545 !important;
+    color: white !important;
+}
+
+.dish-badges .menu-badge.vegetarian {
+    background: #28a745 !important;
+    color: white !important;
+}
+
+.dish-badges .menu-badge.homemade {
+    background: #17a2b8 !important;
+    color: white !important;
+}
+
+.dish-badges .menu-badge.seasonal {
+    background: #ff9800 !important;
+    color: #ffffff !important;
+}
+
+.dish-badges .menu-badge.glutenfree {
+    background: #9c27b0 !important;
+    color: #ffffff !important;
+}
 
 .dish-info { padding-left: 2rem; }
 .breadcrumb { background: none; padding: 0; }

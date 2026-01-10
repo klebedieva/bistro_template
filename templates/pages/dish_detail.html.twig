@@ -44,7 +44,17 @@
                 <div class="dish-image-container">
                     <img src="{{ image }}" alt="{{ item.name }}" class="img-fluid rounded shadow">
                     <div class="dish-badges">
-                        {% for b in badges %}<span class="badge bg-warning text-dark">{{ b }}</span>{% endfor %}
+                        {% set badgeClassMap = {
+                            'Spécialité': 'specialty',
+                            'Végétarien': 'vegetarian',
+                            'Fait maison': 'homemade',
+                            'Saison': 'seasonal',
+                            'Sans Gluten': 'glutenfree'
+                        } %}
+                        {% for b in badges %}
+                            {% set badgeClass = badgeClassMap[b] ?? '' %}
+                            <span class="menu-badge {{ badgeClass }}">{{ b }}</span>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -90,12 +100,14 @@
                 </ul>
             </div>
 
+            {% if allergens|length > 0 %}
             <div class="dish-allergens">
                 <h4>Allergènes</h4>
                 <div class="allergen-badges">
-                            {% for al in allergens %}<span class="badge">{{ al }}</span>{% endfor %}
+                    {% for al in allergens %}<span class="badge">{{ al }}</span>{% endfor %}
                 </div>
             </div>
+            {% endif %}
 
             <div class="dish-actions">
                 <div class="menu-card-actions">
