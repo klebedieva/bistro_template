@@ -23,7 +23,10 @@ fi
 
 # Check critical environment variables
 if [ -z "$APP_SECRET" ]; then
-    echo "WARNING: APP_SECRET environment variable is not set!"
+    echo "ERROR: APP_SECRET environment variable is not set!"
+    echo "This is required for Symfony to work. Please set it in Railway environment variables."
+    echo "You can generate one with: php -r \"echo bin2hex(random_bytes(32));\""
+    exit 1
 fi
 
 if [ -z "$DATABASE_URL" ]; then
