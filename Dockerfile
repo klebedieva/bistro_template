@@ -3,7 +3,12 @@ FROM php:8.3-apache
 # Basic dependencies
 RUN apt-get update \
     && apt-get install -y unzip git libzip-dev \
-    && docker-php-ext-install zip pdo pdo_mysql
+    && docker-php-ext-install zip pdo pdo_mysql \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # 🔥 STRICT: remove all MPM except prefork (must be before any a2enmod)
 RUN set -eux; \
@@ -40,9 +45,31 @@ COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 WORKDIR /var/www/html
+
+# Copy composer files first for better Docker layer caching
+COPY composer.json composer.lock symfony.lock ./
+
+# Set production environment before installing dependencies
+ENV APP_ENV=prod
+ENV APP_DEBUG=0
+
+# Install PHP dependencies (production, no dev)
+# Note: --no-scripts to avoid running scripts before all files are copied
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
+
+# Copy the rest of the application
 COPY . .
 
-RUN chown -R www-data:www-data /var/www/html
+# Run composer scripts (asset compilation) and Symfony cache setup
+RUN set -eux; \
+    composer dump-autoload --optimize --classmap-authoritative --no-interaction || true; \
+    php bin/console cache:clear --env=prod --no-debug --no-interaction || true; \
+    php bin/console cache:warmup --env=prod --no-debug --no-interaction || true
+
+# Fix permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html \
+    && chmod -R 775 /var/www/html/var
 
 EXPOSE 80
 
