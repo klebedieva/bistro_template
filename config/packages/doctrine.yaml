@@ -40,9 +40,8 @@ when@test:
 when@prod:
     doctrine:
         dbal:
-            options:
-                !php/const PDO::MYSQL_ATTR_SSL_CA: '/usr/share/ca-certificates/Scalingo/scalingo-database.pem'
-                !php/const PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT: true
+            # SSL options removed for Railway deployment
+            # Railway MySQL handles SSL automatically if needed via DATABASE_URL
         orm:
             auto_generate_proxy_classes: false
             proxy_dir: '%kernel.build_dir%/doctrine/orm/Proxies'

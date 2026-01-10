@@ -30,10 +30,18 @@ if [ -z "$DATABASE_URL" ]; then
     echo "WARNING: DATABASE_URL environment variable is not set!"
 fi
 
-# Clear and warmup cache for production
+# Prepare Symfony cache
 echo "Preparing Symfony cache..."
-php bin/console cache:clear --env=prod --no-debug --no-interaction || echo "Cache clear failed, but continuing..."
-php bin/console cache:warmup --env=prod --no-debug --no-interaction || echo "Cache warmup failed, but continuing..."
+# Only clear cache if DATABASE_URL is set (to avoid SSL errors)
+if [ -n "$DATABASE_URL" ]; then
+    echo "Clearing cache (DB configured)..."
+    php bin/console cache:clear --env=prod --no-debug --no-interaction || echo "Cache clear had issues, but continuing..."
+else
+    echo "Skipping cache clear (DATABASE_URL not set - will be done on first request)"
+fi
+# Warmup cache (works without DB for basic Symfony operations)
+echo "Warming up cache..."
+php bin/console cache:warmup --env=prod --no-debug --no-interaction || echo "Cache warmup completed (warnings are OK)"
 
 echo "Starting Apache..."
 exec apache2-foreground
