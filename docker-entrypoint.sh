@@ -43,5 +43,14 @@ fi
 echo "Warming up cache..."
 php bin/console cache:warmup --env=prod --no-debug --no-interaction || echo "Cache warmup completed (warnings are OK)"
 
+# Test PHP syntax of index.php
+echo "Testing PHP syntax..."
+php -l /var/www/html/public/index.php || echo "WARNING: Syntax error in index.php!"
+
+# Check if vendor directory exists
+if [ ! -d "/var/www/html/vendor" ]; then
+    echo "ERROR: vendor directory not found!"
+fi
+
 echo "Starting Apache..."
 exec apache2-foreground
