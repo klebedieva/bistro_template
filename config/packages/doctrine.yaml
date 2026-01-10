@@ -1,15 +1,9 @@
 doctrine:
     dbal:
         url: '%env(DATABASE_URL)%'
-        charset: utf8mb4
-        default_table_options:
-            charset: utf8mb4
-            collate: utf8mb4_unicode_ci
-
-        # IMPORTANT: You MUST configure your server version,
-        # either here or in the DATABASE_URL env var (see .env file)
-        #server_version: '16'
-
+        # Charset will be auto-detected from DATABASE_URL
+        # PostgreSQL uses UTF8 by default, MySQL uses utf8mb4
+        # Do not set charset explicitly to avoid PostgreSQL utf8mb4 error
         profiling_collect_backtrace: '%kernel.debug%'
         use_savepoints: true
     orm:
@@ -40,8 +34,9 @@ when@test:
 when@prod:
     doctrine:
         dbal:
-            # SSL options removed for Railway deployment
-            # Railway MySQL handles SSL automatically if needed via DATABASE_URL
+            # Database connection configured via DATABASE_URL
+            # For PostgreSQL: charset is auto-detected (UTF8)
+            # For MySQL: charset should be specified in DATABASE_URL if needed
         orm:
             auto_generate_proxy_classes: false
             proxy_dir: '%kernel.build_dir%/doctrine/orm/Proxies'
