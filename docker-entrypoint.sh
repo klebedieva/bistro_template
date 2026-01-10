@@ -10,4 +10,12 @@ chmod -R 775 /var/www/html/var
 php bin/console cache:clear --env=prod --no-debug --no-interaction || true
 php bin/console cache:warmup --env=prod --no-debug --no-interaction || true
 
+# Run database migrations if DATABASE_URL is set
+if [ -n "$DATABASE_URL" ]; then
+    echo "Running database migrations..."
+    php bin/console doctrine:migrations:migrate --no-interaction || {
+        echo "Warning: Database migrations failed, but continuing startup..."
+    }
+fi
+
 exec apache2-foreground
