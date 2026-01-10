@@ -1,83 +1,13 @@
 #!/bin/bash
 set -e
 
-# Fix MPM: ensure only mpm_prefork is enabled
-echo "Fixing Apache MPM configuration..."
-a2dismod mpm_event mpm_worker 2>/dev/null || true
-rm -f /etc/apache2/mods-enabled/mpm_event.* 2>/dev/null || true
-rm -f /etc/apache2/mods-enabled/mpm_worker.* 2>/dev/null || true
-a2enmod mpm_prefork 2>/dev/null || true
-
 # Ensure var directories exist and have correct permissions
-echo "Setting up Symfony directories..."
 mkdir -p /var/www/html/var/cache /var/www/html/var/log
 chown -R www-data:www-data /var/www/html/var
 chmod -R 775 /var/www/html/var
 
-# Check if Composer dependencies are installed
-if [ ! -f "/var/www/html/vendor/autoload.php" ]; then
-    echo "WARNING: Composer dependencies not found! Installing..."
-    cd /var/www/html
-    composer install --no-dev --optimize-autoloader --no-interaction || echo "Composer install failed, but continuing..."
-fi
-
-# Check critical environment variables
-if [ -z "$APP_SECRET" ]; then
-    echo "ERROR: APP_SECRET environment variable is not set!"
-    echo "This is required for Symfony to work. Please set it in Railway environment variables."
-    echo "You can generate one with: php -r \"echo bin2hex(random_bytes(32));\""
-    exit 1
-fi
-
-if [ -z "$DATABASE_URL" ]; then
-    echo "WARNING: DATABASE_URL environment variable is not set!"
-fi
-
 # Prepare Symfony cache
-echo "Preparing Symfony cache..."
-# Only clear cache if DATABASE_URL is set (to avoid SSL errors)
-if [ -n "$DATABASE_URL" ]; then
-    echo "Clearing cache (DB configured)..."
-    php bin/console cache:clear --env=prod --no-debug --no-interaction || echo "Cache clear had issues, but continuing..."
-else
-    echo "Skipping cache clear (DATABASE_URL not set - will be done on first request)"
-fi
-# Warmup cache (works without DB for basic Symfony operations)
-echo "Warming up cache..."
-php bin/console cache:warmup --env=prod --no-debug --no-interaction || echo "Cache warmup completed (warnings are OK)"
+php bin/console cache:clear --env=prod --no-debug --no-interaction || true
+php bin/console cache:warmup --env=prod --no-debug --no-interaction || true
 
-# Test PHP syntax of index.php
-echo "Testing PHP syntax..."
-php -l /var/www/html/public/index.php || echo "WARNING: Syntax error in index.php!"
-
-# Check if vendor directory exists
-if [ ! -d "/var/www/html/vendor" ]; then
-    echo "ERROR: vendor directory not found!"
-fi
-
-# Enable PHP error logging to help debug 502 errors
-echo "Configuring PHP error logging..."
-echo "log_errors = On" >> /usr/local/etc/php/conf.d/error-logging.ini
-echo "error_log = /var/log/apache2/php_errors.log" >> /usr/local/etc/php/conf.d/error-logging.ini
-echo "display_errors = Off" >> /usr/local/etc/php/conf.d/error-logging.ini
-echo "error_reporting = E_ALL" >> /usr/local/etc/php/conf.d/error-logging.ini
-
-# Try to test if Symfony Kernel can be loaded (this will show errors)
-echo "Testing Symfony Kernel loading..."
-php -r "
-try {
-    require '/var/www/html/vendor/autoload_runtime.php';
-    \$context = ['APP_ENV' => 'prod', 'APP_DEBUG' => false];
-    \$kernelFn = require '/var/www/html/public/index.php';
-    \$kernel = \$kernelFn(\$context);
-    echo 'SUCCESS: Kernel loaded: ' . get_class(\$kernel) . PHP_EOL;
-} catch (Throwable \$e) {
-    echo 'ERROR loading Kernel: ' . get_class(\$e) . PHP_EOL;
-    echo 'Message: ' . \$e->getMessage() . PHP_EOL;
-    echo 'File: ' . \$e->getFile() . ':' . \$e->getLine() . PHP_EOL;
-    exit(1);
-}
-" 2>&1 || echo "Kernel test had warnings (this is OK if DB is not ready)"
-
-echo "Starting Apache..."
 exec apache2-foreground

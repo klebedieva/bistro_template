@@ -13,10 +13,15 @@ return function (array $context) {
         | Request::HEADER_X_FORWARDED_PORT
         | Request::HEADER_X_FORWARDED_PREFIX;
 
-    // Trust all proxies for Railway (Railway uses reverse proxy)
-    // In production, Railway uses a reverse proxy, so we need to trust all proxies
+    // Trust proxies for platforms behind reverse proxy (Render, Railway, etc.)
+    $proxies = array_filter([
+        '127.0.0.1',
+        '::1',
+        $request->server->get('REMOTE_ADDR')
+    ]);
+    
     Request::setTrustedProxies(
-        ['127.0.0.1', '::1', '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16'],
+        array_values($proxies),
         $trustedHeaders
     );
 
