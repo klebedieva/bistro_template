@@ -19,13 +19,25 @@ final class Version20250926095358 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE menu_item CHANGE ingredients ingredients LONGTEXT DEFAULT NULL');
+        $platform = $this->connection->getDatabasePlatform();
+        $isPostgres = $platform instanceof \Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+
+        if ($isPostgres) {
+            $this->addSql('ALTER TABLE menu_item ALTER COLUMN ingredients TYPE TEXT, ALTER COLUMN ingredients DROP NOT NULL, ALTER COLUMN ingredients SET DEFAULT NULL');
+        } else {
+            $this->addSql('ALTER TABLE menu_item CHANGE ingredients ingredients LONGTEXT DEFAULT NULL');
+        }
     }
 
     public function down(Schema $schema): void
     {
-        // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE menu_item CHANGE ingredients ingredients JSON DEFAULT NULL');
+        $platform = $this->connection->getDatabasePlatform();
+        $isPostgres = $platform instanceof \Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+
+        if ($isPostgres) {
+            $this->addSql('ALTER TABLE menu_item ALTER COLUMN ingredients TYPE JSON, ALTER COLUMN ingredients DROP NOT NULL, ALTER COLUMN ingredients SET DEFAULT NULL');
+        } else {
+            $this->addSql('ALTER TABLE menu_item CHANGE ingredients ingredients JSON DEFAULT NULL');
+        }
     }
 }

@@ -19,13 +19,25 @@ final class Version20250905074303 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE users CHANGE role role VARCHAR(50) NOT NULL');
+        $platform = $this->connection->getDatabasePlatform();
+        $isPostgres = $platform instanceof \Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+
+        if ($isPostgres) {
+            $this->addSql('ALTER TABLE users ALTER COLUMN role TYPE VARCHAR(50), ALTER COLUMN role SET NOT NULL');
+        } else {
+            $this->addSql('ALTER TABLE users CHANGE role role VARCHAR(50) NOT NULL');
+        }
     }
 
     public function down(Schema $schema): void
     {
-        // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE users CHANGE role role VARCHAR(255) NOT NULL');
+        $platform = $this->connection->getDatabasePlatform();
+        $isPostgres = $platform instanceof \Doctrine\DBAL\Platforms\PostgreSQLPlatform;
+
+        if ($isPostgres) {
+            $this->addSql('ALTER TABLE users ALTER COLUMN role TYPE VARCHAR(255), ALTER COLUMN role SET NOT NULL');
+        } else {
+            $this->addSql('ALTER TABLE users CHANGE role role VARCHAR(255) NOT NULL');
+        }
     }
 }
