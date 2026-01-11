@@ -19,24 +19,24 @@ class DrinkFixtures extends Fixture implements FixtureGroupInterface
     {
         $data = [
             'vins' => [
-                ['name' => 'Côtes du Rhône rouge', 'price' => '5€ / 25€'],
-                ['name' => 'Rosé de Provence', 'price' => '4€ / 20€'],
-                ['name' => 'Blanc de Cassis', 'price' => '5€ / 24€'],
+                ['name' => 'Côtes du Rhône rouge', 'price' => '5.00'],
+                ['name' => 'Rosé de Provence', 'price' => '4.00'],
+                ['name' => 'Blanc de Cassis', 'price' => '5.00'],
             ],
             'bieres' => [
-                ['name' => 'Pression 25cl', 'price' => '3€'],
-                ['name' => 'Pression 50cl', 'price' => '5€'],
-                ['name' => 'Bière artisanale', 'price' => '6€'],
+                ['name' => 'Pression 25cl', 'price' => '3.00'],
+                ['name' => 'Pression 50cl', 'price' => '5.00'],
+                ['name' => 'Bière artisanale', 'price' => '6.00'],
             ],
             'chaudes' => [
-                ['name' => 'Café expresso', 'price' => '2€'],
-                ['name' => 'Cappuccino', 'price' => '3€'],
-                ['name' => 'Thé / Infusion', 'price' => '2.5€'],
+                ['name' => 'Café expresso', 'price' => '2.00'],
+                ['name' => 'Cappuccino', 'price' => '3.00'],
+                ['name' => 'Thé / Infusion', 'price' => '2.50'],
             ],
             'fraiches' => [
-                ['name' => 'Jus de fruits frais', 'price' => '4€'],
-                ['name' => 'Sodas', 'price' => '3€'],
-                ['name' => 'Eau minérale', 'price' => '2€'],
+                ['name' => 'Jus de fruits frais', 'price' => '4.00'],
+                ['name' => 'Sodas', 'price' => '3.00'],
+                ['name' => 'Eau minérale', 'price' => '2.00'],
             ],
         ];
 
