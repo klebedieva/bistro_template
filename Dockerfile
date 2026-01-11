@@ -55,6 +55,7 @@ COPY . .
 # Run composer scripts (asset compilation) and Symfony cache setup
 RUN set -eux; \
     composer dump-autoload --optimize --classmap-authoritative --no-interaction || true; \
+    php bin/console assets:install public --symlink --relative --env=prod --no-interaction || true; \
     php bin/console cache:clear --env=prod --no-debug --no-interaction || true; \
     php bin/console cache:warmup --env=prod --no-debug --no-interaction || true
 
