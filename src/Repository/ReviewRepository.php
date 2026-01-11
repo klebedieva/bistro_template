@@ -62,8 +62,9 @@ class ReviewRepository extends ServiceEntityRepository
         $row = $this->createQueryBuilder('r')
             ->select('COUNT(r.id) AS cnt, COALESCE(AVG(r.rating), 0) AS avg')
             ->andWhere('r.menuItem = :id')
-			->andWhere('r.isApproved = 1')
+			->andWhere('r.isApproved = :approved')
             ->setParameter('id', $menuItemId)
+            ->setParameter('approved', true)
             ->getQuery()
             ->getSingleResult();
 
@@ -95,7 +96,8 @@ class ReviewRepository extends ServiceEntityRepository
         return (int) $this->createQueryBuilder('r')
             ->select('COUNT(r.id)')
             ->andWhere('r.menuItem IS NULL')
-            ->andWhere('r.isApproved = 1')
+            ->andWhere('r.isApproved = :approved')
+            ->setParameter('approved', true)
             ->getQuery()
             ->getSingleScalarResult();
     }
@@ -108,7 +110,8 @@ class ReviewRepository extends ServiceEntityRepository
         $row = $this->createQueryBuilder('r')
             ->select('COUNT(r.id) AS cnt, COALESCE(AVG(r.rating), 0) AS avg')
             ->andWhere('r.menuItem IS NULL')
-            ->andWhere('r.isApproved = 1')
+            ->andWhere('r.isApproved = :approved')
+            ->setParameter('approved', true)
             ->getQuery()
             ->getSingleResult();
 
