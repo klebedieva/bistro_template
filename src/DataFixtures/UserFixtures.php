@@ -23,25 +23,35 @@ class UserFixtures extends Fixture implements FixtureGroupInterface
 
     public function load(ObjectManager $manager): void
     {
+        $repo = $manager->getRepository(User::class);
+
         // Admin with secure password: Admin13005!@#Secure
         // Requirements: 12+ chars, uppercase, lowercase, digit, special char
-        $admin = new User();
-        $admin->setEmail('admin@bistro.com')
-              ->setName('Admin')
-              ->setRole(UserRole::ADMIN)
-              ->setIsActive(true);
-        $admin->setPassword($this->passwordHasher->hashPassword($admin, 'Admin13005!@#Secure'));
-        $manager->persist($admin);
+        $adminEmail = 'admin@bistro.com';
+        $admin = $repo->findOneBy(['email' => $adminEmail]);
+        if (!$admin) {
+            $admin = new User();
+            $admin->setEmail($adminEmail)
+                  ->setName('Admin')
+                  ->setRole(UserRole::ADMIN)
+                  ->setIsActive(true);
+            $admin->setPassword($this->passwordHasher->hashPassword($admin, 'Admin13005!@#Secure'));
+            $manager->persist($admin);
+        }
 
         // Moderator with secure password: Moder13005!@#Secure
         // Requirements: 12+ chars, uppercase, lowercase, digit, special char
-        $moderator = new User();
-        $moderator->setEmail('moderator@bistro.com')
-                  ->setName('Moderator')
-                  ->setRole(UserRole::MODERATOR)
-                  ->setIsActive(true);
-        $moderator->setPassword($this->passwordHasher->hashPassword($moderator, 'Moder13005!@#Secure'));
-        $manager->persist($moderator);
+        $moderatorEmail = 'moderator@bistro.com';
+        $moderator = $repo->findOneBy(['email' => $moderatorEmail]);
+        if (!$moderator) {
+            $moderator = new User();
+            $moderator->setEmail($moderatorEmail)
+                      ->setName('Moderator')
+                      ->setRole(UserRole::MODERATOR)
+                      ->setIsActive(true);
+            $moderator->setPassword($this->passwordHasher->hashPassword($moderator, 'Moder13005!@#Secure'));
+            $manager->persist($moderator);
+        }
 
         $manager->flush();
     }

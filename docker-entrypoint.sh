@@ -35,6 +35,18 @@ fi
 chown -R www-data:www-data /var/www/html/var
 chmod -R 775 /var/www/html/var
 
+# Load fixtures if LOAD_FIXTURES environment variable is set
+if [ -n "$LOAD_FIXTURES" ]; then
+    echo "Loading fixtures..."
+    # Load users first (admin and moderator)
+    php bin/console doctrine:fixtures:load --group=users --append --no-interaction || true
+    # Load allergens (required by menu fixtures)
+    php bin/console doctrine:fixtures:load --group=allergens --append --no-interaction || true
+    # Load menu fixtures (depends on allergens, badges, tags)
+    php bin/console doctrine:fixtures:load --group=menu --append --no-interaction || true
+    echo "✓ Fixtures loaded"
+fi
+
 # Warm up cache after migrations
 php bin/console cache:warmup --env=prod --no-debug --no-interaction || true
 
