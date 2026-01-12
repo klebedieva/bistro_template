@@ -26,6 +26,8 @@ class MenuFixtures extends Fixture implements FixtureGroupInterface, DependentFi
 
     public function load(ObjectManager $manager): void
     {
+        $repo = $manager->getRepository(MenuItem::class);
+
         $rows = [
             // Entrées
             [
@@ -169,62 +171,66 @@ class MenuFixtures extends Fixture implements FixtureGroupInterface, DependentFi
         ];
 
         foreach ($rows as $r) {
-            $item = (new MenuItem())
-                ->setName($r['name'])
-                ->setDescription($r['description'] ?? null)
-                ->setPrice($r['price'])
-                ->setCategory($r['category'])
-                ->setImage($r['image']);
+            // Idempotent: find by name, create if missing
+            $item = $repo->findOneBy(['name' => $r['name']]);
+            if (!$item) {
+                $item = new MenuItem();
+                $item->setName($r['name'])
+                    ->setDescription($r['description'] ?? null)
+                    ->setPrice($r['price'])
+                    ->setCategory($r['category'])
+                    ->setImage($r['image']);
 
-            // Lier badges/tags via références
-            foreach (($r['badges'] ?? []) as $bn) {
-                $ref = BadgeFixtures::REFERENCE_PREFIX . $bn;
+                // Lier badges/tags via références
+                foreach (($r['badges'] ?? []) as $bn) {
+                    $ref = BadgeFixtures::REFERENCE_PREFIX . $bn;
+                    try {
+                        $entityRef = $this->getReference($ref);
+                        if ($entityRef && method_exists($item, 'addBadge')) {
+                            $item->addBadge($entityRef);
+                        }
+                    } catch (\Throwable $e) {
+                        // Référence manquante: ignorer silencieusement
+                    }
+                }
+                foreach (($r['tags'] ?? []) as $tc) {
+                    $ref = TagFixtures::REFERENCE_PREFIX . $tc;
+                    try {
+                        $entityRef = $this->getReference($ref);
+                        if ($entityRef && method_exists($item, 'addTag')) {
+                            $item->addTag($entityRef);
+                        }
+                    } catch (\Throwable $e) {
+                        // Référence manquante: ignorer
+                    }
+                }
+
+                // Optionally attach some example allergens based on dish name keywords
                 try {
-                    $entityRef = $this->getReference($ref);
-                    if ($entityRef && method_exists($item, 'addBadge')) {
-                        $item->addBadge($entityRef);
+                    $name = strtolower($r['name']);
+                    $maybe = [];
+                    if (str_contains($name, 'thon') || str_contains($name, 'loup de mer') || str_contains($name, 'poêlée') || str_contains($name, 'seiches')) {
+                        $maybe[] = 'fish';
+                    }
+                    if (str_contains($name, 'ricotta') || str_contains($r['description'] ?? '', 'crème')) {
+                        $maybe[] = 'lactose';
+                    }
+                    if (str_contains($r['description'] ?? '', 'amandes') || str_contains($r['description'] ?? '', 'noisettes')) {
+                        $maybe[] = 'nuts';
+                    }
+                    foreach (array_unique($maybe) as $code) {
+                        /** @var \App\Entity\Allergen|null $a */
+                        $a = $this->getReference(AllergenFixtures::REFERENCE_PREFIX . $code) ?? null;
+                        if ($a && method_exists($item, 'addAllergen')) {
+                            $item->addAllergen($a);
+                        }
                     }
                 } catch (\Throwable $e) {
-                    // Référence manquante: ignorer silencieusement
+                    // ignore
                 }
-            }
-            foreach (($r['tags'] ?? []) as $tc) {
-                $ref = TagFixtures::REFERENCE_PREFIX . $tc;
-                try {
-                    $entityRef = $this->getReference($ref);
-                    if ($entityRef && method_exists($item, 'addTag')) {
-                        $item->addTag($entityRef);
-                    }
-                } catch (\Throwable $e) {
-                    // Référence manquante: ignorer
-                }
-            }
 
-            // Optionally attach some example allergens based on dish name keywords
-            try {
-                $name = strtolower($r['name']);
-                $maybe = [];
-                if (str_contains($name, 'thon') || str_contains($name, 'loup de mer') || str_contains($name, 'poêlée') || str_contains($name, 'seiches')) {
-                    $maybe[] = 'fish';
-                }
-                if (str_contains($name, 'ricotta') || str_contains($r['description'] ?? '', 'crème')) {
-                    $maybe[] = 'lactose';
-                }
-                if (str_contains($r['description'] ?? '', 'amandes') || str_contains($r['description'] ?? '', 'noisettes')) {
-                    $maybe[] = 'nuts';
-                }
-                foreach (array_unique($maybe) as $code) {
-                    /** @var \App\Entity\Allergen|null $a */
-                    $a = $this->getReference(AllergenFixtures::REFERENCE_PREFIX . $code) ?? null;
-                    if ($a && method_exists($item, 'addAllergen')) {
-                        $item->addAllergen($a);
-                    }
-                }
-            } catch (\Throwable $e) {
-                // ignore
+                $manager->persist($item);
             }
-
-            $manager->persist($item);
         }
 
         $manager->flush();

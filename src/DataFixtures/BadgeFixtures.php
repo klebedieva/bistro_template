@@ -19,18 +19,23 @@ class BadgeFixtures extends Fixture implements FixtureGroupInterface
 
     public function load(ObjectManager $manager): void
     {
+        $repo = $manager->getRepository(Badge::class);
+
         $badgeNames = [
             'Spécialité', 'Végétarien', 'Fait maison', 'Méditerranéen',
             'Traditionnel', 'Fusion', 'Saison', 'Sans Gluten'
         ];
 
         foreach ($badgeNames as $name) {
-            $badge = (new Badge())
-                ->setName($name)
-                ->setSlug(strtolower(str_replace(' ', '-', $name)));
-
-            $manager->persist($badge);
-            // Mise en référence pour MenuFixtures
+            // Idempotent: find by name, create if missing
+            $badge = $repo->findOneBy(['name' => $name]);
+            if (!$badge) {
+                $badge = (new Badge())
+                    ->setName($name)
+                    ->setSlug(strtolower(str_replace(' ', '-', $name)));
+                $manager->persist($badge);
+            }
+            // Mise en référence pour MenuFixtures (always add reference, even if existing)
             $this->addReference(self::REFERENCE_PREFIX . $name, $badge);
         }
 

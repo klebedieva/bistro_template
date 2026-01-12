@@ -17,6 +17,8 @@ class DrinkFixtures extends Fixture implements FixtureGroupInterface
 
     public function load(ObjectManager $manager): void
     {
+        $repo = $manager->getRepository(Drink::class);
+
         $data = [
             'vins' => [
                 ['name' => 'Côtes du Rhône rouge', 'price' => '5.00'],
@@ -42,11 +44,15 @@ class DrinkFixtures extends Fixture implements FixtureGroupInterface
 
         foreach ($data as $type => $items) {
             foreach ($items as $row) {
-                $drink = new Drink();
-                $drink->setName($row['name']);
-                $drink->setPrice($row['price']);
-                $drink->setType($type);
-                $manager->persist($drink);
+                // Idempotent: find by name and type, create if missing
+                $drink = $repo->findOneBy(['name' => $row['name'], 'type' => $type]);
+                if (!$drink) {
+                    $drink = new Drink();
+                    $drink->setName($row['name']);
+                    $drink->setPrice($row['price']);
+                    $drink->setType($type);
+                    $manager->persist($drink);
+                }
             }
         }
 

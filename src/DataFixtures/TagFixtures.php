@@ -18,6 +18,8 @@ class TagFixtures extends Fixture implements FixtureGroupInterface
 
     public function load(ObjectManager $manager): void
     {
+        $repo = $manager->getRepository(Tag::class);
+
         $defs = [
             ['name' => 'Vegetarian', 'code' => 'vegetarian'],
             ['name' => 'Vegan', 'code' => 'vegan'],
@@ -25,10 +27,15 @@ class TagFixtures extends Fixture implements FixtureGroupInterface
         ];
 
         foreach ($defs as $d) {
-            $tag = (new Tag())
-                ->setName($d['name'])
-                ->setCode($d['code']);
-            $manager->persist($tag);
+            // Idempotent: find by code, create if missing
+            $tag = $repo->findOneBy(['code' => $d['code']]);
+            if (!$tag) {
+                $tag = (new Tag())
+                    ->setName($d['name'])
+                    ->setCode($d['code']);
+                $manager->persist($tag);
+            }
+            // Always add reference, even if existing
             $this->addReference(self::REFERENCE_PREFIX . $d['code'], $tag);
         }
 
