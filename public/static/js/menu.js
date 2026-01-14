@@ -737,14 +737,17 @@ function renderMenuItem(item, qtyById /* Map<string,id> -> quantity */) {
             maximumFractionDigits: 0,
         }) + '€';
 
+    // Use optimized thumbnail (gallery_jpeg) for menu cards - 900x600 optimized size
+    // Fallback to original image if thumbnail generation failed (better than using full size)
+    // WebP is disabled for hosting compatibility
     const imageOriginal = item.image_original || item.image || '/static/img/menu-placeholder.jpg';
     const imageOriginalEscaped = imageOriginal.replace(/'/g, "\\'");
-    const imageJpeg = item.image_optimized || item.image_full || imageOriginal;
-    const imageWebp = item.image_webp || item.image_full_webp || '';
+    // Prefer thumbnail, but use original (not full size) if thumbnail is not available
+    // Full size (hero_jpeg) is too large for menu cards
+    const imageJpeg = item.image_optimized || imageOriginal;
 
     const pictureMarkup = `
         <picture>
-            ${imageWebp ? `<source srcset="${imageWebp}" type="image/webp">` : ''}
             <img src="${imageJpeg}" alt="${escapeHtml(item.name)}" loading="lazy" onerror="this.onerror=null;this.src='${imageOriginalEscaped}'">
         </picture>
     `;

@@ -25,13 +25,13 @@ final class MenuController extends AbstractController
     #[Route('/menu', name: 'app_menu')]
     public function index(MenuItemRepository $menuItemRepository, DrinkRepository $drinkRepository, CacheManager $cacheManager, LoggerInterface $logger): Response
     {
-        // Récupérer toutes les entrées du menu depuis la base de données
-        // Используем метод с eager loading для загрузки badges, tags и allergens
+        // Fetch all menu items from database
+        // Using method with eager loading to load badges, tags and allergens
         $items = $menuItemRepository->findAllWithRelations();
 
-        // Normaliser les entités pour le front (structure attendue par static/js/menu.js)
+        // Normalize entities for frontend (structure expected by static/js/menu.js)
         $menuItems = array_map(static function (MenuItem $item) use ($cacheManager, $logger): array {
-            // Extraire les badges (ex. noms ou slugs)
+            // Extract badges (e.g. names or slugs)
             $badges = [];
             if (method_exists($item, 'getBadges')) {
                 foreach ($item->getBadges() as $badge) {
@@ -39,7 +39,7 @@ final class MenuController extends AbstractController
                 }
             }
 
-            // Extraire les tags (ex. codes techniques pour le filtrage)
+            // Extract tags (e.g. technical codes for filtering)
             $tags = [];
             if (method_exists($item, 'getTags')) {
                 foreach ($item->getTags() as $tag) {
@@ -67,43 +67,48 @@ final class MenuController extends AbstractController
             }
 
             $normalizedImage = $image ? ltrim($image, '/') : null;
-            $imageJpegPath = $imageWebpPath = $imageHeroPath = $imageHeroWebpPath = null;
+            // Use JPEG only for better hosting compatibility (WebP may not be supported)
+            $imageJpegPath = $imageHeroPath = null;
             if ($normalizedImage) {
                 try {
+                    // Generate thumbnail (gallery_jpeg) for menu cards - 900x600 optimized size
                     $imageJpegPath = $cacheManager->getBrowserPath($normalizedImage, 'gallery_jpeg');
-                    $imageWebpPath = $cacheManager->getBrowserPath($normalizedImage, 'gallery_webp');
+                    // Generate full size (hero_jpeg) for detail pages - 1920x1080
                     $imageHeroPath = $cacheManager->getBrowserPath($normalizedImage, 'hero_jpeg');
-                    $imageHeroWebpPath = $cacheManager->getBrowserPath($normalizedImage, 'hero_webp');
                 } catch (\Throwable $e) {
                     $logger->warning('LiipImagine failed to generate menu image variant', [
                         'path' => $normalizedImage,
                         'error' => $e->getMessage(),
                     ]);
+                    // If generation fails, imageJpegPath and imageHeroPath remain null
+                    // JavaScript will fallback to original image
                 }
             }
 
             return [
-                // Forcer l'ID en string pour correspondre au JS (comparaisons strictes)
+                // Force ID as string to match JS (strict comparisons)
                 'id' => (string) $item->getId(),
                 'name' => $item->getName(),
                 'description' => $item->getDescription(),
                 'price' => (float) $item->getPrice(),
-                'category' => $item->getCategory(), // valeurs attendues: entrees|plats|desserts|boissons
+                'category' => $item->getCategory(), // Expected values: entrees|plats|desserts|boissons
                 'image' => $image,
                 'image_original' => $image,
+                // Thumbnail for menu cards (900x600) - fallback to original if generation fails
                 'image_optimized' => $imageJpegPath,
-                'image_webp' => $imageWebpPath,
+                'image_webp' => null, // WebP disabled for hosting compatibility
+                // Full size for detail pages (1920x1080) - fallback to original if generation fails
                 'image_full' => $imageHeroPath ?? $image,
-                'image_full_webp' => $imageHeroWebpPath,
+                'image_full_webp' => null, // WebP disabled for hosting compatibility
                 'badges' => $badges,
                 'tags' => $tags,
             ];
         }, $items);
 
-        // Encoder en JSON (sans échapper les caractères Unicode et les slashs)
+        // Encode to JSON (without escaping Unicode characters and slashes)
         $menuItemsJson = json_encode($menuItems, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
-        // Récupérer les boissons et les regrouper par type
+        // Fetch drinks and group by type
         $drinks = $drinkRepository->findAll();
         $drinksGrouped = [
             'vins' => [],
@@ -124,7 +129,7 @@ final class MenuController extends AbstractController
         }
         $drinksJson = json_encode($drinksGrouped, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
-        // Rendre le template de la page Menu et exposer les données côté client
+        // Render Menu page template and expose data to client side
         return $this->render('pages/menu.html.twig', [
             'menuItemsJson' => $menuItemsJson,
             'drinksJson' => $drinksJson,
@@ -137,7 +142,7 @@ final class MenuController extends AbstractController
     #[Route('/dish/{id}', name: 'app_dish_detail', requirements: ['id' => '\\d+'])]
     public function show(MenuItem $item, MenuItemRepository $menuItemRepository, ReviewRepository $reviewRepository): Response
     {
-        // Préparer structure pour le template
+        // Prepare structure for template
         $badges = [];
         foreach ($item->getBadges() as $badge) {
             $badges[] = method_exists($badge, 'getName') ? $badge->getName() : (string) $badge;

@@ -53,13 +53,12 @@
                         <picture>
                             {# 
                                 NOTE:
-                                На некоторых хостингах GD/Imagick не поддерживает WebP, 
-                                из‑за чего миниатюры с фильтром gallery_webp не отображаются,
-                                хотя полноразмерное JPEG‑изображение (hero_jpeg) в модальном окне работает.
+                                On some hosting providers, GD/Imagick does not support WebP format,
+                                causing thumbnails with gallery_webp filter not to display,
+                                although full-size JPEG images (hero_jpeg) work fine in the modal.
                                 
-                                Чтобы галерея корректно работала везде, используем JPEG‑версию
-                                и для миниатюр. При желании WebP можно будет вернуть,
-                                когда на сервере появится поддержка WebP.
+                                To ensure gallery works correctly everywhere, we use JPEG version
+                                for thumbnails as well. WebP can be re-enabled when server support is available.
                             #}
                             <img src="{{ asset(imagePath)|imagine_filter('gallery_jpeg') }}" 
                                  alt="{{ image.title }}" 

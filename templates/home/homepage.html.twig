@@ -162,7 +162,7 @@
                                 data-description="{{ image.description|default('') }}"
                             >
                                 <picture>
-                                    {# Используем JPEG вместо WebP для совместимости с хостингами без поддержки WebP #}
+                                    {# Use JPEG instead of WebP for compatibility with hosting providers without WebP support #}
                                     <img src="{{ asset(imagePath)|imagine_filter('gallery_jpeg') }}" alt="{{ image.title }}" class="img-fluid" loading="lazy">
                                 </picture>
                                 <div class="gallery-overlay">

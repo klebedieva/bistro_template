@@ -1,5 +1,9 @@
 liip_imagine:
     driver: 'gd'
+    
+    # Используем lazy режим для Twig (устраняет deprecated warning)
+    twig:
+        mode: lazy
 
     loaders:
         default:
