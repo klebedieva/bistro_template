@@ -51,8 +51,20 @@
                          data-title="{{ image.title }}" 
                          data-description="{{ image.description }}">
                         <picture>
-                            <source srcset="{{ asset(imagePath)|imagine_filter('gallery_webp') }}" type="image/webp">
-                            <img src="{{ asset(imagePath) }}" alt="{{ image.title }}" class="img-fluid" loading="lazy">
+                            {# 
+                                NOTE:
+                                На некоторых хостингах GD/Imagick не поддерживает WebP, 
+                                из‑за чего миниатюры с фильтром gallery_webp не отображаются,
+                                хотя полноразмерное JPEG‑изображение (hero_jpeg) в модальном окне работает.
+                                
+                                Чтобы галерея корректно работала везде, используем JPEG‑версию
+                                и для миниатюр. При желании WebP можно будет вернуть,
+                                когда на сервере появится поддержка WebP.
+                            #}
+                            <img src="{{ asset(imagePath)|imagine_filter('gallery_jpeg') }}" 
+                                 alt="{{ image.title }}" 
+                                 class="img-fluid" 
+                                 loading="lazy">
                         </picture>
                         <div class="gallery-overlay">
                             <div class="gallery-content">

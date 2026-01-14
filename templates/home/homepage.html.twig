@@ -162,8 +162,8 @@
                                 data-description="{{ image.description|default('') }}"
                             >
                                 <picture>
-                                    <source srcset="{{ asset(imagePath)|imagine_filter('gallery_webp') }}" type="image/webp">
-                                    <img src="{{ asset(imagePath) }}" alt="{{ image.title }}" class="img-fluid" loading="lazy">
+                                    {# Используем JPEG вместо WebP для совместимости с хостингами без поддержки WebP #}
+                                    <img src="{{ asset(imagePath)|imagine_filter('gallery_jpeg') }}" alt="{{ image.title }}" class="img-fluid" loading="lazy">
                                 </picture>
                                 <div class="gallery-overlay">
                                     <div class="gallery-content">
