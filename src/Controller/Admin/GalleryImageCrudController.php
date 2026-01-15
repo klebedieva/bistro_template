@@ -336,7 +336,10 @@ class GalleryImageCrudController extends AbstractCrudController
                         throw new \Symfony\Component\HttpKernel\Exception\BadRequestHttpException($e->getMessage());
                     }
                     
-                    $uploadDir = 'public/static/img/';
+                    $uploadDir = 'public/uploads/gallery/';
+                    if (!is_dir($uploadDir)) {
+                        mkdir($uploadDir, 0755, true);
+                    }
                     $extension = $uploadedFile->guessExtension() ?: $uploadedFile->getClientOriginalExtension();
                     $fileName = uniqid() . '.' . $extension;
                     
