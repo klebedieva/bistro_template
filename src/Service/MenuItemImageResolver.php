@@ -18,7 +18,7 @@ namespace App\Service;
  * - Absolute URLs (http/https) - returned as-is
  * - Absolute paths starting with /uploads/, /assets/ or /static/ - returned as-is
  * - Relative paths starting with assets/ or static/ - prepended with /
- * - Other relative paths - prepended with /static/img/menu/
+ * - Other relative paths - prepended with /uploads/menu/
  * - Null/empty values - returns default placeholder image
  *
  * Usage:
@@ -50,9 +50,9 @@ class MenuItemImageResolver
      * Examples:
      * - null → '/static/img/default-dish.png'
      * - 'http://example.com/image.jpg' → 'http://example.com/image.jpg'
-     * - '/static/img/menu/dish.jpg' → '/static/img/menu/dish.jpg'
+ * - '/uploads/menu/dish.jpg' → '/uploads/menu/dish.jpg'
      * - 'static/img/dish.jpg' → '/static/img/dish.jpg'
-     * - 'dish.jpg' → '/static/img/menu/dish.jpg'
+ * - 'dish.jpg' → '/uploads/menu/dish.jpg'
      *
      * @param string|null $image Image path from database (can be null, relative, or absolute)
      * @return string Resolved image path suitable for frontend use (always returns a valid path)
@@ -91,11 +91,11 @@ class MenuItemImageResolver
         }
 
         // Handle all other relative paths
-        // Assume these are menu item images stored in /static/img/menu/
+        // Assume these are menu item images stored in /uploads/menu/
         // Remove any leading slashes and prepend the base path
-        // Example: 'dish.jpg' → '/static/img/menu/dish.jpg'
-        // Example: '/dish.jpg' → '/static/img/menu/dish.jpg' (ltrim removes leading slash)
-        return '/static/img/menu/' . ltrim($image, '/');
+        // Example: 'dish.jpg' → '/uploads/menu/dish.jpg'
+        // Example: '/dish.jpg' → '/uploads/menu/dish.jpg' (ltrim removes leading slash)
+        return '/uploads/menu/' . ltrim($image, '/');
     }
 }
 

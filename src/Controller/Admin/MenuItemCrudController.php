@@ -57,13 +57,13 @@ class MenuItemCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         // Configure ImageField for display only - file upload is handled manually in handleFileUpload()
-        // Images are stored in /static/img/menu/ (all menu items in one folder)
+        // Images are stored in /uploads/menu/ (all menu items in one folder)
         // Note: setUploadDir is required by EasyAdmin, but we override file handling in handleFileUpload()
         $imageField = ImageField::new('image', 'Image')
-            ->setBasePath('/static/img/menu')
-            ->setUploadDir('public/static/img/menu') // Required by EasyAdmin, but we override in handleFileUpload()
-            ->setHelp('Téléversez une image. Le fichier sera copié dans /public/static/img/menu/')
-            // Format image path - if it's just a filename, prepend /static/img/menu/
+            ->setBasePath('/uploads/menu')
+            ->setUploadDir('public/uploads/menu') // Required by EasyAdmin, but we override in handleFileUpload()
+            ->setHelp('Téléversez une image. Le fichier sera copié dans /public/uploads/menu/')
+            // Format image path - if it's just a filename, prepend /uploads/menu/
             ->formatValue(function ($value, $entity) {
                 if (!$value) {
                     return null;
@@ -79,8 +79,8 @@ class MenuItemCrudController extends AbstractCrudController
                     return $value;
                 }
                 
-                // Return path with menu folder: /static/img/menu/filename.jpg
-                return '/static/img/menu/' . ltrim($value, '/');
+                // Return path with menu folder: /uploads/menu/filename.jpg
+                return '/uploads/menu/' . ltrim($value, '/');
             })
             // Disable EasyAdmin's automatic file handling - we handle it manually
             ->setFormTypeOptions([
@@ -334,9 +334,9 @@ class MenuItemCrudController extends AbstractCrudController
         }
         
         // Get project directory to build absolute path
-        // Images are stored in /static/img/menu/ (all menu items in one folder)
+        // Images are stored in /uploads/menu/ (all menu items in one folder)
         $projectDir = $this->getParameter('kernel.project_dir');
-        $uploadDir = $projectDir . '/public/static/img/menu';
+        $uploadDir = $projectDir . '/public/uploads/menu';
         
         // Ensure upload directory exists with proper permissions
         if (!is_dir($uploadDir)) {
