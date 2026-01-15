@@ -163,7 +163,11 @@
                             >
                                 <picture>
                                     {# Use JPEG instead of WebP for compatibility with hosting providers without WebP support #}
-                                    <img src="{{ asset(imagePath)|imagine_filter('gallery_jpeg') }}" alt="{{ image.title }}" class="img-fluid" loading="lazy">
+                                    <img src="{{ asset(imagePath)|imagine_filter('gallery_jpeg') }}" 
+                                         alt="{{ image.title }}" 
+                                         class="img-fluid" 
+                                         loading="lazy"
+                                         onerror="this.onerror=null; this.src='{{ asset(imagePath) }}';">
                                 </picture>
                                 <div class="gallery-overlay">
                                     <div class="gallery-content">
