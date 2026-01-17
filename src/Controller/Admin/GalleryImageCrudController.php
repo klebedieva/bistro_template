@@ -62,8 +62,8 @@ class GalleryImageCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
-        $imageBasePath = '/static/img/';
-        $imageUploadPath = 'public/static/img/';
+        $imageBasePath = '/uploads/';
+        $imageUploadPath = 'public/uploads/';
 
         // For moderators editing: allow toggling only the visibility status
         if (!$this->isGranted('ROLE_ADMIN') && $pageName === Crud::PAGE_EDIT) {
@@ -119,7 +119,7 @@ class GalleryImageCrudController extends AbstractCrudController
                 ->setBasePath($imageBasePath)
                 ->setUploadDir($imageUploadPath)
                 ->setRequired($pageName === Crud::PAGE_NEW)
-                ->setHelp('Nom du fichier (ex: terrasse_1.jpg). Le fichier doit être dans public/static/img/. Taille maximum : 2 MB')
+                ->setHelp('Nom du fichier (ex: terrasse_1.jpg). Le fichier doit être dans public/uploads/. Taille maximum : 2 MB')
                 ->setUploadedFileNamePattern('[randomhash].[extension]')
                 ->setFormTypeOptions([
                     'attr' => [
@@ -327,6 +327,11 @@ class GalleryImageCrudController extends AbstractCrudController
                 $uploadedFile = $formData['imagePath'];
                 
                 if ($uploadedFile instanceof \Symfony\Component\HttpFoundation\File\UploadedFile) {
+                    // Avoid double-handling if EasyAdmin already moved the file
+                    $tmpPath = $uploadedFile->getPathname();
+                    if (!$tmpPath || !is_file($tmpPath) || !is_uploaded_file($tmpPath)) {
+                        return;
+                    }
                     // Validate file: MIME type, extension, and size
                     try {
                         $this->fileValidator->validate($uploadedFile);
@@ -336,12 +341,13 @@ class GalleryImageCrudController extends AbstractCrudController
                         throw new \Symfony\Component\HttpKernel\Exception\BadRequestHttpException($e->getMessage());
                     }
                     
-                    $uploadDir = 'public/uploads/gallery/';
+                    $projectDir = $this->getParameter('kernel.project_dir');
+                    $uploadDir = $projectDir . '/public/uploads';
                     if (!is_dir($uploadDir)) {
-                        mkdir($uploadDir, 0755, true);
+                        throw new \RuntimeException('Upload directory does not exist: ' . $uploadDir);
                     }
                     $extension = $uploadedFile->guessExtension() ?: $uploadedFile->getClientOriginalExtension();
-                    $fileName = uniqid() . '.' . $extension;
+                    $fileName = 'gallery-' . uniqid() . '.' . $extension;
                     
                     try {
                         $uploadedFile->move($uploadDir, $fileName);

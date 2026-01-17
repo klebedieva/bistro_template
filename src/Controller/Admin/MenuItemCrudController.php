@@ -57,13 +57,13 @@ class MenuItemCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         // Configure ImageField for display only - file upload is handled manually in handleFileUpload()
-        // Images are stored in /uploads/menu/ (all menu items in one folder)
+        // Images are stored in /uploads/ (shared folder on hosting)
         // Note: setUploadDir is required by EasyAdmin, but we override file handling in handleFileUpload()
         $imageField = ImageField::new('image', 'Image')
-            ->setBasePath('/uploads/menu')
-            ->setUploadDir('public/uploads/menu') // Required by EasyAdmin, but we override in handleFileUpload()
-            ->setHelp('Téléversez une image. Le fichier sera copié dans /public/uploads/menu/')
-            // Format image path - if it's just a filename, prepend /uploads/menu/
+            ->setBasePath('/uploads')
+            ->setUploadDir('public/uploads') // Required by EasyAdmin, but we override in handleFileUpload()
+            ->setHelp('Téléversez une image. Le fichier sera copié dans /public/uploads/')
+            // Format image path - if it's just a filename, prepend /uploads/
             ->formatValue(function ($value, $entity) {
                 if (!$value) {
                     return null;
@@ -79,8 +79,8 @@ class MenuItemCrudController extends AbstractCrudController
                     return $value;
                 }
                 
-                // Return path with menu folder: /uploads/menu/filename.jpg
-                return '/uploads/menu/' . ltrim($value, '/');
+                // Return path under uploads root: /uploads/filename.jpg
+                return '/uploads/' . ltrim($value, '/');
             })
             // Disable EasyAdmin's automatic file handling - we handle it manually
             ->setFormTypeOptions([
@@ -323,6 +323,12 @@ class MenuItemCrudController extends AbstractCrudController
         if (!$uploadedFile instanceof UploadedFile) {
             return;
         }
+
+        // Avoid double-handling if EasyAdmin already moved the file
+        $tmpPath = $uploadedFile->getPathname();
+        if (!$tmpPath || !is_file($tmpPath) || !is_uploaded_file($tmpPath)) {
+            return;
+        }
         
         // Validate file: MIME type, extension, and size
         try {
@@ -334,15 +340,13 @@ class MenuItemCrudController extends AbstractCrudController
         }
         
         // Get project directory to build absolute path
-        // Images are stored in /uploads/menu/ (all menu items in one folder)
+        // Images are stored in /uploads/ (shared folder on hosting)
         $projectDir = $this->getParameter('kernel.project_dir');
-        $uploadDir = $projectDir . '/public/uploads/menu';
+        $uploadDir = $projectDir . '/public/uploads';
         
-        // Ensure upload directory exists with proper permissions
+        // Ensure upload directory exists
         if (!is_dir($uploadDir)) {
-            if (!mkdir($uploadDir, 0755, true)) {
-                throw new \RuntimeException('Failed to create upload directory: ' . $uploadDir);
-            }
+            throw new \RuntimeException('Upload directory does not exist: ' . $uploadDir);
         }
         
         // Check if directory is writable
@@ -350,9 +354,9 @@ class MenuItemCrudController extends AbstractCrudController
             throw new \RuntimeException('Upload directory is not writable: ' . $uploadDir);
         }
         
-        // Generate unique filename (similar to gallery - using uniqid for simplicity)
+        // Generate unique filename (prefix to avoid collisions)
         $extension = $uploadedFile->guessExtension() ?: $uploadedFile->getClientOriginalExtension();
-        $fileName = uniqid() . '.' . $extension;
+        $fileName = 'menu-' . uniqid() . '.' . $extension;
         
         // Ensure filename is unique (in case of rapid uploads)
         $fullPath = $uploadDir . '/' . $fileName;
