@@ -11,6 +11,9 @@ use Doctrine\ORM\Mapping as ORM;
  * Many-to-many with MenuItem for machine-usable filtering (code) and display (name).
  */
 #[ORM\Entity]
+#[ORM\Table(name: 'tag', uniqueConstraints: [
+    new ORM\UniqueConstraint(name: 'uniq_tag_code', columns: ['code'])
+])]
 class Tag
 {
     #[ORM\Id]

@@ -11,6 +11,9 @@ use Doctrine\ORM\Mapping as ORM;
  * Many-to-many with MenuItem for UI badges on dishes.
  */
 #[ORM\Entity]
+#[ORM\Table(name: 'badge', uniqueConstraints: [
+    new ORM\UniqueConstraint(name: 'uniq_badge_name', columns: ['name'])
+])]
 class Badge
 {
     #[ORM\Id]
