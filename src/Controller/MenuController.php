@@ -9,6 +9,7 @@ use App\Repository\MenuItemRepository;
 use App\Repository\ReviewRepository;
 use App\Repository\DrinkRepository;
 use App\Entity\MenuItem;
+use App\Service\MenuItemImageResolver;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Psr\Log\LoggerInterface;
 
@@ -23,14 +24,14 @@ use Psr\Log\LoggerInterface;
 final class MenuController extends AbstractController
 {
     #[Route('/menu', name: 'app_menu')]
-    public function index(MenuItemRepository $menuItemRepository, DrinkRepository $drinkRepository, CacheManager $cacheManager, LoggerInterface $logger): Response
+    public function index(MenuItemRepository $menuItemRepository, DrinkRepository $drinkRepository, CacheManager $cacheManager, LoggerInterface $logger, MenuItemImageResolver $imageResolver): Response
     {
         // Fetch all menu items from database
         // Using method with eager loading to load badges, tags and allergens
         $items = $menuItemRepository->findAllWithRelations();
 
         // Normalize entities for frontend (structure expected by static/js/menu.js)
-        $menuItems = array_map(static function (MenuItem $item) use ($cacheManager, $logger): array {
+        $menuItems = array_map(static function (MenuItem $item) use ($cacheManager, $logger, $imageResolver): array {
             // Extract badges (e.g. names or slugs)
             $badges = [];
             if (method_exists($item, 'getBadges')) {
@@ -47,24 +48,8 @@ final class MenuController extends AbstractController
                 }
             }
 
-            // Resolve public image path
-            // Images are stored in /uploads/ (shared folder on hosting)
-            $image = $item->getImage();
-            if ($image) {
-                // If it's just a filename from upload, prefix with uploads root
-                if (
-                    !str_starts_with($image, '/uploads/')
-                    && !str_starts_with($image, '/assets/')
-                    && !str_starts_with($image, '/static/')
-                    && !str_starts_with($image, 'http')
-                ) {
-                    $image = '/uploads/' . ltrim($image, '/');
-                }
-                // If path starts with 'assets/' or 'static/', make it absolute under public
-                if (str_starts_with($image, 'assets/') || str_starts_with($image, 'static/')) {
-                    $image = '/' . ltrim($image, '/');
-                }
-            }
+            // Resolve public image path (menu images stored in /uploads/menu)
+            $image = $imageResolver->resolve($item->getImage());
 
             $normalizedImage = $image ? ltrim($image, '/') : null;
             // Use JPEG only for better hosting compatibility (WebP may not be supported)
@@ -140,7 +125,7 @@ final class MenuController extends AbstractController
     }
 
     #[Route('/dish/{id}', name: 'app_dish_detail', requirements: ['id' => '\\d+'])]
-    public function show(MenuItem $item, MenuItemRepository $menuItemRepository, ReviewRepository $reviewRepository): Response
+    public function show(MenuItem $item, MenuItemRepository $menuItemRepository, ReviewRepository $reviewRepository, MenuItemImageResolver $imageResolver): Response
     {
         // Prepare structure for template
         $badges = [];
@@ -155,45 +140,15 @@ final class MenuController extends AbstractController
             }
         }
 
-        // Resolve public image path
-        // Images are stored in /uploads/ (shared folder on hosting)
-        $image = $item->getImage();
-        if ($image) {
-            // If it's just a filename from upload, prefix with uploads root
-            if (
-                !str_starts_with($image, '/uploads/')
-                && !str_starts_with($image, '/assets/')
-                && !str_starts_with($image, '/static/')
-                && !str_starts_with($image, 'http')
-            ) {
-                $image = '/uploads/' . ltrim($image, '/');
-            }
-            // If path starts with 'assets/' or 'static/', make it absolute under public
-            if (str_starts_with($image, 'assets/') || str_starts_with($image, 'static/')) {
-                $image = '/' . ltrim($image, '/');
-            }
-        }
+        // Resolve public image path (menu images stored in /uploads/menu)
+        $image = $imageResolver->resolve($item->getImage());
 
         // Related dishes (same category) - optimized lightweight query
         $related = $menuItemRepository->findRelatedForCard($item->getCategory(), (int) $item->getId(), 3);
         // Normalize image path as previously
         foreach ($related as &$rel) {
             $rImage = $rel['image'] ?? null;
-            if ($rImage) {
-                if (
-                    !str_starts_with($rImage, '/uploads/')
-                    && !str_starts_with($rImage, '/assets/')
-                    && !str_starts_with($rImage, '/static/')
-                    && !str_starts_with($rImage, 'http')
-                ) {
-                    // All menu images are in /uploads/
-                    $rImage = '/uploads/' . ltrim($rImage, '/');
-                }
-                if (str_starts_with($rImage, 'assets/') || str_starts_with($rImage, 'static/')) {
-                    $rImage = '/' . ltrim($rImage, '/');
-                }
-            }
-            $rel['image'] = $rImage;
+            $rel['image'] = $imageResolver->resolve($rImage);
         }
 
         // Get ingredients as array

@@ -169,7 +169,24 @@ class GalleryImage
      */
     public function getFullImagePath(): string
     {
-        return 'uploads/' . $this->imagePath;
+        $imagePath = $this->imagePath ?? '';
+        if ($imagePath === '') {
+            return 'static/img/default-dish.png';
+        }
+
+        if (str_starts_with($imagePath, '/')) {
+            return ltrim($imagePath, '/');
+        }
+
+        if (str_starts_with($imagePath, 'uploads/')) {
+            return $imagePath;
+        }
+
+        if (str_starts_with($imagePath, 'gallery/')) {
+            return 'uploads/' . $imagePath;
+        }
+
+        return 'uploads/gallery/' . $imagePath;
     }
 
     /**

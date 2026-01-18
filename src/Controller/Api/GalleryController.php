@@ -132,7 +132,7 @@ class GalleryController extends AbstractController
                     'id' => $image->getId(),
                     'title' => $image->getTitle(),
                     'description' => $image->getDescription(),
-                    'imageUrl' => $req->getSchemeAndHttpHost() . '/uploads/' . $image->getImagePath(),
+                    'imageUrl' => $req->getSchemeAndHttpHost() . '/' . $image->getFullImagePath(),
                     'category' => $image->getCategory(),
                     'displayOrder' => $image->getDisplayOrder(),
                     'createdAt' => $image->getCreatedAt()->format('c')
@@ -215,7 +215,7 @@ class GalleryController extends AbstractController
                 'id' => $image->getId(),
                 'title' => $image->getTitle(),
                 'description' => $image->getDescription(),
-                'imageUrl' => $request->getSchemeAndHttpHost() . '/uploads/' . $image->getImagePath(),
+                'imageUrl' => $request->getSchemeAndHttpHost() . '/' . $image->getFullImagePath(),
                 'category' => $image->getCategory(),
                 'displayOrder' => $image->getDisplayOrder(),
                 'isActive' => $image->isIsActive(),
