@@ -121,8 +121,11 @@ class AddressValidationService
         }
 
         // Step 3: Address geocoding failed (address not found in API)
-        // Return error message - do not use zip code as fallback
-        // User must provide a valid street address for delivery
+        // If zip code is provided, fall back to zip validation to avoid blocking orders
+        if ($zipCode) {
+            return $this->validateZipCodeForDelivery($zipCode);
+        }
+
         return [
             'valid' => false,
             'error' => 'Adresse introuvable',
@@ -392,6 +395,37 @@ class AddressValidationService
                 'lat' => $marseilleZipCodes[$zipCode]['lat'],
                 'lng' => $marseilleZipCodes[$zipCode]['lng'],
                 'display_name' => $marseilleZipCodes[$zipCode]['name']
+            ];
+        }
+
+        $parisZipCodes = [
+            '75001' => ['lat' => 48.8625, 'lng' => 2.3361, 'name' => 'Paris 1er'],
+            '75002' => ['lat' => 48.8686, 'lng' => 2.3430, 'name' => 'Paris 2ème'],
+            '75003' => ['lat' => 48.8640, 'lng' => 2.3626, 'name' => 'Paris 3ème'],
+            '75004' => ['lat' => 48.8556, 'lng' => 2.3570, 'name' => 'Paris 4ème'],
+            '75005' => ['lat' => 48.8448, 'lng' => 2.3471, 'name' => 'Paris 5ème'],
+            '75006' => ['lat' => 48.8506, 'lng' => 2.3322, 'name' => 'Paris 6ème'],
+            '75007' => ['lat' => 48.8575, 'lng' => 2.3200, 'name' => 'Paris 7ème'],
+            '75008' => ['lat' => 48.8756, 'lng' => 2.3176, 'name' => 'Paris 8ème'],
+            '75009' => ['lat' => 48.8760, 'lng' => 2.3371, 'name' => 'Paris 9ème'],
+            '75010' => ['lat' => 48.8722, 'lng' => 2.3607, 'name' => 'Paris 10ème'],
+            '75011' => ['lat' => 48.8588, 'lng' => 2.3794, 'name' => 'Paris 11ème'],
+            '75012' => ['lat' => 48.8412, 'lng' => 2.3889, 'name' => 'Paris 12ème'],
+            '75013' => ['lat' => 48.8322, 'lng' => 2.3563, 'name' => 'Paris 13ème'],
+            '75014' => ['lat' => 48.8320, 'lng' => 2.3266, 'name' => 'Paris 14ème'],
+            '75015' => ['lat' => 48.8414, 'lng' => 2.3005, 'name' => 'Paris 15ème'],
+            '75016' => ['lat' => 48.8633, 'lng' => 2.2760, 'name' => 'Paris 16ème'],
+            '75017' => ['lat' => 48.8844, 'lng' => 2.3224, 'name' => 'Paris 17ème'],
+            '75018' => ['lat' => 48.8927, 'lng' => 2.3444, 'name' => 'Paris 18ème'],
+            '75019' => ['lat' => 48.8817, 'lng' => 2.3829, 'name' => 'Paris 19ème'],
+            '75020' => ['lat' => 48.8642, 'lng' => 2.3980, 'name' => 'Paris 20ème'],
+        ];
+
+        if (isset($parisZipCodes[$zipCode])) {
+            return [
+                'lat' => $parisZipCodes[$zipCode]['lat'],
+                'lng' => $parisZipCodes[$zipCode]['lng'],
+                'display_name' => $parisZipCodes[$zipCode]['name']
             ];
         }
 
