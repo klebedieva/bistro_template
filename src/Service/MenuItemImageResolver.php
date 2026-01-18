@@ -90,6 +90,12 @@ class MenuItemImageResolver
             return '/' . ltrim($image, '/');
         }
 
+        // Handle menu subfolder paths stored without leading slash
+        // Example: 'menu/dish.jpg' → '/uploads/menu/dish.jpg'
+        if (str_starts_with($image, 'menu/')) {
+            return '/uploads/' . ltrim($image, '/');
+        }
+
         // Handle all other relative paths
         // Assume these are menu item images stored in /uploads/menu/
         // Remove any leading slashes and prepend the base path

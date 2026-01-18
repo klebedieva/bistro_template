@@ -63,7 +63,7 @@ class GalleryImageCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         $imageBasePath = '/uploads/';
-        $imageUploadPath = 'public/uploads/';
+        $imageUploadPath = 'public/uploads/gallery';
 
         // For moderators editing: allow toggling only the visibility status
         if (!$this->isGranted('ROLE_ADMIN') && $pageName === Crud::PAGE_EDIT) {
@@ -119,7 +119,7 @@ class GalleryImageCrudController extends AbstractCrudController
                 ->setBasePath($imageBasePath)
                 ->setUploadDir($imageUploadPath)
                 ->setRequired($pageName === Crud::PAGE_NEW)
-                ->setHelp('Nom du fichier (ex: terrasse_1.jpg). Le fichier doit être dans public/uploads/. Taille maximum : 2 MB')
+                ->setHelp('Nom du fichier (ex: terrasse_1.jpg). Le fichier sera stocké dans public/uploads/gallery/. Taille maximum : 2 MB')
                 ->setUploadedFileNamePattern('[randomhash].[extension]')
                 ->setFormTypeOptions([
                     'attr' => [
@@ -342,16 +342,21 @@ class GalleryImageCrudController extends AbstractCrudController
                     }
                     
                     $projectDir = $this->getParameter('kernel.project_dir');
-                    $uploadDir = $projectDir . '/public/uploads';
+                    $uploadDir = $projectDir . '/public/uploads/gallery';
                     if (!is_dir($uploadDir)) {
-                        throw new \RuntimeException('Upload directory does not exist: ' . $uploadDir);
+                        if (!@mkdir($uploadDir, 0775, true) && !is_dir($uploadDir)) {
+                            throw new \RuntimeException('Upload directory could not be created: ' . $uploadDir);
+                        }
+                    }
+                    if (!is_writable($uploadDir)) {
+                        throw new \RuntimeException('Upload directory is not writable: ' . $uploadDir);
                     }
                     $extension = $uploadedFile->guessExtension() ?: $uploadedFile->getClientOriginalExtension();
                     $fileName = 'gallery-' . uniqid() . '.' . $extension;
                     
                     try {
                         $uploadedFile->move($uploadDir, $fileName);
-                        $galleryImage->setImagePath($fileName);
+                        $galleryImage->setImagePath('gallery/' . $fileName);
                     } catch (\Exception $e) {
                         throw new \InvalidArgumentException('Erreur lors de l\'upload du fichier: ' . $e->getMessage());
                     }

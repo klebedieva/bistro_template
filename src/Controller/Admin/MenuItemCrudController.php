@@ -57,12 +57,12 @@ class MenuItemCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         // Configure ImageField for display only - file upload is handled manually in handleFileUpload()
-        // Images are stored in /uploads/ (shared folder on hosting)
+        // Images are stored in /uploads/menu (shared folder on hosting)
         // Note: setUploadDir is required by EasyAdmin, but we override file handling in handleFileUpload()
         $imageField = ImageField::new('image', 'Image')
             ->setBasePath('/uploads')
-            ->setUploadDir('public/uploads') // Required by EasyAdmin, but we override in handleFileUpload()
-            ->setHelp('Téléversez une image. Le fichier sera copié dans /public/uploads/')
+            ->setUploadDir('public/uploads/menu') // Required by EasyAdmin, but we override in handleFileUpload()
+            ->setHelp('Téléversez une image. Le fichier sera copié dans /public/uploads/menu/')
             // Format image path - if it's just a filename, prepend /uploads/
             ->formatValue(function ($value, $entity) {
                 if (!$value) {
@@ -79,8 +79,8 @@ class MenuItemCrudController extends AbstractCrudController
                     return $value;
                 }
                 
-                // Return path under uploads root: /uploads/filename.jpg
-                return '/uploads/' . ltrim($value, '/');
+                // Return path under menu uploads: /uploads/menu/filename.jpg
+                return '/uploads/menu/' . ltrim($value, '/');
             })
             // Disable EasyAdmin's automatic file handling - we handle it manually
             ->setFormTypeOptions([
@@ -340,13 +340,15 @@ class MenuItemCrudController extends AbstractCrudController
         }
         
         // Get project directory to build absolute path
-        // Images are stored in /uploads/ (shared folder on hosting)
+        // Images are stored in /uploads/menu/ (shared folder on hosting)
         $projectDir = $this->getParameter('kernel.project_dir');
-        $uploadDir = $projectDir . '/public/uploads';
+        $uploadDir = $projectDir . '/public/uploads/menu';
         
-        // Ensure upload directory exists
+        // Ensure upload directory exists (create it if missing on hosting)
         if (!is_dir($uploadDir)) {
-            throw new \RuntimeException('Upload directory does not exist: ' . $uploadDir);
+            if (!@mkdir($uploadDir, 0775, true) && !is_dir($uploadDir)) {
+                throw new \RuntimeException('Upload directory could not be created: ' . $uploadDir);
+            }
         }
         
         // Check if directory is writable
