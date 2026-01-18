@@ -121,6 +121,29 @@ class GalleryImageCrudController extends AbstractCrudController
                 ->setRequired($pageName === Crud::PAGE_NEW)
                 ->setHelp('Nom du fichier (ex: terrasse_1.jpg). Le fichier sera stocké dans public/uploads/gallery/. Taille maximum : 2 MB')
                 ->setUploadedFileNamePattern('[randomhash].[extension]')
+                ->formatValue(function ($value) {
+                    if (!$value) {
+                        return null;
+                    }
+
+                    if (str_starts_with($value, '/')) {
+                        return $value;
+                    }
+
+                    if (str_starts_with($value, 'http')) {
+                        return $value;
+                    }
+
+                    if (str_starts_with($value, 'uploads/')) {
+                        return '/' . ltrim($value, '/');
+                    }
+
+                    if (str_starts_with($value, 'gallery/')) {
+                        return '/uploads/' . ltrim($value, '/');
+                    }
+
+                    return '/uploads/gallery/' . ltrim($value, '/');
+                })
                 ->setFormTypeOptions([
                     'attr' => [
                         'accept' => 'image/jpeg,image/jpg,image/png,image/webp,image/gif,image/avif'
