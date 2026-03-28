@@ -1,13 +1,30 @@
-# API Documentation routes
+# Public: /api (Swagger UI) + /api/doc.json — area "public" (safe storefront endpoints only).
+# Admin: /admin/api-doc + /admin/api-doc.json — area "default" (full documented API).
+
 app.swagger_ui:
     path: /api
     methods: GET
     defaults:
         _controller: nelmio_api_doc.controller.swagger_ui
+        area: public
 
 app.swagger:
     path: /api/doc.json
     methods: GET
     defaults:
         _controller: nelmio_api_doc.controller.swagger
+        area: public
 
+app.swagger_ui_admin:
+    path: /admin/api-doc
+    methods: GET
+    defaults:
+        _controller: nelmio_api_doc.controller.swagger_ui
+        area: default
+
+app.swagger_admin:
+    path: /admin/api-doc.json
+    methods: GET
+    defaults:
+        _controller: nelmio_api_doc.controller.swagger
+        area: default

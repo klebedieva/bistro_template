@@ -48,6 +48,9 @@ security:
         - { path: ^/api/dishes, roles: PUBLIC_ACCESS }
         - { path: ^/api/gallery, roles: PUBLIC_ACCESS }
         - { path: ^/api/restaurant, roles: PUBLIC_ACCESS }
+        # Swagger UI + OpenAPI JSON (Nelmio) — sans login ; contenu filtré par area « public »
+        - { path: ^/api/doc\.json$, roles: PUBLIC_ACCESS }
+        - { path: ^/api$, roles: PUBLIC_ACCESS }
         - { path: ^/api, roles: [ROLE_ADMIN, ROLE_MODERATOR] }
 
 when@test:

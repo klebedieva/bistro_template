@@ -4,18 +4,18 @@ nelmio_api_doc:
             title: 'Bistro - API'
             description: |
                 🛒 REST API for shopping cart, orders and reviews management
-                
+
                 ## Features
                 - Storage in PHP session (not localStorage)
                 - Prices always from database (secure)
                 - Synchronization between tabs
                 - 24-hour persistence
                 - Complete order lifecycle management
-                
+
                 ## Usage
                 All requests require a session cookie.
                 The server will create a new session on the first request.
-                
+
             version: '1.0.0'
             contact:
                 name: 'Bistro'
@@ -44,6 +44,29 @@ nelmio_api_doc:
             - name: 'Reviews'
               description: 'Customer reviews operations'
     areas:
-        path_patterns:
-            - ^/api(?!/doc$) # Accept all /api except /api/doc
-
+        default:
+            path_patterns:
+                - ^/api/
+            documentation:
+                info:
+                    title: 'Bistro — API (complète)'
+                    description: |
+                        Documentation interne : tous les endpoints sous `/api/…` (y compris réservés admin).
+                        À ouvrir connecté en administrateur : `/admin/api-doc`.
+        public:
+            path_patterns:
+                - ^/api/cart
+                - ^/api/order$
+                - ^/api/coupon/validate$
+                - ^/api/validate-zip-code$
+                - ^/api/validate-address$
+                - ^/api/review
+                - ^/api/dishes
+                - ^/api/gallery
+                - ^/api/restaurant
+            documentation:
+                info:
+                    title: 'Bistro — API publique'
+                    description: |
+                        Endpoints utilisés par le site (panier, commande, avis, galerie, validation d’adresse, etc.).
+                        Les routes réservées aux administrateurs (ex. détail commande, coupons apply/list) ne figurent pas ici.
